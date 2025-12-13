@@ -11,3 +11,7 @@
 
 ## Testing
 - Write tests for all core logic.
+
+## Tooling
+- **JavaScript/TypeScript**: Always use **Bun** (`bun install`, `bun run`). Never use `npm` or `yarn`.
+- **Python**: Always use **uv** for dependency management and virtual environments.
