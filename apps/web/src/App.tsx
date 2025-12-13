@@ -371,9 +371,9 @@ function App() {
               © 2025 LornuAI Inc. Building the future with intelligent solutions.
             </p>
             <div className="flex gap-6">
-              <a href="#" className="text-sm hover:text-accent transition-colors">Privacy</a>
-              <a href="#" className="text-sm hover:text-accent transition-colors">Terms</a>
-              <a href="#" className="text-sm hover:text-accent transition-colors">Contact</a>
+              <button onClick={() => toast('Privacy Policy coming soon')} className="text-sm hover:text-accent transition-colors">Privacy</button>
+              <button onClick={() => toast('Terms of Service coming soon')} className="text-sm hover:text-accent transition-colors">Terms</button>
+              <button onClick={() => scrollToSection('contact')} className="text-sm hover:text-accent transition-colors">Contact</button>
             </div>
           </div>
         </div>
