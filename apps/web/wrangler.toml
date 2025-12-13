@@ -8,7 +8,7 @@ assets = { directory = "./dist", binding = "ASSETS" }
 [observability]
 enabled = true
 
-[routes]
+[[routes]]
 pattern = "lornu.ai"
 custom_domain = true
 
