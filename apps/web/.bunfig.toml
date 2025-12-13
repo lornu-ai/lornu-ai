@@ -1,0 +1,16 @@
+# Bun Configuration File
+# Reference: https://bun.sh/docs/bundler/config
+
+[packages]
+# Use exact versions specified in package.json
+exact = false
+
+[install]
+# Use production dependencies
+production = false
+
+# Parallel installation threads
+concurrent = true
+
+# Attempt to automatically install optional peer dependencies
+optional = true
