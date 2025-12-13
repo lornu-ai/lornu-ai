@@ -38,7 +38,7 @@ The pipeline will consist of two automated workflows (currently to be implemente
 
 1.  **Code Commit:** Changes pushed to GitHub.
 2.  **Continuous Integration (CI):**
-    *   **Setup:** `bun install --frozen-lockfile`
+    *   **Setup:** `bun install`
     *   **Testing:** `bun test`
 3.  **Deployment:**
     *   Deploys to Cloudflare Workers using `bun x wrangler deploy`.
