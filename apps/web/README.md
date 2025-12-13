@@ -20,7 +20,6 @@ This application uses **Cloudflare Workers** (not Cloudflare Pages) to serve sta
 
 ### Prerequisites
 
-- Node.js 20+
 - npm or bun
 - Wrangler CLI (installed as dev dependency)
 - [Pre-commit](https://pre-commit.com/) (recommended for code quality & security)
