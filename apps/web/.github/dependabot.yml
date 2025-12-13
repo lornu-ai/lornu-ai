@@ -1,13 +1,12 @@
 version: 2
 updates:
   # Note: Dependabot doesn't have native Bun support yet
-  # Since Bun uses package.json as the source of truth (compatible with npm),
-  # we keep npm ecosystem to monitor package.json updates
-  # Developers should run `bun install` after merging dependabot PRs to update bun.lock
-  - package-ecosystem: "npm"
-    directory: "/apps/web"
-    schedule:
-      interval: "daily"
+  # Since Bun manages dependencies via bun.lock, manual dependency updates are required
+  # To update dependencies:
+  # 1. Update package.json versions manually
+  # 2. Run `bun install` to update bun.lock
+  # 3. Test and commit changes
+
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:
