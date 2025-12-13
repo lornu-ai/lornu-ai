@@ -35,7 +35,8 @@ bun install
 bun dev
 
 # Run in production-like environment with Wrangler
-bun run dev:worker
+bun run build
+bun x wrangler dev
 ```
 
 ### Local Development Workflow
