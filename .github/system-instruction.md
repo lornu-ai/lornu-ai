@@ -21,8 +21,9 @@ The project is a monorepo containing a **React** frontend (Vite) and a **Cloudfl
 | :--- | :--- | :--- |
 | **Frontend** | **React** (Vite) | Client-side application (`apps/web`) |
 | **Runtime** | **Cloudflare Workers** | Serverless execution environment |
-| **Language** | **TypeScript** | Strongly typed logic |
+| **Language** | **TypeScript** | Strongly typed logic (Worker) & **Python** (API package) |
 | **Package Manager** | **Bun** 1.3.0+ | Fast, optimized dependency management (`bun.lock` present) |
+| **Backend API** | **Python** | API package in `packages/api/` (currently placeholder) |
 | **AI Inference** | **Cloudflare Workers AI** & **Google Vertex AI** | Multi-model AI inference support (Target) |
 | **Gateway** | **Cloudflare AI Gateway** | Unified routing, analytics, and caching (Target) |
 
@@ -50,8 +51,10 @@ Deployment is automated via **Cloudflare Git Integration** (no GitHub Actions re
 
 *   **Frontend Source:** `apps/web/src/` (React App).
 *   **Worker Entry:** `apps/web/worker.ts` (Currently serves assets; API logic to be added).
+*   **Backend API:** `packages/api/` (Python API package; currently placeholder).
 *   **Configuration:** `apps/web/wrangler.toml` and `apps/web/package.json`.
-*   **Documentation:** `APPS/web/PRD.md` and root `README.md`.
+*   **Documentation:** `apps/web/PRD.md` and root `README.md`.
+*   **AI Context:** `.ai/` directory (MISSION.md, ARCHITECTURE.md, RULES.md - referenced in README but directory to be created).
 
 *   **Secrets:** Never commit secrets. Use `wrangler secret put` and GitHub Secrets.
 

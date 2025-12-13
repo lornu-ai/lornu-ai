@@ -2,11 +2,11 @@
 # Reference: https://bun.sh/docs/bundler/config
 
 [packages]
-# Use exact versions specified in package.json
+# Respect semver ranges from package.json
 exact = false
 
 [install]
-# Use production dependencies
+# Install both production and development dependencies
 production = false
 
 # Parallel installation threads

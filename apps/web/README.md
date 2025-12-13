@@ -35,7 +35,8 @@ bun install
 bun dev
 
 # Run in production-like environment with Wrangler
-bun run dev:worker
+bun run build
+bun x wrangler dev
 ```
 
 ### Local Development Workflow
@@ -138,7 +139,7 @@ API_URL = "https://api.example.com"
 
 For secrets:
 ```bash
-npx wrangler secret put SECRET_NAME
+bun x wrangler secret put SECRET_NAME
 ```
 
 ### Domain Configuration
@@ -166,7 +167,7 @@ This project was migrated from Cloudflare Pages to Cloudflare Workers to gain:
 
 ### For Developers:
 
-- Use `npx wrangler dev` instead of `npm run dev` to test the production-like environment
+- Use `bun x wrangler dev` instead of `bun dev` to test the production-like environment
 - The worker serves assets from the `dist/` directory after build
 - Deploy is automatic via Cloudflare Git integration
 
