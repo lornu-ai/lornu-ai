@@ -22,6 +22,28 @@ This application uses **Cloudflare Workers** (not Cloudflare Pages) to serve sta
 
 - Bun 1.3.0+ (package manager)
 - Wrangler CLI (installed as dev dependency)
+- [Pre-commit](https://pre-commit.com/) (recommended for code quality & security)
+
+
+### Development Tools (Pre-commit)
+
+This project uses pre-commit hooks to enforce code quality and security standards (blocking secrets, checking syntax).
+
+1. **Install pre-commit:**
+   ```bash
+   brew install pre-commit  # macOS
+   pip install pre-commit   # Universal
+   ```
+
+2. **Install hooks in the repo:**
+   ```bash
+   pre-commit install
+   ```
+
+3. **Run checks manually:**
+   ```bash
+   pre-commit run --all-files
+   ```
 
 ### Quick Start
 
