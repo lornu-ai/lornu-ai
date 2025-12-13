@@ -20,7 +20,7 @@ repos:
         entry: bash -c
         args:
           - |
-            if git diff --cached --name-only | grep -E "^\.env$|/\.env$"; then
+            if git diff --cached --name-only | grep -E '(^|/)\.env(\.[^/]*)?$'; then
               echo "ERROR: .env file detected! Use .env.example instead."
               exit 1
             fi
