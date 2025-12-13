@@ -23,7 +23,7 @@ The project is a monorepo containing a **React** frontend (Vite) and a **Cloudfl
 | **Frontend** | **React** (Vite) | Client-side application (`apps/web`) |
 | **Runtime** | **Cloudflare Workers** | Serverless execution environment |
 | **Language** | **TypeScript** | Strongly typed logic (Worker) & **Python** (API package) |
-| **Package Manager** | **bun** | Dependency management (`bun.lockb` present) |
+| **Package Manager** | **Bun** 1.3.0+ | Fast, optimized dependency management (`bun.lock` present) |
 | **Backend API** | **Python** | API package in `packages/api/` (currently placeholder) |
 | **AI Inference** | **Cloudflare Workers AI** & **Google Vertex AI** | Multi-model AI inference support (Target) |
 | **Gateway** | **Cloudflare AI Gateway** | Unified routing, analytics, and caching (Target) |

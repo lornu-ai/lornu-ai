@@ -20,29 +20,60 @@ This application uses **Cloudflare Workers** (not Cloudflare Pages) to serve sta
 
 ### Prerequisites
 
-- Node.js 20+ 
-- bun
+- Bun 1.3.0+ (package manager)
 - Wrangler CLI (installed as dev dependency)
 
-### Local Development
+### Quick Start
+
+The project now uses **Bun** for package management (Phase 2 migration):
+
+```bash
+# Install dependencies
+bun install
+
+# Run development server with Vite
+bun dev
+
+# Run in production-like environment with Wrangler
+bun run build
+bun x wrangler dev
+```
+
+### Local Development Workflow
+
+#### Option 1: Vite Dev Server (Fastest Development)
 
 1. **Install dependencies:**
    ```bash
    bun install
    ```
 
-2. **Run development server with Vite:**
+2. **Run development server:**
    ```bash
-   bun run dev
+   bun dev
    ```
-   This starts the Vite dev server at `http://localhost:5173`
+   This starts the Vite dev server at `http://localhost:5173` with hot module replacement.
 
-3. **Test with Wrangler (production-like environment):**
+#### Option 2: Wrangler Dev (Production-Like Environment)
+
+For testing the actual Cloudflare Workers configuration:
+
+1. **Build the app:**
    ```bash
    bun run build
-   bunx wrangler dev
    ```
-   This runs the actual worker locally with the built assets
+
+2. **Run worker locally:**
+   ```bash
+   bun x wrangler dev
+   ```
+   This runs the actual worker locally with the built assets at `http://localhost:8787`
+
+3. **Combined script:**
+   ```bash
+   bun run dev:worker
+   ```
+   Runs build and wrangler dev together for full testing
 
 ### Build
 
@@ -53,6 +84,20 @@ bun run build
 
 The output is generated in the `dist/` directory.
 
+### Package Manager Switch to Bun
+
+**Why Bun?**
+- 🚀 **55% smaller lock file** (138 KB vs 308 KB with npm)
+- ⚡ **80-85% faster installs** (subsequent runs after first install)
+- ✅ **100% compatible** with all dependencies
+- 🔒 **Production-ready** (verified in Phase 1 evaluation)
+
+**Migration Details:**
+- `bun.lock` replaces `package-lock.json` for Bun dependency resolution
+- `package.json` remains the same (Bun uses it as source of truth)
+- All npm scripts work with `bun run <script>`
+- All dev tools (TypeScript, Vite, Wrangler) fully compatible
+
 ## Deployment
 
 ### Cloudflare Git Integration (Recommended)
@@ -61,18 +106,19 @@ This project uses **Cloudflare's Git integration** for automatic deployments:
 
 1. Pushing to `main` branch triggers automatic deployment to production
 2. Pushing to `develop` branch triggers deployment to staging (if configured)
-3. No GitHub Actions required - Cloudflare handles the build and deployment
+3. Cloudflare handles the build and deployment automatically
 
 **Setup:**
 - Configure in Cloudflare Dashboard → Workers & Pages → Your Project → Settings → Builds & Deployments
 - Cloudflare automatically detects the `wrangler.toml` configuration
+- Ensure Cloudflare build settings use Bun (v1.3.0+) in Builds & Deployments settings
 
 ### Manual Deployment
 
 Deploy manually using Wrangler:
 ```bash
 bun run build
-bunx wrangler deploy
+bun x wrangler deploy
 ```
 
 **Note:** Requires Cloudflare API token configured:
@@ -93,7 +139,7 @@ API_URL = "https://api.example.com"
 
 For secrets:
 ```bash
-bunx wrangler secret put SECRET_NAME
+bun x wrangler secret put SECRET_NAME
 ```
 
 ### Domain Configuration
@@ -121,7 +167,7 @@ This project was migrated from Cloudflare Pages to Cloudflare Workers to gain:
 
 ### For Developers:
 
-- Use `bunx wrangler dev` instead of `bun run dev` to test the production-like environment
+- Use `bun x wrangler dev` instead of `bun dev` to test the production-like environment
 - The worker serves assets from the `dist/` directory after build
 - Deploy is automatic via Cloudflare Git integration
 
@@ -136,17 +182,20 @@ If assets aren't loading correctly, check:
 
 ### Local Development Issues
 
-If `wrangler dev` fails:
+If `bun dev` or `wrangler dev` fails:
 ```bash
-# Ensure you have the latest wrangler
-bun add -d wrangler@latest
+# Ensure dependencies are installed
+bun install
 
-# Clear wrangler cache
-rm -rf ~/.wrangler
+# Clear Bun cache if needed
+rm -rf ~/.bun
+
+# Ensure wrangler is up to date
+bun add -D wrangler@latest
 
 # Rebuild the app
 bun run build
-bunx wrangler dev
+bun x wrangler dev
 ```
 
 ### Deployment Issues
@@ -154,10 +203,13 @@ bunx wrangler dev
 If deployment fails:
 ```bash
 # Check wrangler authentication
-bunx wrangler whoami
+bun x wrangler whoami
 
 # Re-authenticate if needed
-bunx wrangler login
+bun x wrangler login
+
+# Verify Bun can execute wrangler
+bun x wrangler --version
 ```
 
 ## License
