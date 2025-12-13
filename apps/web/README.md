@@ -21,26 +21,26 @@ This application uses **Cloudflare Workers** (not Cloudflare Pages) to serve sta
 ### Prerequisites
 
 - Node.js 20+ 
-- npm or bun
+- bun
 - Wrangler CLI (installed as dev dependency)
 
 ### Local Development
 
 1. **Install dependencies:**
    ```bash
-   npm install
+   bun install
    ```
 
 2. **Run development server with Vite:**
    ```bash
-   npm run dev
+   bun run dev
    ```
    This starts the Vite dev server at `http://localhost:5173`
 
 3. **Test with Wrangler (production-like environment):**
    ```bash
-   npm run build
-   npx wrangler dev
+   bun run build
+   bunx wrangler dev
    ```
    This runs the actual worker locally with the built assets
 
@@ -48,7 +48,7 @@ This application uses **Cloudflare Workers** (not Cloudflare Pages) to serve sta
 
 Build the production bundle:
 ```bash
-npm run build
+bun run build
 ```
 
 The output is generated in the `dist/` directory.
@@ -71,8 +71,8 @@ This project uses **Cloudflare's Git integration** for automatic deployments:
 
 Deploy manually using Wrangler:
 ```bash
-npm run build
-npx wrangler deploy
+bun run build
+bunx wrangler deploy
 ```
 
 **Note:** Requires Cloudflare API token configured:
@@ -93,7 +93,7 @@ API_URL = "https://api.example.com"
 
 For secrets:
 ```bash
-npx wrangler secret put SECRET_NAME
+bunx wrangler secret put SECRET_NAME
 ```
 
 ### Domain Configuration
@@ -121,7 +121,7 @@ This project was migrated from Cloudflare Pages to Cloudflare Workers to gain:
 
 ### For Developers:
 
-- Use `npx wrangler dev` instead of `npm run dev` to test the production-like environment
+- Use `bunx wrangler dev` instead of `bun run dev` to test the production-like environment
 - The worker serves assets from the `dist/` directory after build
 - Deploy is automatic via Cloudflare Git integration
 
@@ -139,14 +139,14 @@ If assets aren't loading correctly, check:
 If `wrangler dev` fails:
 ```bash
 # Ensure you have the latest wrangler
-npm install wrangler@latest --save-dev
+bun add -d wrangler@latest
 
 # Clear wrangler cache
 rm -rf ~/.wrangler
 
 # Rebuild the app
-npm run build
-npx wrangler dev
+bun run build
+bunx wrangler dev
 ```
 
 ### Deployment Issues
@@ -154,10 +154,10 @@ npx wrangler dev
 If deployment fails:
 ```bash
 # Check wrangler authentication
-npx wrangler whoami
+bunx wrangler whoami
 
 # Re-authenticate if needed
-npx wrangler login
+bunx wrangler login
 ```
 
 ## License
