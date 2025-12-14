@@ -117,7 +117,23 @@ function isValidEmail(email: string): boolean {
 }
 
 /**
+ * HTML-encodes a string to prevent XSS attacks when inserting into HTML context
+ * Encodes special characters that could be used for XSS: <, >, &, ", ', /
+ */
+function htmlEncode(input: string): string {
+	return input
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;')
+		.replace(/\//g, '&#x2F;');
+}
+
+/**
  * Sanitizes string input to prevent XSS attacks
+ * Trims whitespace, limits length, and removes potentially dangerous characters
+ * For HTML context, use htmlEncode() instead
  */
 function sanitizeString(input: string, maxLength: number = 5000): string {
 	return input
@@ -243,13 +259,13 @@ async function sendEmail(
 				from: 'LornuAI Contact Form <noreply@lornu.ai>',
 				to: [toEmail],
 				replyTo: data.email,
-				subject: `New Contact Form Submission from ${data.name}`,
+				subject: `New Contact Form Submission from ${data.name.replace(/[\r\n]/g, ' ')}`,
 				html: `
 					<h2>New Contact Form Submission</h2>
-					<p><strong>Name:</strong> ${data.name}</p>
-					<p><strong>Email:</strong> ${data.email}</p>
+					<p><strong>Name:</strong> ${htmlEncode(data.name)}</p>
+					<p><strong>Email:</strong> ${htmlEncode(data.email)}</p>
 					<p><strong>Message:</strong></p>
-					<p>${data.message.replace(/\n/g, '<br>')}</p>
+					<p>${htmlEncode(data.message).replace(/\n/g, '<br>')}</p>
 				`,
 				text: `
 New Contact Form Submission
