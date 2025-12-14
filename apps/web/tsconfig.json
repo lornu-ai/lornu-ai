@@ -12,7 +12,9 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "strictNullChecks": true,
-    "types": ["@cloudflare/workers-types"],
+    "types": [
+      "@cloudflare/workers-types"
+    ],
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -28,8 +30,12 @@
         "./src/*"
       ]
     },
+    "types": [
+      "@cloudflare/workers-types"
+    ]
   },
   "include": [
-    "src"
+    "src",
+    "worker.ts"
   ]
 }

@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig, configDefaults } from 'vitest/config'
 import react from '@vitejs/plugin-react-swc'
 import path from 'path'
 
@@ -11,6 +11,7 @@ export default defineConfig({
     css: true,
     testTimeout: 10000, // 10 seconds
     hookTimeout: 10000,
+    exclude: [...configDefaults.exclude],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

@@ -105,9 +105,10 @@ bun pm ls --size | head -20
   - `@heroicons/react`
   - `lucide-react`
 - **Large Dependencies:**
+  - `d3` (data visualization library - ~250KB)
+  - `three` (3D graphics - ~200KB)
   - `recharts` (charting library)
   - `framer-motion` (animation library)
-  **Note:** Previously, `d3` (~250KB) and `three` (~200KB) were significant contributors to bundle size, but both have been removed from dependencies as part of the recent bundle optimization effort.
 
 ### Identified Issues
 
@@ -201,7 +202,8 @@ export default defineConfig({
               pkg.startsWith('@radix-ui/')
             )
           ],
-          'vendor-charts': ['recharts'],
+          'vendor-charts': ['d3', 'recharts'],
+          'vendor-3d': ['three'],
         }
       }
     }
@@ -210,7 +212,7 @@ export default defineConfig({
 ```
 
 #### B. Dynamic Imports for Large Libraries
-- Lazy load `recharts` only when needed
+- Lazy load `d3`, `three`, `recharts` only when needed
 - Use React.lazy() for route-based code splitting
 
 #### C. Tree Shaking Optimization
@@ -248,10 +250,9 @@ export default defineConfig({
 ### Priority 4: Dependency Review
 
 #### Review Large Dependencies
+- **d3:** Only import needed modules (`d3-selection`, `d3-scale`, etc.)
+- **three:** Consider if full library is needed or can use smaller alternatives
 - **Radix UI:** Audit if all 27 components are used, remove unused ones
-- **recharts:** Only import required chart types and components; avoid importing the full library if possible
-- **@phosphor-icons/react:** Consider switching to a lighter icon library or only importing used icons
-- **@github/spark:** Review if all features are needed; remove unused plugins or dependencies
 
 ## Implementation Plan
 

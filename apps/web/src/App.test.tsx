@@ -1,15 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { render, waitFor } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 
 describe('App Routing', () => {
   const renderApp = () => {
-    return render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    )
+    return render(<App />)
   }
 
   it('renders without crashing', () => {

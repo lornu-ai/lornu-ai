@@ -10,7 +10,7 @@ const Security = lazy(() => import('@/pages/Security'))
 
 // Simple loading fallback for lazy-loaded routes
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen" role="status" aria-live="polite" aria-label="Loading page">
+  <div className="flex items-center justify-center min-h-screen" aria-live="polite" aria-label="Loading page">
     <div className="text-muted-foreground">Loading...</div>
   </div>
 )

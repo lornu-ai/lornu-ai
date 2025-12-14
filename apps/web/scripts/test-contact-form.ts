@@ -1,0 +1,260 @@
+#!/usr/bin/env bun
+/**
+ * Test script for contact form email functionality
+ *
+ * This script helps debug contact form email issues by:
+ * 1. Testing the local/production API endpoint
+ * 2. Testing Resend API directly
+ * 3. Checking configuration
+ *
+ * Usage:
+ *   bun run scripts/test-contact-form.ts [--local|--production] [--resend-only]
+ */
+
+type TestDetails =
+  | { emailId: string; status: string }
+  | { rateLimitRemaining: string | null; [key: string]: unknown }
+  | { stderr: string }
+  | { output: string[] }
+  | Record<string, unknown>;
+
+interface TestResult {
+  name: string;
+  success: boolean;
+  error?: string;
+  details?: TestDetails;
+}
+
+const results: TestResult[] = [];
+
+function logResult(result: TestResult) {
+  results.push(result);
+  const icon = result.success ? '✅' : '❌';
+  console.log(`${icon} ${result.name}`);
+  if (result.error) {
+    console.log(`   Error: ${result.error}`);
+  }
+  if (result.details) {
+    console.log(`   Details:`, JSON.stringify(result.details, null, 2));
+  }
+}
+
+async function testResendAPI(apiKey: string): Promise<TestResult> {
+  try {
+    const testEmail = {
+      from: 'LornuAI Contact Form <noreply@lornu.ai>',
+      to: ['contact@lornu.ai'],
+      subject: 'Test Email from Contact Form Script',
+      html: '<p>This is a test email from the contact form test script.</p>',
+      text: 'This is a test email from the contact form test script.',
+    };
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(testEmail),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return {
+        name: 'Resend API Direct Test',
+        success: false,
+        error: `HTTP ${response.status}: ${data.message || response.statusText}`,
+        details: data,
+      };
+    }
+
+    return {
+      name: 'Resend API Direct Test',
+      success: true,
+      details: {
+        emailId: data.id,
+        status: 'sent',
+      },
+    };
+  } catch (error) {
+    return {
+      name: 'Resend API Direct Test',
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+async function testContactAPI(baseUrl: string): Promise<TestResult> {
+  try {
+    const testData = {
+      name: 'Test User',
+      email: 'test@example.com',
+      message: 'This is a test message from the contact form test script.',
+    };
+
+    const response = await fetch(`${baseUrl}/api/contact`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(testData),
+    });
+
+    const data = await response.json();
+    const rateLimitRemaining = response.headers.get('X-RateLimit-Remaining');
+
+    if (!response.ok) {
+      return {
+        name: `Contact API Test (${baseUrl})`,
+        success: false,
+        error: `HTTP ${response.status}: ${data.error || response.statusText}`,
+        details: {
+          ...data,
+          rateLimitRemaining,
+        },
+      };
+    }
+
+    return {
+      name: `Contact API Test (${baseUrl})`,
+      success: true,
+      details: {
+        ...data,
+        rateLimitRemaining,
+      },
+    };
+  } catch (error) {
+    return {
+      name: `Contact API Test (${baseUrl})`,
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+async function checkWranglerSecrets(): Promise<TestResult> {
+  try {
+    const process = await Bun.spawn(['bunx', 'wrangler', 'secret', 'list'], {
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+
+    const output = await new Response(process.stdout).text();
+    const errorOutput = await new Response(process.stderr).text();
+    const exitCode = await process.exited;
+
+    if (exitCode !== 0) {
+      return {
+        name: 'Wrangler Secrets Check',
+        success: false,
+        error: `Command failed with exit code ${exitCode}`,
+        details: { stderr: errorOutput },
+      };
+    }
+
+    const hasResendKey = output.includes('RESEND_API_KEY');
+
+    return {
+      name: 'Wrangler Secrets Check',
+      success: hasResendKey,
+      error: hasResendKey ? undefined : 'RESEND_API_KEY secret not found',
+      details: {
+        output: output.split('\n').filter(line => line.trim()).slice(0, 10), // First 10 lines
+      },
+    };
+  } catch (error) {
+    return {
+      name: 'Wrangler Secrets Check',
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to check secrets',
+    };
+  }
+}
+
+async function main() {
+  console.log('🧪 Contact Form Test Script\n');
+  console.log('This script will test your contact form email functionality.\n');
+
+  const args = process.argv.slice(2);
+  const isLocal = args.includes('--local');
+  const isProduction = args.includes('--production');
+  const resendOnly = args.includes('--resend-only');
+
+  // Check for Resend API key
+  const resendApiKey = process.env.RESEND_API_KEY;
+
+  // Always check for API key if not provided, regardless of resend-only flag
+  // (resend-only still needs the API key to run the test)
+  if (!resendApiKey) {
+    console.log('⚠️  RESEND_API_KEY environment variable not set.');
+    console.log('   Trying to check Wrangler secrets...\n');
+
+    const secretCheck = await checkWranglerSecrets();
+    logResult(secretCheck);
+
+    if (!secretCheck.success) {
+      console.log('\n❌ Cannot proceed without Resend API key.');
+      console.log('   Please set RESEND_API_KEY environment variable or configure it in Wrangler:');
+      console.log('   bunx wrangler secret put RESEND_API_KEY\n');
+      process.exit(1);
+    }
+  }
+
+  // Test Resend API directly
+  if (resendApiKey) {
+    console.log('\n📧 Testing Resend API directly...\n');
+    const resendTest = await testResendAPI(resendApiKey);
+    logResult(resendTest);
+  } else {
+    console.log('\n⚠️  Skipping Resend API test (no API key provided)\n');
+  }
+
+  if (resendOnly) {
+    console.log('\n✅ Resend-only test complete.\n');
+    printSummary();
+    return;
+  }
+
+  // Test contact API endpoints
+  console.log('\n🌐 Testing Contact API endpoints...\n');
+
+  if (isLocal || (!isLocal && !isProduction)) {
+    const localTest = await testContactAPI('http://localhost:5173');
+    logResult(localTest);
+  }
+
+  if (isProduction || (!isLocal && !isProduction)) {
+    const prodTest = await testContactAPI('https://lornu.ai');
+    logResult(prodTest);
+  }
+
+  printSummary();
+}
+
+function printSummary() {
+  console.log('\n' + '='.repeat(50));
+  console.log('📊 Test Summary');
+  console.log('='.repeat(50));
+
+  const passed = results.filter(r => r.success).length;
+  const failed = results.filter(r => !r.success).length;
+
+  console.log(`✅ Passed: ${passed}`);
+  console.log(`❌ Failed: ${failed}`);
+  console.log(`📝 Total:  ${results.length}`);
+
+  if (failed > 0) {
+    console.log('\n🔍 Troubleshooting Tips:');
+    console.log('1. Verify domain is verified in Resend dashboard');
+    console.log('2. Check Resend API key has correct permissions');
+    console.log('3. Check Cloudflare Worker logs for errors');
+    console.log('4. Ensure RESEND_API_KEY secret is set in Wrangler');
+    console.log('5. Test Resend API directly with curl (see CONTACT_FORM_SETUP.md)');
+  }
+
+  console.log('\n');
+}
+
+main().catch(console.error);
