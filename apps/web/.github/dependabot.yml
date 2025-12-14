@@ -1,9 +1,11 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "daily"
+  # Note: Dependabot doesn't have native Bun support yet
+  # Since Bun manages dependencies via bun.lock, manual dependency updates are required
+  # To update dependencies:
+  # 1. Update package.json versions manually
+  # 2. Run `bun install` to update bun.lock
+  # 3. Test and commit changes
 
   - package-ecosystem: "devcontainers"
     directory: "/"

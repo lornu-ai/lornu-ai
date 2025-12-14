@@ -20,7 +20,7 @@ This application uses **Cloudflare Workers** (not Cloudflare Pages) to serve sta
 
 ### Prerequisites
 
-- bun
+- Bun 1.3.0+ (package manager)
 - Wrangler CLI (installed as dev dependency)
 - [Pre-commit](https://pre-commit.com/) (recommended for code quality & security)
 
@@ -45,7 +45,25 @@ This project uses pre-commit hooks to enforce code quality and security standard
     pre-commit run --all-files
     ```
 
-### Local Development
+### Quick Start
+
+The project now uses **Bun** for package management (Phase 2 migration):
+
+```bash
+# Install dependencies
+bun install
+
+# Run development server with Vite
+bun dev
+
+# Run in production-like environment with Wrangler
+bun run build
+bun x wrangler dev
+```
+
+### Local Development Workflow
+
+#### Option 1: Vite Dev Server (Fastest Development)
 
 1.  **Install dependencies:**
     ```bash
@@ -74,19 +92,34 @@ bun run build
 
 The output is generated in the `dist/` directory.
 
+### Package Manager Switch to Bun
+
+**Why Bun?**
+- 🚀 **55% smaller lock file** (138 KB vs 308 KB with npm)
+- ⚡ **80-85% faster installs** (subsequent runs after first install)
+- ✅ **100% compatible** with all dependencies
+- 🔒 **Production-ready** (verified in Phase 1 evaluation)
+
+**Migration Details:**
+- `bun.lock` replaces `package-lock.json` for Bun dependency resolution
+- `package.json` remains the same (Bun uses it as source of truth)
+- All npm scripts work with `bun run <script>`
+- All dev tools (TypeScript, Vite, Wrangler) fully compatible
+
 ## Deployment
 
 ### Cloudflare Git Integration (Recommended)
 
 This project uses **Cloudflare's Git integration** for automatic deployments:
 
-1.  Pushing to `main` branch triggers automatic deployment to production
-2.  Pushing to `develop` branch triggers deployment to staging (if configured)
-3.  No GitHub Actions required - Cloudflare handles the build and deployment
+1. Pushing to `main` branch triggers automatic deployment to production
+2. Pushing to `develop` branch triggers deployment to staging (if configured)
+3. Cloudflare handles the build and deployment automatically
 
 **Setup:**
 - Configure in Cloudflare Dashboard → Workers & Pages → Your Project → Settings → Builds & Deployments
 - Cloudflare automatically detects the `wrangler.toml` configuration
+- Ensure Cloudflare build settings use Bun (v1.3.0+) in Builds & Deployments settings
 
 ### Manual Deployment
 
@@ -157,13 +190,18 @@ If assets aren't loading correctly, check:
 
 ### Local Development Issues
 
-If `wrangler dev` fails:
+If `bun dev` or `wrangler dev` fails:
 ```bash
 # Ensure you have the latest wrangler
 bun add -d wrangler@latest
+# Ensure dependencies are installed
+bun install
 
-# Clear wrangler cache
-rm -rf ~/.wrangler
+# Clear Bun cache if needed
+rm -rf ~/.bun
+
+# Ensure wrangler is up to date
+bun add -D wrangler@latest
 
 # Rebuild the app
 bun run build

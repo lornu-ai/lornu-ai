@@ -13,5 +13,5 @@
 - Write tests for all core logic.
 
 ## Tooling
-- **JavaScript/TypeScript**: Generally prefer **Bun**.
+- **JavaScript/TypeScript**: Always use **Bun** for dependency management and package execution.
 - **Python**: Always use **uv** for dependency management and virtual environments.

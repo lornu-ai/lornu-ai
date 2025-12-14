@@ -4,15 +4,14 @@
 
 You are a professional Full-Stack Developer building an AI-powered RAG (Retrieval-Augmented Generation) application.
 
-The project is a monorepo containing a **React** frontend (Vite) and a **Cloudflare Workers** backend. It is managed with **npm** and **Turborepo** (implied by `apps/` structure).
+The project is a monorepo containing a **React** frontend (Vite) and a **Cloudflare Workers** backend. It is managed with **Bun** package manager and **Turborepo** (implied by `apps/` structure).
 
 **Key Features (Planned/Target):**
 
 - **Multi-Model Support:** Supports **Cloudflare AI** (Llama 2) and **Google Vertex AI** (Gemini models).
 - **AI Gateway:** All AI inference requests are routed through **Cloudflare AI Gateway** for analytics and caching.
-- **Infrastructure as Code:** Google Cloud infrastructure to be managed via **Terraform** (Terraform Cloud backend).
 - **RAG Architecture:** Uses **Cloudflare KV** and **R2** for caching and storage.
-- **CI/CD:** Automated deployment via **GitHub Actions**.
+- **CI/CD:** Automated deployment via **Cloudflare Git Integration**.
 
 ---
 
@@ -23,33 +22,28 @@ The project is a monorepo containing a **React** frontend (Vite) and a **Cloudfl
 | **Frontend** | **React** (Vite) | Client-side application (`apps/web`) |
 | **Runtime** | **Cloudflare Workers** | Serverless execution environment |
 | **Language** | **TypeScript** | Strongly typed logic (Worker) & **Python** (API package) |
-| **Package Manager** | **npm** | Dependency management (`package-lock.json` present) |
+| **Package Manager** | **Bun** 1.3.0+ | Fast, optimized dependency management (`bun.lock` present) |
 | **Backend API** | **Python** | API package in `packages/api/` (currently placeholder) |
 | **AI Inference** | **Cloudflare Workers AI** & **Google Vertex AI** | Multi-model AI inference support (Target) |
 | **Gateway** | **Cloudflare AI Gateway** | Unified routing, analytics, and caching (Target) |
-| **Infrastructure** | **Terraform** | Infrastructure as Code for Google Cloud resources (Target) |
 
 ---
 
-## The CI/CD Workflow (Planned)
+## The CI/CD Workflow
 
-The pipeline will consist of two automated workflows (currently to be implemented):
+### Application Deployment (Cloudflare Git Integration)
 
-### Application Deployment (`.github/workflows/deploy.yml`)
+Deployment is automated via **Cloudflare Git Integration** (no GitHub Actions required):
 
-1.  **Code Commit:** Changes pushed to GitHub.
-2.  **Continuous Integration (CI):**
-    *   **Setup:** `npm ci`
-    *   **Testing:** `npm test`
-3.  **Deployment:**
-    *   Deploys to Cloudflare Workers using `wrangler deploy`.
-    *   Authentication via `CF_API_TOKEN`.
-
-### Infrastructure Management (`.github/workflows/terraform.yml`)
-
-1.  **Terraform Changes:** Changes to `terraform/` directory trigger validation.
-2.  **Validation & Planning:** `terraform fmt`, `tflint`, `terraform plan`.
-3.  **Infrastructure Deployment:** Terraform Cloud apply on merge.
+1.  **Code Commit:** Changes pushed to GitHub (`main` or `develop` branch).
+2.  **Cloudflare Build:**
+    *   Cloudflare automatically detects changes
+    *   Runs `bun install` and `bun run build`
+    *   Deploys to Workers edge network
+3.  **Configuration:**
+    *   Set in Cloudflare Dashboard → Workers & Pages → Settings → Builds & Deployments
+    *   Build command: `bun run build`
+    *   Output directory: `dist/`
 
 ---
 
@@ -59,8 +53,6 @@ The pipeline will consist of two automated workflows (currently to be implemente
 *   **Worker Entry:** `apps/web/worker.ts` (Currently serves assets; API logic to be added).
 *   **Backend API:** `packages/api/` (Python API package; currently placeholder).
 *   **Configuration:** `apps/web/wrangler.toml` and `apps/web/package.json`.
-*   **Infrastructure:** `terraform/` (Directory to be created).
-*   **Workflows:** `.github/workflows/` (Directory to be created).
 *   **Documentation:** `apps/web/PRD.md` and root `README.md`.
 *   **AI Context:** `.ai/` directory (MISSION.md, ARCHITECTURE.md, RULES.md - referenced in README but directory to be created).
 
@@ -73,8 +65,3 @@ The pipeline will consist of two automated workflows (currently to be implemente
     *   `cloudflare` - Cloudflare AI
     *   `vertex-ai` - Google Vertex AI
 *   **Caching:** responses cached in KV.
-
-## Infrastructure as Code (Target Implementation)
-
-*   **Terraform:** Google Cloud infrastructure defined in `terraform/`.
-*   **State:** Managed in Terraform Cloud.
