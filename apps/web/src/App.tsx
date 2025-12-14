@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import SEOHead from '@/components/SEOHead'
+import { Logo } from '@/components/Logo'
 import { 
   Lightning, 
   Code, 
@@ -113,13 +114,10 @@ function App() {
         }`}>
           <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-2xl font-bold gradient-text"
-            >
-              LornuAI
-            </motion.div>
+            <Logo 
+              onClick={() => scrollToSection('home')}
+              size="md"
+            />
             
             <div className="hidden md:flex space-x-8">
               {['home', 'services', 'about', 'contact'].map((section) => (
@@ -378,7 +376,7 @@ function App() {
     <footer className="bg-primary text-primary-foreground py-12 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-2xl font-bold gradient-text">LornuAI</div>
+            <Logo size="md" />
             <p className="text-sm text-center md:text-left opacity-80">
               © 2025 LornuAI Inc. Building the future with intelligent solutions.
             </p>
