@@ -13,7 +13,9 @@
         "test": "vitest",
         "test:ui": "vitest --ui",
         "test:run": "vitest run",
-        "test:coverage": "vitest run --coverage"
+        "test:coverage": "vitest run --coverage",
+        "test:e2e": "playwright test",
+        "test:ci": "vitest run --coverage && playwright test --reporter=line"
     },
     "dependencies": {
         "@github/spark": "^0.39.144",
@@ -90,6 +92,7 @@
         "@types/react": "^19.2.7",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react-swc": "^4.2.2",
+        "@playwright/test": "^1.49.0",
         "@vitest/coverage-v8": "^4.0.15",
         "@vitest/ui": "^4.0.15",
         "eslint": "^9.39.2",
