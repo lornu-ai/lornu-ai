@@ -354,7 +354,7 @@ const MAX_REQUEST_SIZE = 10240;
 /**
  * Handles POST /api/contact requests
  */
-async function handleContactAPI(request: Request, env: Env): Promise<Response> {
+export async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 	const corsHeaders = getCORSHeaders();
 	// Handle CORS preflight requests
 	if (request.method === 'OPTIONS') {
@@ -451,7 +451,7 @@ async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
-	async fetch(request: Request, env: Env): Promise<Response> {
+	async fetch(request: Request, env: Env, _ctx?: ExecutionContext): Promise<Response> {
 		const url = new URL(request.url);
 
 		// Handle API routes
