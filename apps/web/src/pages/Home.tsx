@@ -56,20 +56,50 @@ export default function Home() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const name = formData.get('name')
-    const email = formData.get('email')
-    const message = formData.get('message')
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    const name = formData.get('name') as string
+    const email = formData.get('email') as string
+    const message = formData.get('message') as string
 
     if (!name || !email || !message) {
       toast.error('Please fill in all fields')
       return
     }
 
-    toast.success('Message sent! We\'ll be in touch soon.')
-    e.currentTarget.reset()
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, message }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message')
+      }
+
+      toast.success('Message sent! We\'ll be in touch soon.')
+      // Safely reset the form - check if form still exists
+      if (form) {
+        form.reset()
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to send message. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+>>>>>>> 5e3f578... Fix contact form reset error and add test script
   }
 
   const services = [
