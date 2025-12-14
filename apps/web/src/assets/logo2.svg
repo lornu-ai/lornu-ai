@@ -1,0 +1,30 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2ED3C6"></stop>
+      <stop offset="100%" stop-color="#1B6EEA"></stop>
+    </linearGradient>
+  </defs>
+
+  <!-- Hexagon base -->
+  <path d="M256 48
+       L416 144
+       V336
+       L256 432
+       L96 336
+       V144
+       Z" fill="#0F2A44" rx="28"></path>
+
+  <!-- Flowing AI ribbon -->
+  <path d="M190 140
+       C260 110, 330 150, 322 200
+       C315 245, 220 245, 220 300
+       C220 345, 280 360, 322 332" fill="none" stroke="url(#flowGradient)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"></path>
+
+  <!-- Motion cut -->
+  <path d="M132 220
+       L210 180
+       V220
+       L132 260
+       Z" fill="#2ED3C6" opacity="0.9"></path>
+</svg>
