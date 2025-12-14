@@ -35,7 +35,11 @@ Resend is an excellent fit for Cloudflare Workers:
 3. Create an API key:
    - Go to **API Keys** in the Resend dashboard
    - Click **Create API Key**
-   - Copy the API key (you won't be able to see it again)
+   - Give your API key a name (e.g., "Cloudflare Worker - Production")
+   - Select **Full access** or **Sending access** permission
+     - **Sending access** is recommended for security (limits to email sending only)
+     - If using **Sending access**, you can optionally restrict to `lornu.ai` domain
+   - Copy the API key immediately (you won't be able to see it again)
 4. Set it as a Cloudflare Worker secret:
 
 ```bash
@@ -143,7 +147,10 @@ Emails sent from the contact form include:
    bunx wrangler secret list
    ```
 
-3. **Verify Resend API key is valid and has sending permissions**
+3. **Verify Resend API key permissions:**
+   - Check the API key has at least **Sending access** permission
+   - If using domain-restricted key, ensure `lornu.ai` is included
+   - API key must have been created (not expired or deleted)
 
 4. **Check Cloudflare Worker logs for errors:**
    - Go to Cloudflare Dashboard → Workers & Pages → lornu-ai → Logs

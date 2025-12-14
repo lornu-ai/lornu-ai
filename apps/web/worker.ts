@@ -227,13 +227,40 @@ ${data.message}
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
-			console.error('Resend API error:', response.status, errorData);
+			console.error('Resend API error:', {
+				status: response.status,
+				statusText: response.statusText,
+				error: errorData,
+			});
+
+			// Provide more specific error messages based on status codes
+			if (response.status === 401) {
+				return {
+					success: false,
+					error: 'Authentication failed. Please check RESEND_API_KEY secret.',
+				};
+			}
+			if (response.status === 403) {
+				return {
+					success: false,
+					error: 'API key lacks permission to send emails. Check API key permissions in Resend dashboard.',
+				};
+			}
+			if (response.status === 422) {
+				return {
+					success: false,
+					error: errorData.message || 'Invalid email configuration. Check domain verification.',
+				};
+			}
+
 			return {
 				success: false,
-				error: 'Failed to send email. Please try again later.',
+				error: errorData.message || 'Failed to send email. Please try again later.',
 			};
 		}
 
+		const result = await response.json().catch(() => ({}));
+		console.log('Email sent successfully:', result);
 		return { success: true };
 	} catch (error) {
 		console.error('Email sending error:', error);
