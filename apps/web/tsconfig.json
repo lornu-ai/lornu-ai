@@ -10,7 +10,11 @@
     ],
     "module": "ESNext",
     "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
     "strictNullChecks": true,
+    "types": [
+      "@cloudflare/workers-types"
+    ],
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -28,6 +32,7 @@
     },
   },
   "include": [
-    "src"
+    "src",
+    "worker.ts"
   ]
 }
