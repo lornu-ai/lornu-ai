@@ -55,7 +55,7 @@ export function Logo({
   size = 'md',
   width,
   height,
-  variant = 'option1'
+  variant = 'option2'  // Temporarily defaulting to option2 (logo2.svg) for live testing
 }: LogoProps) {
   const logo = logoVariants[variant]
 

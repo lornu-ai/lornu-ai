@@ -9,20 +9,16 @@ import { Logo } from '@/components/Logo'
 /**
  * Logo Test Page
  *
- * This page allows you to test and compare the three logo SVG variants:
- * - Option 1: logo.svg
- * - Option 2: logo2.svg
- * - Option 3: logo3.svg
+ * This page allows you to test and compare logo2.svg vs logo3.svg in large size.
  *
  * Visit: /logo-test
  */
 export default function LogoTest() {
-  const [selectedVariant, setSelectedVariant] = useState<'option1' | 'option2' | 'option3'>('option1')
+  const [selectedVariant, setSelectedVariant] = useState<'option2' | 'option3'>('option2')
 
   const variants = [
-    { id: 'option1' as const, name: 'Option 1 (logo.svg)', description: 'Default logo variant' },
-    { id: 'option2' as const, name: 'Option 2 (logo2.svg)', description: 'Alternative logo variant' },
-    { id: 'option3' as const, name: 'Option 3 (logo3.svg)', description: 'Alternative logo variant' }
+    { id: 'option2' as const, name: 'Option 2 (logo2.svg)', description: 'Logo variant 2' },
+    { id: 'option3' as const, name: 'Option 3 (logo3.svg)', description: 'Logo variant 3' }
   ]
 
   return (
@@ -52,7 +48,7 @@ export default function LogoTest() {
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2">Logo Variant Testing</h1>
             <p className="text-muted-foreground">
-              Compare and test the three logo SVG variants side by side
+              Compare logo2.svg vs logo3.svg in large size
             </p>
           </div>
 
@@ -81,7 +77,7 @@ export default function LogoTest() {
           </Card>
 
           {/* Side by Side Comparison */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             {variants.map((variant) => (
               <Card key={variant.id} className={selectedVariant === variant.id ? 'ring-2 ring-primary' : ''}>
                 <CardHeader>
@@ -89,35 +85,11 @@ export default function LogoTest() {
                   <p className="text-sm text-muted-foreground">{variant.description}</p>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-col items-center justify-center p-8 bg-muted/50 rounded-lg space-y-6">
-                    {/* Standard size */}
+                  <div className="flex flex-col items-center justify-center p-8 bg-muted/50 rounded-lg">
+                    {/* Large size only */}
                     <div className="flex flex-col items-center space-y-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Standard (120x40)</p>
-                      <Logo variant={variant.id} width={120} height={40} />
-                    </div>
-
-                    {/* Small size */}
-                    <div className="flex flex-col items-center space-y-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Small (size="sm")</p>
-                      <Logo variant={variant.id} size="sm" />
-                    </div>
-
-                    {/* Medium size */}
-                    <div className="flex flex-col items-center space-y-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Medium (size="md")</p>
-                      <Logo variant={variant.id} size="md" />
-                    </div>
-
-                    {/* Large size */}
-                    <div className="flex flex-col items-center space-y-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Large (size="lg")</p>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-4">Large Size</p>
                       <Logo variant={variant.id} size="lg" />
-                    </div>
-
-                    {/* Large custom size */}
-                    <div className="flex flex-col items-center space-y-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Large (200x80)</p>
-                      <Logo variant={variant.id} width={200} height={80} />
                     </div>
                   </div>
                 </CardContent>
