@@ -60,7 +60,8 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const formData = new FormData(e.currentTarget)
+    const form = e.currentTarget
+    const formData = new FormData(form)
     const name = formData.get('name') as string
     const email = formData.get('email') as string
     const message = formData.get('message') as string
@@ -88,7 +89,10 @@ export default function Home() {
       }
 
       toast.success('Message sent! We\'ll be in touch soon.')
-      e.currentTarget.reset()
+      // Safely reset the form - check if form still exists
+      if (form) {
+        form.reset()
+      }
     } catch (error) {
       console.error('Error submitting form:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to send message. Please try again.')
