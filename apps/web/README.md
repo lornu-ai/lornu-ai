@@ -12,7 +12,7 @@ This application uses **Cloudflare Workers** (not Cloudflare Pages) to serve sta
 
 ### Key Components
 
-- **`worker.ts`**: Cloudflare Worker that intercepts requests and ensures proper Content-Type headers
+- **`worker.ts`**: Cloudflare Worker that serves assets, handles API routes (e.g., `/api/contact`), and ensures proper Content-Type headers
 - **`wrangler.toml`**: Worker configuration including asset directory and domain routing
 - **`src/`**: React application source code built with Vite
 
@@ -29,21 +29,21 @@ This application uses **Cloudflare Workers** (not Cloudflare Pages) to serve sta
 
 This project uses pre-commit hooks to enforce code quality and security standards (blocking secrets, checking syntax).
 
-1. **Install pre-commit:**
-   ```bash
-   brew install pre-commit  # macOS
-   pip install pre-commit   # Universal
-   ```
+1.  **Install pre-commit:**
+    ```bash
+    brew install pre-commit  # macOS
+    pip install pre-commit   # Universal
+    ```
 
-2. **Install hooks in the repo:**
-   ```bash
-   pre-commit install
-   ```
+2.  **Install hooks in the repo:**
+    ```bash
+    pre-commit install
+    ```
 
-3. **Run checks manually:**
-   ```bash
-   pre-commit run --all-files
-   ```
+3.  **Run checks manually:**
+    ```bash
+    pre-commit run --all-files
+    ```
 
 ### Quick Start
 
@@ -65,37 +65,23 @@ bun x wrangler dev
 
 #### Option 1: Vite Dev Server (Fastest Development)
 
-1. **Install dependencies:**
-   ```bash
-   bun install
-   ```
+1.  **Install dependencies:**
+    ```bash
+    bun install
+    ```
 
-2. **Run development server:**
-   ```bash
-   bun dev
-   ```
-   This starts the Vite dev server at `http://localhost:5173` with hot module replacement.
+2.  **Run development server with Vite:**
+    ```bash
+    bun run dev
+    ```
+    This starts the Vite dev server at `http://localhost:5173`
 
-#### Option 2: Wrangler Dev (Production-Like Environment)
-
-For testing the actual Cloudflare Workers configuration:
-
-1. **Build the app:**
-   ```bash
-   bun run build
-   ```
-
-2. **Run worker locally:**
-   ```bash
-   bun x wrangler dev
-   ```
-   This runs the actual worker locally with the built assets at `http://localhost:8787`
-
-3. **Combined script:**
-   ```bash
-   bun run dev:worker
-   ```
-   Runs build and wrangler dev together for full testing
+3.  **Test with Wrangler (production-like environment):**
+    ```bash
+    bun run build
+    bunx wrangler dev
+    ```
+    This runs the actual worker locally with the built assets
 
 ### Build
 
@@ -140,29 +126,43 @@ This project uses **Cloudflare's Git integration** for automatic deployments:
 Deploy manually using Wrangler:
 ```bash
 bun run build
-bun x wrangler deploy
+bunx wrangler deploy
 ```
 
 **Note:** Requires Cloudflare API token configured:
 ```bash
-wrangler login
+bunx wrangler login
 ```
 
 ## Configuration
 
 ### Environment Variables
 
-Currently no environment variables required. Add them in `wrangler.toml` if needed:
+Configuration values can be added in `wrangler.toml`:
 
 ```toml
 [vars]
 API_URL = "https://api.example.com"
 ```
 
-For secrets:
+### Secrets
+
+Required secrets for the contact form API:
+
 ```bash
-bun x wrangler secret put SECRET_NAME
+# Required: Resend API key for email sending
+bunx wrangler secret put RESEND_API_KEY
+
+# Optional: Override default contact email (defaults to contact@lornu.ai)
+bunx wrangler secret put CONTACT_EMAIL
 ```
+
+For other secrets:
+```bash
+bunx wrangler secret put SECRET_NAME
+```
+
+See [`CONTACT_FORM_SETUP.md`](./CONTACT_FORM_SETUP.md) for detailed contact form configuration.
 
 ### Domain Configuration
 
@@ -176,20 +176,20 @@ Production domains are configured in `wrangler.toml`:
 
 This project was migrated from Cloudflare Pages to Cloudflare Workers to gain:
 
-1. **Better control**: Custom request/response handling in the worker
-2. **MIME type fixes**: Resolved issues with Content-Type headers for static assets
-3. **Flexibility**: Can add API routes, authentication, or other logic in the worker
+1.  **Better control**: Custom request/response handling in the worker
+2.  **MIME type fixes**: Resolved issues with Content-Type headers for static assets
+3.  **Flexibility**: Can add API routes, authentication, or other logic in the worker
 
 ### What Changed:
 
 - ❌ Removed: `.github/workflows/deploy.yml` (GitHub Actions workflow)
-- ✅ Added: `worker.ts` (Cloudflare Worker for asset serving)
+- ✅ Added: `worker.ts` (Cloudflare Worker for asset serving and API routes like `/api/contact`)
 - ✅ Modified: `wrangler.toml` (from Pages config to Workers config)
 - ✅ Added: Wrangler and Workers types to dependencies
 
 ### For Developers:
 
-- Use `bun x wrangler dev` instead of `bun dev` to test the production-like environment
+- Use `bunx wrangler dev` instead of `bun run dev` to test the production-like environment
 - The worker serves assets from the `dist/` directory after build
 - Deploy is automatic via Cloudflare Git integration
 
@@ -198,14 +198,16 @@ This project was migrated from Cloudflare Pages to Cloudflare Workers to gain:
 ### MIME Type Issues
 
 If assets aren't loading correctly, check:
-1. File extensions are recognized in `worker.ts` MIME_TYPES map
-2. The worker is properly serving from the ASSETS binding
-3. Content-Type headers in browser DevTools Network tab
+1.  File extensions are recognized in `worker.ts` MIME_TYPES map
+2.  The worker is properly serving from the ASSETS binding
+3.  Content-Type headers in browser DevTools Network tab
 
 ### Local Development Issues
 
 If `bun dev` or `wrangler dev` fails:
 ```bash
+# Ensure you have the latest wrangler
+bun add -d wrangler@latest
 # Ensure dependencies are installed
 bun install
 
@@ -217,7 +219,7 @@ bun add -D wrangler@latest
 
 # Rebuild the app
 bun run build
-bun x wrangler dev
+bunx wrangler dev
 ```
 
 ### Deployment Issues
@@ -225,14 +227,19 @@ bun x wrangler dev
 If deployment fails:
 ```bash
 # Check wrangler authentication
-bun x wrangler whoami
+bunx wrangler whoami
 
 # Re-authenticate if needed
-bun x wrangler login
-
-# Verify Bun can execute wrangler
-bun x wrangler --version
+bunx wrangler login
 ```
+
+### Contact Form / Email Issues
+
+If the contact form isn't sending emails:
+1. Verify `RESEND_API_KEY` secret is set: `bunx wrangler secret list`
+2. Check domain is verified in Resend dashboard
+3. Review Cloudflare Worker logs for errors
+4. See [`CONTACT_FORM_SETUP.md`](./CONTACT_FORM_SETUP.md) for detailed troubleshooting
 
 ## License
 
