@@ -71,10 +71,48 @@ const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour in milliseconds
 const RATE_LIMIT_MAX_REQUESTS = 5; // Max 5 requests per hour per IP
 
 /**
- * Validates email format
+ * Validates email format using a more robust RFC 5322-compliant pattern
+ * This regex pattern is more strict than the basic pattern and prevents:
+ * - Multiple consecutive @ symbols (e.g., "user@@domain.com")
+ * - Multiple consecutive dots in domain (e.g., "user@domain..com")
+ * - Missing TLD (e.g., "user@domain")
+ * - Invalid characters in local or domain parts
+ *
+ * Pattern breakdown:
+ * - ^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+  Local part: alphanumeric + common special chars
+ * - @  Single @ symbol required
+ * - [a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?  Domain: valid domain name
+ * - (?:\.  Start of TLD part
+ * - [a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+  One or more TLD segments
+ * - $  End of string
  */
 function isValidEmail(email: string): boolean {
-	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	// More robust RFC 5322-compliant email regex
+	// This pattern is stricter and prevents common invalid formats
+	const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+
+	// Additional checks for edge cases
+	if (!email || email.length > 254) { // RFC 5321 max email length
+		return false;
+	}
+
+	// Check for consecutive dots (invalid)
+	if (email.includes('..')) {
+		return false;
+	}
+
+	// Check that @ appears exactly once
+	const atCount = (email.match(/@/g) || []).length;
+	if (atCount !== 1) {
+		return false;
+	}
+
+	// Check that local part (before @) is not empty
+	const localPart = email.split('@')[0];
+	if (!localPart || localPart.length === 0 || localPart.length > 64) { // RFC 5321 max local part length
+		return false;
+	}
+
 	return emailRegex.test(email);
 }
 
