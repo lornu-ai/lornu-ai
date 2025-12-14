@@ -89,7 +89,7 @@ const RATE_LIMIT_MAX_REQUESTS = 5; // Max 5 requests per hour per IP
 function isValidEmail(email: string): boolean {
 	// More robust RFC 5322-compliant email regex
 	// This pattern is stricter and prevents common invalid formats
-	const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+	const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
 	// Additional checks for edge cases
 	if (!email || email.length > 254) { // RFC 5321 max email length
@@ -134,10 +134,18 @@ function htmlEncode(input: string): string {
  * Sanitizes string input to prevent XSS attacks
  * Trims whitespace, limits length, and removes potentially dangerous characters
  * For HTML context, use htmlEncode() instead
+ *
+ * @param input - The string to sanitize
+ * @param maxLength - Maximum allowed length in characters
+ *                    Suggested values:
+ *                    - Name: 200 chars (typical name length + buffer)
+ *                    - Email: 254 chars (RFC 5321 maximum)
+ *                    - Message: 5000 chars (reasonable for email body)
  */
 function sanitizeString(input: string, maxLength: number = 5000): string {
 	return input
 		.trim()
+		.replace(/[\r\n]/g, ' ') // Remove newlines and replace with space
 		.slice(0, maxLength)
 		.replace(/[<>]/g, '');
 }
@@ -259,7 +267,9 @@ async function sendEmail(
 				from: 'LornuAI Contact Form <noreply@lornu.ai>',
 				to: [toEmail],
 				replyTo: data.email,
-				subject: `New Contact Form Submission from ${data.name.replace(/[\r\n]/g, ' ')}`,
+				// data.name is already sanitized in validateContactForm with 200 chars
+				// No need to sanitize again, just ensure it's safe for email subject
+				subject: `New Contact Form Submission from ${data.name.slice(0, 100)}`,
 				html: `
 					<h2>New Contact Form Submission</h2>
 					<p><strong>Name:</strong> ${htmlEncode(data.name)}</p>
@@ -280,7 +290,7 @@ ${data.message}
 		});
 
 		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}));
+			const errorData = await response.json().catch(() => ({})) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 			console.error('Resend API error:', {
 				status: response.status,
 				statusText: response.statusText,
@@ -326,15 +336,53 @@ ${data.message}
 }
 
 /**
+ * CORS headers for contact API
+ * Allows cross-origin requests from any domain
+ */
+const getCORSHeaders = (): Record<string, string> => ({
+	'Access-Control-Allow-Origin': '*',
+	'Access-Control-Allow-Methods': 'POST, OPTIONS',
+	'Access-Control-Allow-Headers': 'Content-Type',
+});
+
+/**
+ * Maximum request body size in bytes (10KB)
+ * Prevents DoS attacks via oversized payloads
+ */
+const MAX_REQUEST_SIZE = 10240;
+
+/**
  * Handles POST /api/contact requests
  */
-async function handleContactAPI(request: Request, env: Env): Promise<Response> {
+export async function handleContactAPI(request: Request, env: Env): Promise<Response> {
+	const corsHeaders = getCORSHeaders();
+	// Handle CORS preflight requests
+	if (request.method === 'OPTIONS') {
+		return new Response(null, {
+			status: 204,
+			headers: corsHeaders,
+		});
+	}
+
 	// Only allow POST requests
 	if (request.method !== 'POST') {
 		return new Response(JSON.stringify({ error: 'Method not allowed' }), {
 			status: 405,
-			headers: { 'Content-Type': 'application/json' },
+			headers: { ...corsHeaders, 'Content-Type': 'application/json' },
 		});
+	}
+
+	// Validate request size to prevent DoS attacks
+	// Validate request size to prevent DoS attacks
+	const contentLength = request.headers.get('content-length');
+	if (contentLength && parseInt(contentLength, 10) > MAX_REQUEST_SIZE) {
+		return new Response(
+			JSON.stringify({ error: 'Request body too large (max 10KB)' }),
+			{
+				status: 413,
+				headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+			}
+		);
 	}
 
 	// Check rate limit
@@ -349,6 +397,7 @@ async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 			{
 				status: 429,
 				headers: {
+					...corsHeaders,
 					'Content-Type': 'application/json',
 					'Retry-After': '3600', // 1 hour
 				},
@@ -360,10 +409,10 @@ async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 	let body: unknown;
 	try {
 		body = await request.json();
-	} catch (error) {
+	} catch {
 		return new Response(JSON.stringify({ error: 'Invalid JSON in request body' }), {
 			status: 400,
-			headers: { 'Content-Type': 'application/json' },
+			headers: { ...corsHeaders, 'Content-Type': 'application/json' },
 		});
 	}
 
@@ -371,7 +420,7 @@ async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 	if (!validation.valid || !validation.data) {
 		return new Response(JSON.stringify({ error: validation.error || 'Validation failed' }), {
 			status: 400,
-			headers: { 'Content-Type': 'application/json' },
+			headers: { ...corsHeaders, 'Content-Type': 'application/json' },
 		});
 	}
 
@@ -380,7 +429,7 @@ async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 	if (!emailResult.success) {
 		return new Response(JSON.stringify({ error: emailResult.error || 'Failed to send email' }), {
 			status: 500,
-			headers: { 'Content-Type': 'application/json' },
+			headers: { ...corsHeaders, 'Content-Type': 'application/json' },
 		});
 	}
 
@@ -393,6 +442,7 @@ async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 		{
 			status: 200,
 			headers: {
+				...corsHeaders,
 				'Content-Type': 'application/json',
 				'X-RateLimit-Remaining': rateLimit.remaining.toString(),
 			},
@@ -401,7 +451,7 @@ async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
-	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+	async fetch(request: Request, env: Env): Promise<Response> {
 		const url = new URL(request.url);
 
 		// Handle API routes

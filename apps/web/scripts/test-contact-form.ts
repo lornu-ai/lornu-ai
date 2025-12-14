@@ -11,11 +11,18 @@
  *   bun run scripts/test-contact-form.ts [--local|--production] [--resend-only]
  */
 
+type TestDetails =
+  | { emailId: string; status: string }
+  | { rateLimitRemaining: string | null; [key: string]: unknown }
+  | { stderr: string }
+  | { output: string[] }
+  | Record<string, unknown>;
+
 interface TestResult {
   name: string;
   success: boolean;
   error?: string;
-  details?: any;
+  details?: TestDetails;
 }
 
 const results: TestResult[] = [];
