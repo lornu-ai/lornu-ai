@@ -21,6 +21,13 @@ import {
   Check
 } from '@phosphor-icons/react'
 
+// Type definition for contact form API response
+type ContactResponse = {
+  success?: boolean
+  message?: string
+  error?: string
+}
+
 export default function Home() {
   const [activeSection, setActiveSection] = useState('home')
   const [isScrolled, setIsScrolled] = useState(false)
@@ -81,7 +88,16 @@ export default function Home() {
         body: JSON.stringify({ name, email, message }),
       })
 
-      const data = await response.json()
+      // Read response text first to preserve body for error handling
+      const rawText = await response.text().catch(() => '')
+
+      let data: ContactResponse = {}
+      try {
+        data = rawText ? JSON.parse(rawText) : {}
+      } catch (jsonError) {
+        // If JSON parsing fails, use raw text as error message
+        data = { error: rawText || 'Failed to parse error response' }
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to send message')
