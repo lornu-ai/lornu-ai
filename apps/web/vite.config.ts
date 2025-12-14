@@ -27,6 +27,10 @@ export default defineConfig({
     }
   },
   build: {
+    // Optimize build performance and output
+    target: 'es2020', // Match TypeScript target for broader browser compatibility
+    sourcemap: false, // Disable sourcemaps in production (faster builds, smaller output)
+    // Note: minify: 'esbuild' and cssCodeSplit: true are already defaults in Vite 5+
     rollupOptions: {
       output: {
         manualChunks: (id) => {
