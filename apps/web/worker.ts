@@ -145,6 +145,7 @@ function htmlEncode(input: string): string {
 function sanitizeString(input: string, maxLength: number = 5000): string {
 	return input
 		.trim()
+		.replace(/[\r\n]/g, ' ') // Remove newlines and replace with space
 		.slice(0, maxLength)
 		.replace(/[<>]/g, '');
 }
@@ -266,7 +267,9 @@ async function sendEmail(
 				from: 'LornuAI Contact Form <noreply@lornu.ai>',
 				to: [toEmail],
 				replyTo: data.email,
-				subject: `New Contact Form Submission from ${sanitizeString(data.name, 100).replace(/[\r\n]/g, ' ')}`,
+				// data.name is already sanitized in validateContactForm with 200 chars
+				// No need to sanitize again, just ensure it's safe for email subject
+				subject: `New Contact Form Submission from ${data.name.slice(0, 100)}`,
 				html: `
 					<h2>New Contact Form Submission</h2>
 					<p><strong>Name:</strong> ${htmlEncode(data.name)}</p>
