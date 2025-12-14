@@ -89,10 +89,8 @@ export default function Home() {
       }
 
       toast.success('Message sent! We\'ll be in touch soon.')
-      // Safely reset the form - check if form still exists
-      if (form) {
-        form.reset()
-      }
+      // Reset the form after successful submission
+      form.reset()
     } catch (error) {
       console.error('Error submitting form:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to send message. Please try again.')
@@ -391,9 +389,10 @@ export default function Home() {
                   type="submit"
                   size="lg"
                   className="w-full gradient-bg hover:opacity-90 text-lg"
+                  disabled={isSubmitting}
                 >
                   <Envelope className="mr-2" weight="bold" />
-                  Send Message
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>
             </Card>

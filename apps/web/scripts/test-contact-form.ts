@@ -176,9 +176,11 @@ async function main() {
   const resendOnly = args.includes('--resend-only');
 
   // Check for Resend API key
+  // Always check for API key if not provided, regardless of resend-only flag
+  // (resend-only still needs the API key to run the test)
   const resendApiKey = process.env.RESEND_API_KEY;
 
-  if (!resendApiKey && !resendOnly) {
+  if (!resendApiKey) {
     console.log('⚠️  RESEND_API_KEY environment variable not set.');
     console.log('   Trying to check Wrangler secrets...\n');
 
