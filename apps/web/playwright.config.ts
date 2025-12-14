@@ -7,7 +7,7 @@ export default defineConfig({
   retries: 0,
   reporter: 'list',
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:4173',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5174',
     trace: 'on-first-retry',
     headless: true,
   },
@@ -18,8 +18,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'bun run dev -- --host --port 4173',
-    url: 'http://localhost:4173',
+    command: 'bun run dev',
+    url: 'http://localhost:5174',
     timeout: 120_000,
     reuseExistingServer: !process.env.CI,
   },
