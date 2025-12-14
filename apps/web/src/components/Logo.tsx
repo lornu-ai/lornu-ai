@@ -1,7 +1,19 @@
 /**
  * Logo Component
- * 
- * Displays the LornuAI logo image.
+ *
+ * Displays the LornuAI logo image with entry animation.
+ *
+ * - If the `onClick` prop is provided, renders the logo inside an animated button (`motion.button`), making it interactive.
+ * - If `onClick` is not provided, renders the logo inside an animated div (`motion.div`), making it non-interactive.
+ * - Uses Framer Motion for fade-in and slide-in animation on mount.
+ *
+ * Props:
+ * @param {string} [className] - Additional CSS classes to apply to the logo image.
+ * @param {() => void} [onClick] - If provided, makes the logo clickable and renders it as a button.
+ * @param {'sm' | 'md' | 'lg'} [size='md'] - Sets the logo height size.
+ *
+ * Accessibility:
+ * - When rendered as a button, includes `aria-label="LornuAI Home"`.
  */
 
 import { motion } from 'framer-motion'
