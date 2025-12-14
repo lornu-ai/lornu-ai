@@ -21,7 +21,9 @@ export default function SEOHead({
   ogType = 'website',
   twitterCard = 'summary_large_image',
 }: SEOHeadProps) {
-  const fullTitle = `${title} | LornuAI`
+  const fullTitle = title.toLowerCase().includes('lornuai')
+    ? title
+    : `${title} | LornuAI`
   const fullCanonical = canonical ? `https://lornu.ai${canonical}` : 'https://lornu.ai'
 
   return (
@@ -31,10 +33,10 @@ export default function SEOHead({
       <meta name="description" content={description} />
 
       <meta charSet="utf-8" />
-      
+
       {/* Canonical URL */}
       <link rel="canonical" href={fullCanonical} />
-      
+
       {/* Open Graph Tags */}
       <meta property="og:type" content={ogType} />
       <meta property="og:title" content={ogTitle || title} />
@@ -42,13 +44,13 @@ export default function SEOHead({
       {ogImage && <meta property="og:image" content={ogImage} />}
       <meta property="og:url" content={fullCanonical} />
       <meta property="og:site_name" content="LornuAI" />
-      
+
       {/* Twitter Card Tags */}
       <meta name="twitter:card" content={twitterCard} />
       <meta name="twitter:title" content={ogTitle || title} />
       <meta name="twitter:description" content={ogDescription || description} />
       {ogImage && <meta name="twitter:image" content={ogImage} />}
-      
+
       {/* Additional SEO */}
       <meta name="robots" content="index, follow" />
       <meta name="language" content="en" />
