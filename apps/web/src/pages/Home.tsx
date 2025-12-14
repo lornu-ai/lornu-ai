@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
+import SEOHead from '@/components/SEOHead'
 import {
   Lightning,
   Code,
@@ -99,7 +100,15 @@ export default function Home() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEOHead
+        title="Enterprise AI RAG Search & Deep Dive Analysis"
+        description="LornuAI is an AI-powered Retrieval-Augmented Generation platform for enterprise knowledge retrieval, content generation, and data analysis using Cloudflare AI and Google Vertex AI."
+        canonical="/"
+        ogTitle="LornuAI - Enterprise AI RAG Search"
+        ogDescription="Transform your business with cutting-edge AI and automation solutions that deliver results fast."
+      />
+      <div className="min-h-screen bg-background">
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled ? 'bg-card/80 backdrop-blur-lg shadow-lg' : 'bg-transparent'
       }`}>
@@ -380,5 +389,6 @@ export default function Home() {
         </div>
       </footer>
     </div>
+    </>
   )
 }

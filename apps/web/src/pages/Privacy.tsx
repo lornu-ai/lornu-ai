@@ -5,10 +5,17 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { Logo } from '@/components/Logo'
+import SEOHead from '@/components/SEOHead'
 
 export default function Privacy() {
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEOHead
+        title="Privacy Policy - LornuAI"
+        description="Privacy Policy for LornuAI platform. Learn how we protect and handle your data with our AI-powered enterprise solutions."
+        canonical="/privacy"
+      />
+      <div className="min-h-screen bg-background">
       <nav className="bg-card/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -305,5 +312,6 @@ export default function Privacy() {
         </motion.div>
       </div>
     </div>
+    </>
   )
 }

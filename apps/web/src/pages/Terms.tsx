@@ -5,10 +5,17 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { Logo } from '@/components/Logo'
+import SEOHead from '@/components/SEOHead'
 
 export default function Terms() {
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEOHead
+        title="Terms of Service - LornuAI"
+        description="Terms of Service for LornuAI platform. Read our terms and conditions for using our AI-powered enterprise solutions."
+        canonical="/terms"
+      />
+      <div className="min-h-screen bg-background">
       <nav className="bg-card/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -251,5 +258,6 @@ export default function Terms() {
         </motion.div>
       </div>
     </div>
+    </>
   )
 }
