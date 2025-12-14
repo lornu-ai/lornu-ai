@@ -11,7 +11,7 @@ export default defineConfig({
     css: true,
     testTimeout: 10000, // 10 seconds
     hookTimeout: 10000,
-    exclude: [...configDefaults.exclude, 'tests/e2e/**'],
+    exclude: [...configDefaults.exclude],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
