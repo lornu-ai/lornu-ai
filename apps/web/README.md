@@ -12,7 +12,7 @@ This application uses **Cloudflare Workers** (not Cloudflare Pages) to serve sta
 
 ### Key Components
 
-- **`worker.ts`**: Cloudflare Worker that intercepts requests and ensures proper Content-Type headers
+- **`worker.ts`**: Cloudflare Worker that serves assets, handles API routes (e.g., `/api/contact`), and ensures proper Content-Type headers
 - **`wrangler.toml`**: Worker configuration including asset directory and domain routing
 - **`src/`**: React application source code built with Vite
 
@@ -138,17 +138,31 @@ bunx wrangler login
 
 ### Environment Variables
 
-Currently no environment variables required. Add them in `wrangler.toml` if needed:
+Configuration values can be added in `wrangler.toml`:
 
 ```toml
 [vars]
 API_URL = "https://api.example.com"
 ```
 
-For secrets:
+### Secrets
+
+Required secrets for the contact form API:
+
+```bash
+# Required: Resend API key for email sending
+bunx wrangler secret put RESEND_API_KEY
+
+# Optional: Override default contact email (defaults to contact@lornu.ai)
+bunx wrangler secret put CONTACT_EMAIL
+```
+
+For other secrets:
 ```bash
 bunx wrangler secret put SECRET_NAME
 ```
+
+See [`CONTACT_FORM_SETUP.md`](./CONTACT_FORM_SETUP.md) for detailed contact form configuration.
 
 ### Domain Configuration
 
@@ -169,7 +183,7 @@ This project was migrated from Cloudflare Pages to Cloudflare Workers to gain:
 ### What Changed:
 
 - ❌ Removed: `.github/workflows/deploy.yml` (GitHub Actions workflow)
-- ✅ Added: `worker.ts` (Cloudflare Worker for asset serving)
+- ✅ Added: `worker.ts` (Cloudflare Worker for asset serving and API routes like `/api/contact`)
 - ✅ Modified: `wrangler.toml` (from Pages config to Workers config)
 - ✅ Added: Wrangler and Workers types to dependencies
 
@@ -218,6 +232,14 @@ bunx wrangler whoami
 # Re-authenticate if needed
 bunx wrangler login
 ```
+
+### Contact Form / Email Issues
+
+If the contact form isn't sending emails:
+1. Verify `RESEND_API_KEY` secret is set: `bunx wrangler secret list`
+2. Check domain is verified in Resend dashboard
+3. Review Cloudflare Worker logs for errors
+4. See [`CONTACT_FORM_SETUP.md`](./CONTACT_FORM_SETUP.md) for detailed troubleshooting
 
 ## License
 
