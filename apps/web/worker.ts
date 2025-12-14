@@ -89,7 +89,7 @@ const RATE_LIMIT_MAX_REQUESTS = 5; // Max 5 requests per hour per IP
 function isValidEmail(email: string): boolean {
 	// More robust RFC 5322-compliant email regex
 	// This pattern is stricter and prevents common invalid formats
-	const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+	const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
 	// Additional checks for edge cases
 	if (!email || email.length > 254) { // RFC 5321 max email length
@@ -280,7 +280,7 @@ ${data.message}
 		});
 
 		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({}));
+			const errorData = await response.json().catch(() => ({})) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 			console.error('Resend API error:', {
 				status: response.status,
 				statusText: response.statusText,
@@ -363,8 +363,9 @@ async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 	}
 
 	// Validate request size to prevent DoS attacks
+	// Validate request size to prevent DoS attacks
 	const contentLength = request.headers.get('content-length');
-	if (contentLength && parseInt(contentLength) > MAX_REQUEST_SIZE) {
+	if (contentLength && parseInt(contentLength, 10) > MAX_REQUEST_SIZE) {
 		return new Response(
 			JSON.stringify({ error: 'Request body too large (max 10KB)' }),
 			{
@@ -398,7 +399,7 @@ async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 	let body: unknown;
 	try {
 		body = await request.json();
-	} catch (error) {
+	} catch {
 		return new Response(JSON.stringify({ error: 'Invalid JSON in request body' }), {
 			status: 400,
 			headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -440,7 +441,7 @@ async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
-	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+	async fetch(request: Request, env: Env): Promise<Response> {
 		const url = new URL(request.url);
 
 		// Handle API routes
