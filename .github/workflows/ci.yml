@@ -24,11 +24,11 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Type check & unit tests
-        run: bun run test:ci
-
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
+
+      - name: Type check & unit tests
+        run: bun run test:ci
 
       - name: E2E tests (Playwright)
         run: bun run test:e2e
