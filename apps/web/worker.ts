@@ -134,10 +134,18 @@ function htmlEncode(input: string): string {
  * Sanitizes string input to prevent XSS attacks
  * Trims whitespace, limits length, and removes potentially dangerous characters
  * For HTML context, use htmlEncode() instead
+ *
+ * @param input - The string to sanitize
+ * @param maxLength - Maximum allowed length in characters
+ *                    Suggested values:
+ *                    - Name: 200 chars (typical name length + buffer)
+ *                    - Email: 254 chars (RFC 5321 maximum)
+ *                    - Message: 5000 chars (reasonable for email body)
  */
 function sanitizeString(input: string, maxLength: number = 5000): string {
 	return input
 		.trim()
+		.replace(/[\r\n]/g, ' ') // Remove newlines and replace with space
 		.slice(0, maxLength)
 		.replace(/[<>]/g, '');
 }
@@ -259,7 +267,9 @@ async function sendEmail(
 				from: 'LornuAI Contact Form <noreply@lornu.ai>',
 				to: [toEmail],
 				replyTo: data.email,
-				subject: `New Contact Form Submission from ${data.name.replace(/[\r\n]/g, ' ')}`,
+				// data.name is already sanitized in validateContactForm with 200 chars
+				// No need to sanitize again, just ensure it's safe for email subject
+				subject: `New Contact Form Submission from ${data.name.slice(0, 100)}`,
 				html: `
 					<h2>New Contact Form Submission</h2>
 					<p><strong>Name:</strong> ${htmlEncode(data.name)}</p>
