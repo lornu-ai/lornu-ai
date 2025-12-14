@@ -19,11 +19,8 @@ This directory contains static assets served directly by the web server.
 - Online: https://favicon.io/
 
 ### Steps (for additional favicons only):
-1. Use `favicon.ico` as source or download logo from Google Drive (see issue #10)
+1. Use `favicon.ico` as source
 2. Use an online favicon generator to create PNG variants
 3. Place generated files in this directory
 4. Update `index.html` favicon links if needed
-
-### Logo Source:
-Google Drive: https://drive.google.com/file/d/1VwCBEDtaA-Rab1REXJY7Ialp8dQXkyMr/view?usp=sharing
 
