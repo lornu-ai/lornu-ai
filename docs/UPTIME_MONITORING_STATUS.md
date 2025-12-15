@@ -30,7 +30,7 @@
 
 ### 1. Set Up Better Stack Monitors
 
-**Account:** https://uptime.betterstack.com/team/t483057/monitors
+**Account:** Log in to Better Stack dashboard at https://uptime.betterstack.com
 
 **Monitor 1: Frontend**
 - URL: `https://lornu.ai/`
@@ -99,7 +99,7 @@ All documentation is in the `docs/` directory:
 
 ## 🔗 Quick Links
 
-- **Better Stack Dashboard:** https://uptime.betterstack.com/team/t483057/monitors
+- **Better Stack Dashboard:** https://uptime.betterstack.com (log in to access monitors)
 - **Cloudflare Performance:** https://dash.cloudflare.com/1d361f061ebf3d1a293900bdb815db26/lornu.ai/speed/test/lornu.ai%2F/history/desktop/us-central1
 - **Health Endpoint:** https://lornu.ai/api/health
 - **PR #76:** https://github.com/lornu-ai/lornu-ai/pull/76
