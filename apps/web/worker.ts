@@ -479,6 +479,19 @@ export default {
 			return handleContactAPI(request, env);
 		}
 
+		// Handle Spark library endpoints
+		// Spark uses /_spark/loaded for tracking/analytics
+		if (url.pathname === '/_spark/loaded') {
+			// Return 200 OK for Spark tracking endpoint
+			// This is a no-op endpoint used by the Spark library
+			return new Response(JSON.stringify({ status: 'ok' }), {
+				status: 200,
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
+		}
+
 		// Serve static assets
 		const response = await env.ASSETS.fetch(request);
 
