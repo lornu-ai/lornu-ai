@@ -12,6 +12,7 @@ compatibility_date = "2024-11-24"
 
 # Asset binding: Serves the built React app (Vite output from dist/)
 # The worker in worker.ts handles requests and ensures correct Content-Type headers
+# Path is relative to wrangler.toml location (apps/web/)
 assets = { directory = "./dist", binding = "ASSETS" }
 
 # KV namespace for rate limiting on /api/contact endpoint

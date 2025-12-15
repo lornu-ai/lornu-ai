@@ -425,6 +425,7 @@ export default function Home() {
                 <Link to="/privacy" className="text-sm hover:text-accent transition-colors">Privacy</Link>
                 <Link to="/terms" className="text-sm hover:text-accent transition-colors">Terms</Link>
                 <Link to="/security" className="text-sm hover:text-accent transition-colors">Security</Link>
+                <a href="https://status.lornu.ai" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-accent transition-colors">Status</a>
                 <button onClick={() => scrollToSection('contact')} className="text-sm hover:text-accent transition-colors">Contact</button>
               </div>
             </div>

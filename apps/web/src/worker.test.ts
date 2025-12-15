@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { handleContactAPI } from '../worker'
+import { handleContactAPI, handleHealthAPI } from '../worker'
 
 // Type for error responses from the contact API
 interface ErrorResponse {
@@ -484,5 +484,40 @@ describe('Contact Form API', () => {
 				expect(response.status).toBe(testCase.expectedStatus)
 			}
 		})
+	})
+})
+
+describe('Health Check API', () => {
+	it('returns 200 OK with status: ok', async () => {
+		const response = await handleHealthAPI()
+		expect(response.status).toBe(200)
+		const data = await response.json()
+		expect(data).toEqual({ status: 'ok' })
+	})
+
+	it('returns JSON content type', async () => {
+		const response = await handleHealthAPI()
+		expect(response.headers.get('Content-Type')).toBe('application/json')
+	})
+
+	it('is lightweight and fast (no external dependencies)', async () => {
+		const startTime = Date.now()
+		const response = await handleHealthAPI()
+		const endTime = Date.now()
+
+		expect(response.status).toBe(200)
+		// Should be very fast (< 10ms) since it has no async operations
+		expect(endTime - startTime).toBeLessThan(10)
+	})
+
+	it('returns consistent response format', async () => {
+		const response1 = await handleHealthAPI()
+		const response2 = await handleHealthAPI()
+
+		const data1 = await response1.json()
+		const data2 = await response2.json()
+
+		expect(data1).toEqual(data2)
+		expect(data1).toEqual({ status: 'ok' })
 	})
 })
