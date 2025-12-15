@@ -1,0 +1,36 @@
+# Cloudflare Worker Configuration for Lornu AI Web App
+# This worker serves the React/Vite app with custom request handling
+#
+# IMPORTANT: Configure Cloudflare Git Integration to use Bun instead of npm
+# In Cloudflare Dashboard → Workers & Pages → lornu-ai → Settings → Builds & Deployments:
+# - Build command: bun run build
+# - Install command: chmod +x install-bun.sh && ./install-bun.sh && export PATH="$HOME/.bun/bin:$PATH"
+
+name = "lornu-ai"
+main = "worker.ts"
+compatibility_date = "2024-11-24"
+
+# Asset binding: Serves the built React app (Vite output from dist/)
+# The worker in worker.ts handles requests and ensures correct Content-Type headers
+assets = { directory = "./dist", binding = "ASSETS" }
+
+# KV namespace for rate limiting on /api/contact endpoint
+# Limits contact form submissions to 5 requests per hour per IP address
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "8f08c5bb53f44bbab031992ca3531429"
+
+# Enable observability for monitoring and debugging in Cloudflare dashboard
+[observability]
+enabled = true
+
+# Production domain routes
+# Note: Custom domains must be configured in Cloudflare dashboard first
+# Remove or modify these routes for development/staging environments
+[[routes]]
+pattern = "lornu.ai"
+custom_domain = true
+
+[[routes]]
+pattern = "www.lornu.ai"
+custom_domain = true
