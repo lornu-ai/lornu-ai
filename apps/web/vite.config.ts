@@ -54,11 +54,17 @@ export default defineConfig({
             if (id.includes('framer-motion')) {
               return 'vendor-animations';
             }
-            // React core libraries - use specific paths to avoid matching react-* packages
+            // React core libraries and all React-dependent packages
+            // Include all react-* packages to ensure React is available when needed
             if (
               id.includes('node_modules/react/') ||
               id.includes('node_modules/react-dom/') ||
-              id.includes('node_modules/react-router')
+              id.includes('node_modules/react-router') ||
+              id.includes('node_modules/react-') ||
+              id.includes('node_modules/next-themes') || // Uses React
+              id.includes('node_modules/sonner') || // Uses React
+              id.includes('node_modules/cmdk') || // Uses React
+              id.includes('node_modules/embla-carousel-react') // Uses React
             ) {
               return 'vendor-react';
             }

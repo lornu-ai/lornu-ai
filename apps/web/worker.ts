@@ -513,7 +513,13 @@ export default {
 		// Check if Content-Type header is missing
 		const contentType = response.headers.get("Content-Type");
 		if (!contentType) {
-			const mimeType = getMimeType(url.pathname);
+			let mimeType = getMimeType(url.pathname);
+
+			// Fallback: If path is root or has no extension, assume HTML
+			// This fixes issues where ASSETS binding returns 200 for directories but misses the header
+			if (!mimeType && (url.pathname === '/' || !url.pathname.includes('.'))) {
+				mimeType = 'text/html;charset=UTF-8';
+			}
 
 			// If we found a matching MIME type, set it
 			if (mimeType) {
