@@ -462,6 +462,34 @@ export default {
 		// Serve static assets
 		const response = await env.ASSETS.fetch(request);
 
+		// For SPA routing: if the asset is not found (404), serve index.html
+		// This allows React Router to handle client-side routing
+		if (response.status === 404) {
+			// Check if this is a file request (has an extension) or an API route
+			const hasExtension = url.pathname.includes('.');
+			if (!hasExtension && !url.pathname.startsWith('/api/')) {
+				// Serve index.html for SPA routes
+				const indexResponse = await env.ASSETS.fetch(
+					new Request(new URL('/index.html', request.url), {
+						method: request.method,
+						headers: request.headers,
+					})
+				);
+
+				// If index.html exists, return it with proper Content-Type
+				if (indexResponse.status === 200) {
+					const newHeaders = new Headers(indexResponse.headers);
+					newHeaders.set("Content-Type", "text/html;charset=UTF-8");
+					return new Response(indexResponse.body, {
+						status: 200,
+						headers: newHeaders,
+					});
+				}
+			}
+			// If index.html also doesn't exist, return the 404
+			return response;
+		}
+
 		// Check if Content-Type header is missing
 		const contentType = response.headers.get("Content-Type");
 		if (!contentType) {
