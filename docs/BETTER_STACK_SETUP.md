@@ -293,7 +293,7 @@ Expected status:
 
 ## Resources
 
-- [Better Stack Dashboard](https://uptime.betterstack.com/team/t483057/monitors)
+- [Better Stack Dashboard](https://uptime.betterstack.com) - Log in to access your monitors
 - [Better Stack Documentation](https://betterstack.com/docs)
 - [Issue #66](https://github.com/lornu-ai/lornu-ai/issues/66)
 - [Uptime Monitoring Setup Guide](./UPTIME_MONITORING_SETUP.md)
