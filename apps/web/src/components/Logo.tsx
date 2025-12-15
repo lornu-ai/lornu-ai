@@ -18,7 +18,7 @@
 
 import { motion } from 'framer-motion'
 // Logo SVG file
-import logoSvg from '@/assets/logo.svg'
+import LogoSvg from '@/assets/logo.svg?react'
 
 interface LogoProps {
   className?: string
@@ -41,8 +41,6 @@ export function Logo({
   width,
   height
 }: LogoProps) {
-  const logoSource = logoSvg
-
   // Use explicit width/height if provided, otherwise use size classes
   const style = width || height
     ? { width: width ? `${width}px` : undefined, height: height ? `${height}px` : undefined }
@@ -51,9 +49,8 @@ export function Logo({
   const sizeClass = width || height ? '' : sizeClasses[size]
 
   const content = (
-    <img
-      src={logoSource}
-      alt="Lornuai Enterprise AI Logo"
+    <LogoSvg
+      aria-label="Lornuai Enterprise AI Logo"
       className={`${sizeClass} w-auto ${className}`}
       style={style}
     />
