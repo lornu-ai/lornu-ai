@@ -12,7 +12,8 @@ compatibility_date = "2024-11-24"
 
 # Asset binding: Serves the built React app (Vite output from dist/)
 # The worker in worker.ts handles requests and ensures correct Content-Type headers
-assets = { directory = "./dist", binding = "ASSETS" }
+# Path is relative to repository root (where Cloudflare Workers runs the build)
+assets = { directory = "apps/web/dist", binding = "ASSETS" }
 
 # KV namespace for rate limiting on /api/contact endpoint
 # Limits contact form submissions to 5 requests per hour per IP address
