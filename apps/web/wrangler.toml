@@ -35,3 +35,12 @@ custom_domain = true
 [[routes]]
 pattern = "www.lornu.ai"
 custom_domain = true
+
+# Staging Environment
+# Used for preview deployments and smoke testing before promotion to production.
+# Deploys to: https://lornu-ai-staging.<your-subdomain>.workers.dev
+[env.staging]
+name = "lornu-ai-staging"
+workers_dev = true
+# Inherits assets binding from top-level
+# KV namespace is optional (worker handles missing KV), so we don't include it here to avoid rate limiting staging
