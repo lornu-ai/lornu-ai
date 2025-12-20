@@ -27,8 +27,8 @@
   <url>
     <loc>https://lornu.ai/security</loc>
     <lastmod>2025-12-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <changefreq>quarterly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://lornu.ai/about</loc>
@@ -46,7 +46,7 @@
     <loc>https://lornu.ai/blog</loc>
     <lastmod>2025-12-20</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://lornu.ai/terms</loc>
