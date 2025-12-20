@@ -8,6 +8,7 @@ import { CookieConsent } from '@/components/CookieConsent'
 const Terms = lazy(() => import('@/pages/Terms'))
 const Privacy = lazy(() => import('@/pages/Privacy'))
 const Security = lazy(() => import('@/pages/Security'))
+const Contact = lazy(() => import('@/pages/Contact'))
 
 // Simple loading fallback for lazy-loaded routes
 const PageLoader = () => (
@@ -43,6 +44,14 @@ function App() {
             element={
               <Suspense fallback={<PageLoader />}>
                 <Security />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/contact"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <Contact />
               </Suspense>
             }
           />

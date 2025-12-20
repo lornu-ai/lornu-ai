@@ -16,7 +16,8 @@
         "test:coverage": "vitest run --coverage",
         "test:integration": "vitest run src/**/*.integration.test.tsx",
         "test:ci": "vitest run --coverage",
-        "test:contact": "bun run scripts/test-contact-form.ts"
+        "test:contact": "bun run scripts/test-contact-form.ts",
+        "test:e2e": "playwright test"
     },
     "dependencies": {
         "@github/spark": "^0.39.0",
@@ -77,6 +78,7 @@
         "zod": "^3.25.76"
     },
     "devDependencies": {
+        "@playwright/test": "^1.42.1",
         "@cloudflare/workers-types": "^4.20251213.0",
         "@eslint/js": "^9.21.0",
         "@tailwindcss/postcss": "^4.1.8",

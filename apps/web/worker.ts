@@ -6,6 +6,8 @@ export interface Env {
 	CONTACT_EMAIL?: string;
 	// Optional: KV namespace for rate limiting
 	RATE_LIMIT_KV?: KVNamespace;
+	// Optional: Secret for E2E tests to bypass rate limiting
+	E2E_SECRET?: string;
 }
 
 /**
@@ -390,36 +392,41 @@ export async function handleContactAPI(request: Request, env: Env): Promise<Resp
 	}
 
 	// Validate request size to prevent DoS attacks
-	// Validate request size to prevent DoS attacks
 	const contentLength = request.headers.get('content-length');
 	if (contentLength && parseInt(contentLength, 10) > MAX_REQUEST_SIZE) {
-		return new Response(
-			JSON.stringify({ error: 'Request body too large (max 10KB)' }),
-			{
-				status: 413,
-				headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-			}
-		);
+		return new Response(JSON.stringify({ error: 'Request body too large (max 10KB)' }), {
+			status: 413,
+			headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+		});
 	}
 
-	// Check rate limit
-	const clientIP = getClientIP(request);
-	const rateLimit = await checkRateLimit(clientIP, env.RATE_LIMIT_KV);
+	// Bypass rate limit for E2E tests if secret is provided
+	const bypassHeader = request.headers.get('X-Bypass-Rate-Limit');
+	const isE2ETest = env.E2E_SECRET && bypassHeader === env.E2E_SECRET;
 
-	if (!rateLimit.allowed) {
-		return new Response(
-			JSON.stringify({
-				error: 'Too many requests. Please try again later.',
-			}),
-			{
-				status: 429,
-				headers: {
-					...corsHeaders,
-					'Content-Type': 'application/json',
-					'Retry-After': '3600', // 1 hour
-				},
-			}
-		);
+	// Define rateLimitResult here to be available later
+	let rateLimitResult = { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS };
+
+	if (!isE2ETest) {
+		// Check rate limit
+		const clientIP = getClientIP(request);
+		rateLimitResult = await checkRateLimit(clientIP, env.RATE_LIMIT_KV);
+
+		if (!rateLimitResult.allowed) {
+			return new Response(
+				JSON.stringify({
+					error: 'Too many requests. Please try again later.',
+				}),
+				{
+					status: 429,
+					headers: {
+						...corsHeaders,
+						'Content-Type': 'application/json',
+						'Retry-After': '3600', // 1 hour
+					},
+				}
+			);
+		}
 	}
 
 	// Parse and validate request body
@@ -461,7 +468,7 @@ export async function handleContactAPI(request: Request, env: Env): Promise<Resp
 			headers: {
 				...corsHeaders,
 				'Content-Type': 'application/json',
-				'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+				'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
 			},
 		}
 	);
