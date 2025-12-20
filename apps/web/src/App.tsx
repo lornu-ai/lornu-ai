@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import Home from '@/pages/Home'
+import { CookieConsent } from '@/components/CookieConsent'
 
 // Lazy load non-critical pages for better initial bundle size
 const Terms = lazy(() => import('@/pages/Terms'))
@@ -46,6 +47,7 @@ function App() {
             }
           />
         </Routes>
+        <CookieConsent />
       </Router>
     </HelmetProvider>
   )
