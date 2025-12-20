@@ -60,7 +60,11 @@ const MIME_TYPES: Record<string, string> = {
  */
 function getMimeType(path: string): string | null {
 	const lowerPath = path.toLowerCase();
-	const ext = lowerPath.substring(lowerPath.lastIndexOf('.'));
+	const lastDotIndex = lowerPath.lastIndexOf('.');
+	if (lastDotIndex === -1) {
+		return null;
+	}
+	const ext = lowerPath.substring(lastDotIndex);
 	return MIME_TYPES[ext] || null;
 }
 
@@ -465,8 +469,10 @@ export default {
 		// For SPA routing: if the asset is not found (404), serve index.html
 		// This allows React Router to handle client-side routing
 		if (response.status === 404) {
-			// Check if this is a file request (has an extension) or an API route
-			const hasExtension = url.pathname.includes('.');
+			// Determine if last path segment has an extension
+			const segments = url.pathname.split('/').filter(Boolean);
+			const lastSegment = segments.length > 0 ? segments[segments.length - 1] : '';
+			const hasExtension = lastSegment.includes('.');
 			if (!hasExtension && !url.pathname.startsWith('/api/')) {
 				// Serve index.html for SPA routes
 				const indexResponse = await env.ASSETS.fetch(
@@ -482,6 +488,7 @@ export default {
 					newHeaders.set("Content-Type", "text/html;charset=UTF-8");
 					return new Response(indexResponse.body, {
 						status: 200,
+						statusText: "OK",
 						headers: newHeaders,
 					});
 				}
@@ -493,9 +500,16 @@ export default {
 		// Check if Content-Type header is missing
 		const contentType = response.headers.get("Content-Type");
 		if (!contentType) {
-			const mimeType = getMimeType(url.pathname);
+			let mimeType = getMimeType(url.pathname);
 
-			// If we found a matching MIME type, set it
+			// Fallback: If path is root or last segment has no extension, assume HTML
+			const segments = url.pathname.split('/').filter(Boolean);
+			const lastSegment = segments.length > 0 ? segments[segments.length - 1] : '';
+			const isExtensionless = lastSegment !== '' && !lastSegment.includes('.');
+			if (!mimeType && (url.pathname === '/' || isExtensionless)) {
+				mimeType = 'text/html;charset=UTF-8';
+			}
+
 			if (mimeType) {
 				const newHeaders = new Headers(response.headers);
 				newHeaders.set("Content-Type", mimeType);
