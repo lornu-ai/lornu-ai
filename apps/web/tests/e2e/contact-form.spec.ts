@@ -78,8 +78,8 @@ test.describe('Contact Form', () => {
 		await submitButton.click();
 
 		// Should see validation errors
-		await expect(page.locator('text=Name must be at least 2 characters')).toBeVisible();
-		await expect(page.locator('text=Invalid email address')).toBeVisible();
-		await expect(page.locator('text=Message must be at least 10 characters')).toBeVisible();
+		await expect(page.locator('text=Name must be at least 2 characters.')).toBeVisible();
+		await expect(page.locator('text=Invalid email address.')).toBeVisible();
+		await expect(page.locator('text=Message must be at least 10 characters.')).toBeVisible();
 	});
 });
