@@ -20,7 +20,7 @@ This guide walks through setting up external uptime monitoring and a public stat
 ### Cloudflare Performance Reporting
 
 You already have **Cloudflare Performance Reporting** configured:
-- **URL:** [Performance Dashboard](https://dash.cloudflare.com/1d361f061ebf3d1a293900bdb815db26/lornu.ai/speed/test/lornu.ai%2F/history/desktop/us-central1)
+- **URL:** [Performance Dashboard](https://dash.cloudflare.com/{your-account-id}/lornu.ai/speed/test/lornu.ai%2F/history/desktop/us-central1)
 - **Monitors:** Desktop performance (US Central)
 - **Metrics:** Core Web Vitals, page load times, performance scores
 
