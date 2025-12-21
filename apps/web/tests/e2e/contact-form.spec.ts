@@ -7,7 +7,6 @@ test.describe('Contact Form', () => {
 
 		// Get bypass secrets from environment (for CI/local testing)
 		const rateLimitBypass = process.env.RATE_LIMIT_BYPASS_SECRET;
-		const emailBypass = process.env.EMAIL_BYPASS_SECRET;
 
 		// Mock the API endpoint before navigating to the page
 		await page.route('/api/contact', async (route) => {
