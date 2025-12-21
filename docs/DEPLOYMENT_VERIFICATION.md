@@ -12,7 +12,7 @@ This guide outlines the two-tier approach for verifying deployments: a fast API 
 ### Cloudflare Performance Reporting
 
 Performance monitoring is already configured:
-- **Dashboard:** [Cloudflare Performance](https://dash.cloudflare.com/1d361f061ebf3d1a293900bdb815db26/lornu.ai/speed/test/lornu.ai%2F/history/desktop/us-central1)
+- **Dashboard:** [Cloudflare Performance](https://dash.cloudflare.com/YOUR_ACCOUNT_ID/lornu.ai/speed/test/lornu.ai%2F/history/desktop/us-central1)
 - **Tracks:** Core Web Vitals, page load times, performance scores
 - **Location:** Desktop, US Central
 
