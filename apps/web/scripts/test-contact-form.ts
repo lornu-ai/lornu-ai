@@ -94,11 +94,21 @@ async function testContactAPI(baseUrl: string): Promise<TestResult> {
       message: 'This is a test message from the contact form test script.',
     };
 
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Optional CI bypass headers to avoid rate limiting and real email sends
+    if (process.env.RATE_LIMIT_BYPASS_SECRET) {
+      headers['X-Bypass-Rate-Limit'] = process.env.RATE_LIMIT_BYPASS_SECRET;
+    }
+    if (process.env.EMAIL_BYPASS_SECRET) {
+      headers['X-Bypass-Email'] = process.env.EMAIL_BYPASS_SECRET;
+    }
+
     const response = await fetch(`${baseUrl}/api/contact`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(testData),
     });
 
@@ -226,7 +236,8 @@ async function main() {
   }
 
   if (isProduction || (!isLocal && !isProduction)) {
-    const prodTest = await testContactAPI('https://lornu.ai');
+    const prodBase = process.env.PLAYWRIGHT_BASE_URL || 'https://lornu.ai';
+    const prodTest = await testContactAPI(prodBase);
     logResult(prodTest);
   }
 

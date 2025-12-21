@@ -6,6 +6,10 @@ export interface Env {
 	CONTACT_EMAIL?: string;
 	// Optional: KV namespace for rate limiting
 	RATE_LIMIT_KV?: KVNamespace;
+	// Optional: secret to bypass rate limiting for CI (matches X-Bypass-Rate-Limit)
+	RATE_LIMIT_BYPASS_SECRET?: string;
+	// Optional: secret to bypass sending emails for CI (matches X-Bypass-Email)
+	EMAIL_BYPASS_SECRET?: string;
 }
 
 /**
@@ -60,7 +64,11 @@ const MIME_TYPES: Record<string, string> = {
  */
 function getMimeType(path: string): string | null {
 	const lowerPath = path.toLowerCase();
-	const ext = lowerPath.substring(lowerPath.lastIndexOf('.'));
+	const lastDotIndex = lowerPath.lastIndexOf('.');
+	if (lastDotIndex === -1) {
+		return null;
+	}
+	const ext = lowerPath.substring(lastDotIndex);
 	return MIME_TYPES[ext] || null;
 }
 
@@ -373,6 +381,11 @@ export async function handleHealthAPI(): Promise<Response> {
  */
 export async function handleContactAPI(request: Request, env: Env): Promise<Response> {
 	const corsHeaders = getCORSHeaders();
+
+	const bypassRateHeader = request.headers.get('X-Bypass-Rate-Limit');
+	const bypassEmailHeader = request.headers.get('X-Bypass-Email');
+	const bypassRateLimit = Boolean(env.RATE_LIMIT_BYPASS_SECRET) && bypassRateHeader === env.RATE_LIMIT_BYPASS_SECRET;
+	const bypassEmailSend = Boolean(env.EMAIL_BYPASS_SECRET) && bypassEmailHeader === env.EMAIL_BYPASS_SECRET;
 	// Handle CORS preflight requests
 	if (request.method === 'OPTIONS') {
 		return new Response(null, {
@@ -402,9 +415,12 @@ export async function handleContactAPI(request: Request, env: Env): Promise<Resp
 		);
 	}
 
-	// Check rate limit
-	const clientIP = getClientIP(request);
-	const rateLimit = await checkRateLimit(clientIP, env.RATE_LIMIT_KV);
+	// Check rate limit (unless bypassed via header)
+	let rateLimit = { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS };
+	if (!bypassRateLimit) {
+		const clientIP = getClientIP(request);
+		rateLimit = await checkRateLimit(clientIP, env.RATE_LIMIT_KV);
+	}
 
 	if (!rateLimit.allowed) {
 		return new Response(
@@ -441,8 +457,11 @@ export async function handleContactAPI(request: Request, env: Env): Promise<Resp
 		});
 	}
 
-	// Send email
-	const emailResult = await sendEmail(validation.data, env);
+	// Send email (unless bypassed via header for CI)
+	let emailResult: { success: boolean; error?: string } = { success: true };
+	if (!bypassEmailSend) {
+		emailResult = await sendEmail(validation.data, env);
+	}
 	if (!emailResult.success) {
 		return new Response(JSON.stringify({ error: emailResult.error || 'Failed to send email' }), {
 			status: 500,
@@ -498,8 +517,10 @@ export default {
 		// For SPA routing: if the asset is not found (404), serve index.html
 		// This allows React Router to handle client-side routing
 		if (response.status === 404) {
-			// Check if this is a file request (has an extension) or an API route
-			const hasExtension = url.pathname.includes('.');
+			// Determine if last path segment has an extension
+			const segments = url.pathname.split('/').filter(Boolean);
+			const lastSegment = segments.length > 0 ? segments[segments.length - 1] : '';
+			const hasExtension = lastSegment.includes('.');
 			if (!hasExtension && !url.pathname.startsWith('/api/')) {
 				// Serve index.html for SPA routes
 				const indexResponse = await env.ASSETS.fetch(
@@ -515,6 +536,7 @@ export default {
 					newHeaders.set("Content-Type", "text/html;charset=UTF-8");
 					return new Response(indexResponse.body, {
 						status: 200,
+						statusText: "OK",
 						headers: newHeaders,
 					});
 				}
@@ -528,13 +550,14 @@ export default {
 		if (!contentType) {
 			let mimeType = getMimeType(url.pathname);
 
-			// Fallback: If path is root or has no extension, assume HTML
-			// This fixes issues where ASSETS binding returns 200 for directories but misses the header
-			if (!mimeType && (url.pathname === '/' || !url.pathname.includes('.'))) {
+			// Fallback: If path is root or last segment has no extension, assume HTML
+			const segments = url.pathname.split('/').filter(Boolean);
+			const lastSegment = segments.length > 0 ? segments[segments.length - 1] : '';
+			const isExtensionless = lastSegment !== '' && !lastSegment.includes('.');
+			if (!mimeType && (url.pathname === '/' || isExtensionless)) {
 				mimeType = 'text/html;charset=UTF-8';
 			}
 
-			// If we found a matching MIME type, set it
 			if (mimeType) {
 				const newHeaders = new Headers(response.headers);
 				newHeaders.set("Content-Type", mimeType);
