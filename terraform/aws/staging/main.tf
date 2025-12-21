@@ -10,7 +10,7 @@ terraform {
   backend "remote" {
     organization = "lornu-ai"
     workspaces {
-      name = "lornu-aws-staging"
+      name = "lornu-ai"
     }
   }
 }
