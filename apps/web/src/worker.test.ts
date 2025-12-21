@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { handleContactAPI, handleHealthAPI } from '../worker'
+import workerDefault, { handleContactAPI, handleHealthAPI } from '../worker'
 
 // Type for error responses from the contact API
 interface ErrorResponse {
@@ -484,6 +484,64 @@ describe('Contact Form API', () => {
 				expect(response.status).toBe(testCase.expectedStatus)
 			}
 		})
+	})
+})
+
+describe('Static Assets and Routing', () => {
+	const makeEnv = () => ({
+		ASSETS: { fetch: vi.fn() },
+		RESEND_API_KEY: 'test-api-key',
+	})
+
+	it('sets Content-Type to text/html for root path when missing', async () => {
+		const env = makeEnv()
+		// First fetch: request for '/' returns 200 without Content-Type
+		env.ASSETS.fetch = vi.fn().mockResolvedValue(
+			new Response('<html></html>', { status: 200, headers: new Headers() })
+		)
+
+		const req = new Request('http://localhost/')
+		const res = await workerDefault.fetch(req, env as any)
+		expect(res.status).toBe(200)
+		expect(res.headers.get('Content-Type')).toBe('text/html;charset=UTF-8')
+	})
+
+	it('sets MIME type for known extensions when header is missing', async () => {
+		const env = makeEnv()
+		env.ASSETS.fetch = vi.fn().mockResolvedValue(
+			new Response('body', { status: 200, headers: new Headers() })
+		)
+
+		const req = new Request('http://localhost/styles.css')
+		const res = await workerDefault.fetch(req, env as any)
+		expect(res.status).toBe(200)
+		expect(res.headers.get('Content-Type')).toBe('text/css;charset=UTF-8')
+	})
+
+	it('serves index.html for SPA routes on 404', async () => {
+		const env = makeEnv()
+		// First call returns 404 for extensionless route
+		const indexHeaders = new Headers({ 'Content-Type': 'text/html;charset=UTF-8' })
+		env.ASSETS.fetch = vi.fn()
+			.mockResolvedValueOnce(new Response('not found', { status: 404 }))
+			.mockResolvedValueOnce(new Response('<html>index</html>', { status: 200, headers: indexHeaders }))
+
+		const req = new Request('http://localhost/privacy')
+		const res = await workerDefault.fetch(req, env as any)
+		expect(res.status).toBe(200)
+		expect(res.headers.get('Content-Type')).toBe('text/html;charset=UTF-8')
+	})
+
+	it('does not override existing Content-Type header', async () => {
+		const env = makeEnv()
+		const headers = new Headers({ 'Content-Type': 'application/json' })
+		env.ASSETS.fetch = vi.fn().mockResolvedValue(
+			new Response('{"ok":true}', { status: 200, headers })
+		)
+
+		const req = new Request('http://localhost/data.json')
+		const res = await workerDefault.fetch(req, env as any)
+		expect(res.headers.get('Content-Type')).toBe('application/json')
 	})
 })
 
