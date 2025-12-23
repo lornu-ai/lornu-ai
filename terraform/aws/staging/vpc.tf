@@ -1,7 +1,9 @@
 data "aws_availability_zones" "available" {}
 
 resource "aws_vpc" "main" {
-  cidr_block = "10.1.0.0/16"
+  cidr_block           = "10.1.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 
   tags = {
     Name = "lornu-ai-staging-vpc"
@@ -9,9 +11,10 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "public_a" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.1.1.0/24"
-  availability_zone = data.aws_availability_zones.available.names[0]
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.1.1.0/24"
+  availability_zone       = data.aws_availability_zones.available.names[0]
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "lornu-ai-staging-public-a"
@@ -19,9 +22,10 @@ resource "aws_subnet" "public_a" {
 }
 
 resource "aws_subnet" "public_b" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.1.2.0/24"
-  availability_zone = data.aws_availability_zones.available.names[1]
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.1.2.0/24"
+  availability_zone       = data.aws_availability_zones.available.names[1]
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "lornu-ai-staging-public-b"
@@ -63,6 +67,8 @@ resource "aws_eip" "nat" {
 resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public_a.id
+
+  depends_on = [aws_internet_gateway.main]
 
   tags = {
     Name = "lornu-ai-staging-nat"
