@@ -11,8 +11,9 @@ variable "docker_image" {
 }
 
 variable "acm_certificate_arn" {
-  description = "The ARN of the ACM certificate to use for the ALB."
+  description = "The ARN of the ACM certificate to use for the ALB. Set this in Terraform Cloud workspace variables."
   type        = string
+  default     = ""
 }
 
 variable "secrets_manager_arn_pattern" {
