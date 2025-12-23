@@ -42,19 +42,19 @@ jobs:
 
       - name: Terraform Init
         id: init
-        if: steps.setup.outcome == 'success'
+        if: steps.setup.outcome == 'success' && secrets.TF_API_TOKEN != ''
         continue-on-error: true
         run: terraform init
 
       - name: Terraform Validate
         id: validate
-        if: steps.init.outcome == 'success' || steps.init.outcome == 'skipped'
+        if: (steps.init.outcome == 'success' || steps.init.outcome == 'skipped') && secrets.TF_API_TOKEN != ''
         run: terraform validate -no-color
         continue-on-error: true
 
       - name: Terraform Plan
         id: plan
-        if: github.event_name == 'pull_request' && steps.init.outcome == 'success'
+        if: github.event_name == 'pull_request' && steps.init.outcome == 'success' && secrets.TF_API_TOKEN != ''
         run: terraform plan -no-color -input=false
         continue-on-error: true
 
@@ -89,14 +89,16 @@ jobs:
             })
 
       - name: Comment PR - Missing Credentials
-        if: github.event_name == 'pull_request' && (steps.setup.outcome == 'failure' || steps.init.outcome == 'failure' || steps.plan.outcome == 'skipped')
+        if: github.event_name == 'pull_request' && (secrets.TF_API_TOKEN == '' || steps.setup.outcome == 'failure' || steps.init.outcome == 'failure' || steps.init.outcome == 'skipped')
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const missing = [];
-            if ('${{ steps.setup.outcome }}' === 'failure') {
-              missing.push('TF_API_TOKEN');
+            if ('${{ secrets.TF_API_TOKEN }}' === '') {
+              missing.push('TF_API_TOKEN (secret not configured)');
+            } else if ('${{ steps.setup.outcome }}' === 'failure') {
+              missing.push('TF_API_TOKEN (invalid)');
             }
             if ('${{ steps.init.outcome }}' === 'failure') {
               missing.push('Terraform Cloud organization not found or token invalid');
