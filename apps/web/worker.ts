@@ -511,6 +511,28 @@ export default {
 			});
 		}
 
+		// For root path, explicitly serve index.html
+		if (url.pathname === '/' || url.pathname === '') {
+			const indexResponse = await env.ASSETS.fetch(
+				new Request(new URL('/index.html', request.url), {
+					method: request.method,
+					headers: request.headers,
+				})
+			);
+
+			if (indexResponse.status === 200) {
+				const newHeaders = new Headers(indexResponse.headers);
+				newHeaders.set("Content-Type", "text/html;charset=UTF-8");
+				return new Response(indexResponse.body, {
+					status: 200,
+					statusText: "OK",
+					headers: newHeaders,
+				});
+			}
+			// If index.html doesn't exist, return the response (likely 404)
+			return indexResponse;
+		}
+
 		// Serve static assets
 		const response = await env.ASSETS.fetch(request);
 
