@@ -8,13 +8,15 @@ interface ErrorResponse {
 
 // Mock Env for testing
 const createMockEnv = () => ({
-	ASSETS: { fetch: vi.fn() },
+	ASSETS: { fetch: vi.fn(), connect: vi.fn() },
 	RESEND_API_KEY: 'test-api-key',
 	CONTACT_EMAIL: 'test@example.com',
 	RATE_LIMIT_KV: {
 		get: vi.fn(),
 		put: vi.fn(),
 		delete: vi.fn(),
+		list: vi.fn(),
+		getWithMetadata: vi.fn(),
 	},
 })
 
@@ -489,7 +491,7 @@ describe('Contact Form API', () => {
 
 describe('Static Assets and Routing', () => {
 	const makeEnv = () => ({
-		ASSETS: { fetch: vi.fn() },
+		ASSETS: { fetch: vi.fn(), connect: vi.fn() },
 		RESEND_API_KEY: 'test-api-key',
 	})
 
