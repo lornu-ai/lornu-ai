@@ -18,7 +18,7 @@
 
 import { motion } from 'framer-motion'
 // Logo PNG file
-import LogoPng from '@/assets/brand/lornu-ai-final.png'
+import LogoPng from '@/assets/brand/lornu-ai-final-clear-bg.png'
 
 interface LogoProps {
   className?: string

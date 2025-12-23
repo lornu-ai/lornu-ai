@@ -32,7 +32,7 @@ This is a monorepo containing:
   - `uv sync` - Install dependencies
   - `uv sync --frozen` - Install with lockfile (CI/production)
   - `uv run <command>` - Run command in uv environment
-  - `uv run python main.py` - Run placeholder backend script (FastAPI planned)
+  - `uv run uvicorn main:app --reload` - Run FastAPI dev server with auto-reload
 
 ## Project Structure
 
@@ -86,7 +86,7 @@ lornu-ai/
 
 ### Backend Development
 1. **Install**: `cd packages/api && uv sync`
-2. **Run**: `uv run python main.py`
+2. **Run**: `uv run uvicorn main:app --reload`
 3. **Test**: (Add test commands when available)
 
 ### Docker Development
@@ -174,7 +174,7 @@ bun run test:run
 # Backend
 cd packages/api
 uv sync
-uv run python main.py
+uv run uvicorn main:app --reload
 
 # Docker
 docker build -t lornu-ai .
