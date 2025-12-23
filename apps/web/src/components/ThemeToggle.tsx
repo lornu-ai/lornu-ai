@@ -3,18 +3,18 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { Sun, Moon, Terminal } from '@phosphor-icons/react';
 
+const themes = ['light', 'dark', 'open-source-pro'];
+
 const ThemeToggle: React.FC = () => {
   const { theme, setTheme } = useTheme();
 
   const toggleTheme = () => {
-    if (theme === 'light') {
-      setTheme('dark');
-    } else if (theme === 'dark') {
-      setTheme('open-source-pro');
-    } else {
-      setTheme('light');
-    }
+    const currentIndex = themes.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setTheme(themes[nextIndex] as any);
   };
+
+  const nextTheme = themes[(themes.indexOf(theme) + 1) % themes.length];
 
   const renderIcon = () => {
     if (theme === 'light') {
@@ -27,7 +27,13 @@ const ThemeToggle: React.FC = () => {
   };
 
   return (
-    <Button onClick={toggleTheme} variant="ghost" size="icon" aria-label="Toggle theme">
+    <Button
+      onClick={toggleTheme}
+      variant="ghost"
+      size="icon"
+      aria-label="Toggle theme"
+      title={`Switch to ${nextTheme} theme`}
+    >
       {renderIcon()}
     </Button>
   );

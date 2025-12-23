@@ -14,10 +14,11 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme') as Theme | null;
-    if (storedTheme) {
-      setTheme(storedTheme);
-      document.documentElement.setAttribute('data-theme', storedTheme);
-    }
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const defaultTheme = storedTheme || (prefersDark ? 'dark' : 'light');
+
+    setTheme(defaultTheme);
+    document.documentElement.setAttribute('data-theme', defaultTheme);
   }, []);
 
   const handleSetTheme = (newTheme: Theme) => {
