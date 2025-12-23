@@ -7,10 +7,12 @@ on:
     paths:
       - "terraform/**"
       - ".github/workflows/terraform.yml"
+      - "k8s/**"
   pull_request:
     paths:
       - "terraform/**"
       - ".github/workflows/terraform.yml"
+      - "k8s/**"
 
 permissions:
   contents: read
@@ -56,12 +58,12 @@ jobs:
       - name: Terraform Validate
         id: validate
         # Validate should fail fast - if init failed, skip validation
-        if: steps.init.outcome == 'success' || steps.init.outcome == 'skipped'
+        if: steps.init.outcome == 'success'
         run: terraform validate -no-color
 
       - name: Terraform Plan
         id: plan
-        if: github.event_name == 'pull_request' && steps.init.outcome == 'success' && steps.validate.outcome == 'success'
+        if: github.event_name == 'pull_request' && steps.validate.outcome == 'success'
         env:
           # Terraform Cloud API token for backend authentication
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
@@ -175,13 +177,12 @@ jobs:
             });
 
       - name: Terraform Plan Status
-        # Only fail if plan actually failed (not skipped due to init/validate failure)
-        if: steps.plan.outcome == 'failure' && steps.plan.outcome != 'skipped' && steps.init.outcome == 'success' && steps.validate.outcome == 'success'
+        if: steps.plan.outcome == 'failure'
         run: exit 1
 
       - name: Terraform Plan (for Apply)
         id: plan-apply
-        if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success' && steps.validate.outcome == 'success'
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.validate.outcome == 'success'
         env:
           # Terraform Cloud API token for backend authentication
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
@@ -192,7 +193,8 @@ jobs:
         run: terraform plan -no-color -input=false
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success' && steps.validate.outcome == 'success' && steps.plan-apply.outcome == 'success'
+        id: apply
+        if: steps.plan-apply.outcome == 'success'
         env:
           # Terraform Cloud API token for backend authentication
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
@@ -201,3 +203,22 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: terraform apply -auto-approve -input=false
+
+      - name: Setup Kustomize
+        if: steps.apply.outcome == 'success'
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Build Staging Manifests
+        id: kustomize-build
+        if: steps.apply.outcome == 'success'
+        run: |
+          sed -i "s|<AWS_ECR_REGISTRY>|${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/lornu-ai|" k8s/overlays/staging/kustomization.yaml
+          kustomize build k8s/overlays/staging > staging-manifests.yaml
+        working-directory: .
+
+      - name: Deploy to EKS (commented out)
+        if: steps.kustomize-build.outcome == 'success'
+        run: |
+          # The following steps would be used to deploy to EKS
+          # echo "aws eks update-kubeconfig --name lornu-ai-staging --region ${{ secrets.AWS_DEFAULT_REGION }}"
+          # echo "kubectl apply -f staging-manifests.yaml"

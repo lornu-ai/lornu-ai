@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lornu-ai-config
+data:
+  LOG_LEVEL: "info"
+  ENVIRONMENT: "base"
