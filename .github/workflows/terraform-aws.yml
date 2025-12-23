@@ -34,10 +34,6 @@ jobs:
         id: fmt
         run: terraform -chdir=terraform/aws/staging fmt -check
 
-      - name: "Terraform Validate"
-        id: validate
-        run: terraform -chdir=terraform/aws/staging validate
-
       - name: "Configure Terraform Cloud Backend"
         run: |
           sed -i 's/organization = "lornu-ai"/organization = "${{ secrets.TF_CLOUD_ORG }}"/' terraform/aws/staging/main.tf
@@ -48,9 +44,14 @@ jobs:
         continue-on-error: true
         run: terraform -chdir=terraform/aws/staging init
 
+      - name: "Terraform Validate"
+        id: validate
+        if: steps.init.outcome == 'success'
+        run: terraform -chdir=terraform/aws/staging validate
+
       - name: "Terraform Plan"
         id: plan
-        if: steps.aws-creds.outcome == 'success' && steps.init.outcome == 'success'
+        if: steps.aws-creds.outcome == 'success' && steps.init.outcome == 'success' && steps.validate.outcome == 'success'
         run: terraform -chdir=terraform/aws/staging plan -no-color
         continue-on-error: true
 
