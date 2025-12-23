@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import workerDefault, { handleContactAPI, handleHealthAPI, Env } from '../worker'
+import workerDefault, { handleContactAPI, handleHealthAPI } from '../worker'
 
 // Type for error responses from the contact API
 interface ErrorResponse {
@@ -493,8 +493,30 @@ describe('Static Assets and Routing', () => {
 		RESEND_API_KEY: 'test-api-key',
 	})
 
-	// Note: Some environments default missing Content-Type to text/plain.
-	// The worker only sets Content-Type when truly missing; we rely on SPA routing tests.
+	it('sets Content-Type to text/html for root path when missing', async () => {
+		const env = makeEnv()
+		// First fetch: request for '/' returns 200 without Content-Type
+		env.ASSETS.fetch = vi.fn().mockResolvedValue(
+			new Response('<html></html>', { status: 200, headers: new Headers() })
+		)
+
+		const req = new Request('http://localhost/')
+		const res = await workerDefault.fetch(req, env as any)
+		expect(res.status).toBe(200)
+		expect(res.headers.get('Content-Type')).toBe('text/html;charset=UTF-8')
+	})
+
+	it('sets MIME type for known extensions when header is missing', async () => {
+		const env = makeEnv()
+		env.ASSETS.fetch = vi.fn().mockResolvedValue(
+			new Response('body', { status: 200, headers: new Headers() })
+		)
+
+		const req = new Request('http://localhost/styles.css')
+		const res = await workerDefault.fetch(req, env as any)
+		expect(res.status).toBe(200)
+		expect(res.headers.get('Content-Type')).toBe('text/css;charset=UTF-8')
+	})
 
 	it('serves index.html for SPA routes on 404', async () => {
 		const env = makeEnv()
@@ -505,7 +527,7 @@ describe('Static Assets and Routing', () => {
 			.mockResolvedValueOnce(new Response('<html>index</html>', { status: 200, headers: indexHeaders }))
 
 		const req = new Request('http://localhost/privacy')
-		const res = await workerDefault.fetch(req, env as unknown as Env)
+		const res = await workerDefault.fetch(req, env as any)
 		expect(res.status).toBe(200)
 		expect(res.headers.get('Content-Type')).toBe('text/html;charset=UTF-8')
 	})
@@ -518,7 +540,7 @@ describe('Static Assets and Routing', () => {
 		)
 
 		const req = new Request('http://localhost/data.json')
-		const res = await workerDefault.fetch(req, env as unknown as Env)
+		const res = await workerDefault.fetch(req, env as any)
 		expect(res.headers.get('Content-Type')).toBe('application/json')
 	})
 })
