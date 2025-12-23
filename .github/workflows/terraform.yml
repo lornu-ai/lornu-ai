@@ -15,7 +15,6 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  id-token: write  # Required for OIDC/WIF authentication with Terraform Cloud
 
 jobs:
   terraform:
@@ -37,9 +36,12 @@ jobs:
       - name: Terraform Init
         id: init
         env:
-          # Use API token if WIF/OIDC is not configured in Terraform Cloud
-          # If WIF is properly configured in Terraform Cloud, this may not be needed
+          # Terraform Cloud API token for backend authentication
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          # AWS credentials for provider authentication (Phase 2)
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         continue-on-error: true
         run: terraform init
 
@@ -60,8 +62,12 @@ jobs:
         id: plan
         if: github.event_name == 'pull_request' && steps.init.outcome == 'success'
         env:
-          # Use API token if WIF/OIDC is not configured in Terraform Cloud
+          # Terraform Cloud API token for backend authentication
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          # AWS credentials for provider authentication (Phase 2)
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: terraform plan -no-color -input=false
         continue-on-error: true
 
@@ -108,8 +114,9 @@ jobs:
               issues.push('Terraform Cloud backend connection failed');
               recommendations.push('**Most likely causes:**');
               recommendations.push('1. Organization "lornu-ai" does not exist in Terraform Cloud');
-              recommendations.push('2. The \`TF_API_TOKEN\` secret exists but lacks access to organization "lornu-ai"');
-              recommendations.push('3. Workspace "lornu-ai" does not exist in the organization');
+              recommendations.push('2. Project does not exist in the organization');
+              recommendations.push('3. The \`TF_API_TOKEN\` secret exists but lacks access to organization "lornu-ai"');
+              recommendations.push('4. Workspace "lornu-ai" does not exist in the project');
             }
 
             const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
@@ -123,16 +130,13 @@ jobs:
 
             **To resolve:**
 
-            **Option 1: If WIF/OIDC is configured in Terraform Cloud**
-            - Verify WIF/OIDC is properly configured in Terraform Cloud for this repository
-            - Ensure the organization "lornu-ai" exists
-            - Check that the workspace "lornu-ai" exists in the organization
-
-            **Option 2: If using API token authentication** (WIF not configured)
             - The \`TF_API_TOKEN\` secret exists in GitHub ✅
             - **Action needed**: Verify the token has access to organization "lornu-ai"
             - **Action needed**: Create the organization "lornu-ai" in Terraform Cloud if it doesn't exist
-            - **Action needed**: Create the workspace "lornu-ai" in the organization
+            - **Action needed**: Create a project in the organization (if using projects)
+            - **Action needed**: Create the workspace "lornu-ai" in the organization/project
+
+            **Note**: Cloudflare has GitHub integration (separate from Terraform). AWS credentials (\`AWS_ACCESS_KEY_ID\`, \`AWS_SECRET_ACCESS_KEY\`, \`AWS_DEFAULT_REGION\`) are for AWS provider authentication, not Terraform Cloud.
 
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
@@ -152,6 +156,10 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
         env:
-          # Use API token if WIF/OIDC is not configured in Terraform Cloud
+          # Terraform Cloud API token for backend authentication
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          # AWS credentials for provider authentication (Phase 2)
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: terraform apply -auto-approve -input=false
