@@ -47,6 +47,9 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        # Note: continue-on-error allows graceful degradation when Terraform Cloud isn't configured.
+        # Failures are explicitly handled by subsequent steps (validate/plan conditionals and PR comments).
+        # This enables the workflow to validate Terraform syntax even without backend access.
         continue-on-error: true
         run: terraform init
 
@@ -66,8 +69,11 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-        run: terraform plan -no-color -input=false
+        # Note: continue-on-error allows the plan output to be captured and posted to PR comments even on failure.
+        # Plan failures are explicitly checked by the "Terraform Plan Status" step below, which fails the workflow
+        # when a plan actually fails (not just skipped due to missing config).
         continue-on-error: true
+        run: terraform plan -no-color -input=false
 
       - name: Update Pull Request
         uses: actions/github-script@v7
