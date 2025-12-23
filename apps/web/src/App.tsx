@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import Home from '@/pages/Home'
 import { CookieConsent } from '@/components/CookieConsent'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 
 // Lazy load non-critical pages for better initial bundle size
 const Terms = lazy(() => import('@/pages/Terms'))
@@ -19,36 +20,38 @@ const PageLoader = () => (
 function App() {
   return (
     <HelmetProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route
-            path="/terms"
-            element={
-              <Suspense fallback={<PageLoader />}>
-                <Terms />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/privacy"
-            element={
-              <Suspense fallback={<PageLoader />}>
-                <Privacy />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/security"
-            element={
-              <Suspense fallback={<PageLoader />}>
-                <Security />
-              </Suspense>
-            }
-          />
-        </Routes>
-        <CookieConsent />
-      </Router>
+      <ThemeProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route
+              path="/terms"
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <Terms />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/privacy"
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <Privacy />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/security"
+              element={
+                <Suspense fallback={<PageLoader />}>
+                  <Security />
+                </Suspense>
+              }
+            />
+          </Routes>
+          <CookieConsent />
+        </Router>
+      </ThemeProvider>
     </HelmetProvider>
   )
 }
