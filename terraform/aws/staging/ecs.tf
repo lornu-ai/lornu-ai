@@ -2,6 +2,11 @@ resource "aws_ecs_cluster" "main" {
   name = "lornu-ai-staging-cluster"
 }
 
+resource "aws_cloudwatch_log_group" "ecs" {
+  name              = "/ecs/lornu-ai-staging"
+  retention_in_days = 7
+}
+
 resource "aws_ecs_task_definition" "main" {
   family                   = "lornu-ai-staging-task"
   network_mode             = "awsvpc"
@@ -25,6 +30,14 @@ resource "aws_ecs_task_definition" "main" {
           hostPort      = 8080
         }
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/lornu-ai-staging"
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
     }
   ])
 }
@@ -46,10 +59,12 @@ resource "aws_ecs_service" "main" {
     container_name   = "lornu-ai-staging-container"
     container_port   = 8080
   }
+
+  depends_on = [aws_lb_listener.https]
 }
 
 resource "aws_security_group" "ecs_service" {
-  name        = "lornu-ai-staging-ecs-service"
+  name_prefix = "lornu-ai-staging-ecs-service-"
   description = "Allow inbound traffic from the ALB"
   vpc_id      = aws_vpc.main.id
 
@@ -65,5 +80,9 @@ resource "aws_security_group" "ecs_service" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }

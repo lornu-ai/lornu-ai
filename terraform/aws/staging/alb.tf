@@ -14,7 +14,11 @@ resource "aws_lb_target_group" "main" {
   target_type = "ip"
 
   health_check {
-    path = "/health"
+    path                = "/health"
+    timeout             = 5
+    interval            = 30
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
   }
 }
 
@@ -37,7 +41,7 @@ resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.main.arn
   port              = "443"
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   certificate_arn   = var.acm_certificate_arn
 
   default_action {
@@ -47,7 +51,7 @@ resource "aws_lb_listener" "https" {
 }
 
 resource "aws_security_group" "alb" {
-  name        = "lornu-ai-staging-alb"
+  name_prefix = "lornu-ai-staging-alb-"
   description = "Allow inbound HTTP and HTTPS traffic"
   vpc_id      = aws_vpc.main.id
 
@@ -70,5 +74,9 @@ resource "aws_security_group" "alb" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }

@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "The AWS region to deploy the infrastructure to."
   type        = string
-  default     = "us-east-1"
+  default     = "us-east-2"
 }
 
 variable "docker_image" {
@@ -18,4 +18,5 @@ variable "acm_certificate_arn" {
 variable "secrets_manager_arn_pattern" {
   description = "The ARN pattern for the secrets the application needs to access."
   type        = string
+  default     = "arn:aws:secretsmanager:*:*:secret:lornu-*"
 }
