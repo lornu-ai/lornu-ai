@@ -38,13 +38,17 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks for better caching and code splitting
           if (id.includes('node_modules')) {
-            // React core libraries AND React ecosystem packages - MUST be together
-            // This ensures React is always available when React dependencies try to use it
+            // React core libraries - MUST be together to share context
             if (
               id.includes('/react/') ||
               id.includes('/react-dom/') ||
               id.includes('/react-is/') ||
-              id.includes('/scheduler/') ||
+              id.includes('/scheduler/')
+            ) {
+              return 'vendor-react';
+            }
+            // React ecosystem packages that depend on React context
+            if (
               id.includes('react-router') ||
               id.includes('react-helmet-async') ||
               id.includes('react-error-boundary') ||
@@ -55,7 +59,7 @@ export default defineConfig({
               id.includes('cmdk') ||
               id.includes('embla-carousel-react')
             ) {
-              return 'vendor-react';
+              return 'vendor-react-deps';
             }
             // Icon libraries
             if (id.includes('@phosphor-icons') || id.includes('@heroicons') || id.includes('lucide-react')) {
