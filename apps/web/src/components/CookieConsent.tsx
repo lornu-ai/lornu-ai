@@ -98,6 +98,6 @@ export function CookieConsent() {
 // Add types for window.dataLayer
 declare global {
   interface Window {
-    dataLayer: any[]
+    dataLayer: unknown[]
   }
 }

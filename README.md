@@ -1,14 +1,23 @@
 # Lornu AI
 
-## For Developers & AI Agents
-This repository is structured to be "AI-Native". 
-All high-level context, architectural decisions, and coding standards are located in the `.ai/` directory.
+This monorepo contains a React web app (Vite + Bun), a Cloudflare Worker, and a Python package (uv).
 
-### Quick Start
-1. Read `.ai/MISSION.md` to understand the product goal.
-2. Read `.ai/ARCHITECTURE.md` to understand the system design.
-3. Read `.ai/RULES.md` for coding standards.
+## Developer Quick Start
+- Web app (apps/web)
+	- Install: `bun install`
+	- Lint: `bun run lint`
+	- Tests: `bun run test:run`
+	- E2E: `bun run test:e2e:smoke`
+	- Build: `bun run build`
+- Python API (packages/api)
+	- Install: `uv pip install -e .`
+	- Run: `uv run python main.py`
+
+See [docs/COPILOT_CONTEXT.md](docs/COPILOT_CONTEXT.md) and apps/web/TESTING.md for more.
 
 ## Project Structure
-- `.ai/`: AI context and documentation.
-- `src/`: Source code (To be created).
+- apps/web: React + Vite app, Cloudflare Worker in `worker.ts`
+- packages/api: Python package managed with `uv`
+- docs/: operational docs and testing notes
+- .vscode/: workspace settings and tasks
+- .ai/: AI context and documentation

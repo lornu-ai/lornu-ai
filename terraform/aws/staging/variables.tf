@@ -16,17 +16,31 @@ variable "vpc_cidr" {
   default     = "10.1.0.0/16"
 }
 
-variable "container_image" {
+variable "docker_image" {
   description = "Docker image to deploy (ECR URI or Docker Hub)"
   type        = string
-  # Placeholder until we have the ECR repo set up
-  default     = "lornu-ai/backend:0.1.0"
+  default     = "lornuai/lornu-ai:commit-sha"
 }
 
 variable "container_port" {
   description = "Port exposed by the container"
   type        = number
   default     = 8080
+}
+
+variable "acm_certificate_arn" {
+  description = "The ARN of the ACM certificate to use for the ALB"
+  type        = string
+  validation {
+    condition     = can(regex("^arn:aws:acm:", var.acm_certificate_arn))
+    error_message = "Must be a valid ACM certificate ARN starting with 'arn:aws:acm:'"
+  }
+}
+
+variable "secrets_manager_arn_pattern" {
+  description = "The ARN pattern for the secrets the application needs to access"
+  type        = string
+  default     = "arn:aws:secretsmanager:*:*:secret:*"
 }
 
 variable "secret_gemini_api_key_arn" {

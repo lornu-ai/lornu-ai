@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
-import { HelmetProvider } from 'react-helmet-async'
 import App from './App'
 
 describe('App - Navigation Integration', () => {
@@ -12,13 +10,7 @@ describe('App - Navigation Integration', () => {
   ]
 
   it('renders footer links for legal pages', () => {
-    render(
-      <HelmetProvider>
-        <MemoryRouter initialEntries={['/']}>
-          <App />
-        </MemoryRouter>
-      </HelmetProvider>
-    )
+    render(<App />)
 
     // Verify all footer links are present
     for (const route of routes) {
@@ -29,26 +21,15 @@ describe('App - Navigation Integration', () => {
   })
 
   it('renders home page by default', () => {
-    render(
-      <HelmetProvider>
-        <MemoryRouter initialEntries={['/']}>
-          <App />
-        </MemoryRouter>
-      </HelmetProvider>
-    )
+    render(<App />)
 
     // Check for home page content
     expect(screen.getByText(/Let's Talk/i)).toBeInTheDocument()
   })
 
   it('renders privacy page at /privacy route', async () => {
-    render(
-      <HelmetProvider>
-        <MemoryRouter initialEntries={['/privacy']}>
-          <App />
-        </MemoryRouter>
-      </HelmetProvider>
-    )
+    window.history.pushState({}, '', '/privacy')
+    render(<App />)
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: /Privacy Policy/i })).toBeInTheDocument()
@@ -56,13 +37,8 @@ describe('App - Navigation Integration', () => {
   })
 
   it('renders terms page at /terms route', async () => {
-    render(
-      <HelmetProvider>
-        <MemoryRouter initialEntries={['/terms']}>
-          <App />
-        </MemoryRouter>
-      </HelmetProvider>
-    )
+    window.history.pushState({}, '', '/terms')
+    render(<App />)
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: /Terms of Service/i })).toBeInTheDocument()
@@ -70,13 +46,8 @@ describe('App - Navigation Integration', () => {
   })
 
   it('renders security page at /security route', async () => {
-    render(
-      <HelmetProvider>
-        <MemoryRouter initialEntries={['/security']}>
-          <App />
-        </MemoryRouter>
-      </HelmetProvider>
-    )
+    window.history.pushState({}, '', '/security')
+    render(<App />)
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: /Security Standards/i })).toBeInTheDocument()

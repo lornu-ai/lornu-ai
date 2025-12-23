@@ -1,52 +1,45 @@
 # Multi-stage build for Lornu AI (ECS Fargate)
-# ------------------------------------------------------------------------------
 # Stage 1: Build Frontend (React/Vite with Bun)
-# ------------------------------------------------------------------------------
 FROM oven/bun:alpine AS frontend-builder
 WORKDIR /app
 
-# Copy frontend dependency files
-# We need to preserve the directory structure for relative path references if any,
-# but for a standalone app `apps/web` works fine.
+# Copy and install frontend dependencies
 COPY apps/web/package.json apps/web/bun.lockb* ./apps/web/
-
-# Install dependencies
 WORKDIR /app/apps/web
 RUN bun install --frozen-lockfile
 
-# Copy source code and build
+# Copy source and build
 COPY apps/web/ ./
 RUN bun run build
 
-# ------------------------------------------------------------------------------
-# Stage 2: Backend Execution (Python 3.11+ / FastAPI)
-# ------------------------------------------------------------------------------
-FROM python:3.11-slim AS runtime
+# Stage 2: Backend Execution (Python 3.11+ for ADK)
+FROM python:3.11-slim
 WORKDIR /app
 
-# Install uv for fast Python package management
+# Copy uv from specific pinned version (not latest)
 COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /bin/uv
 
-# Copy backend dependency files
-COPY packages/api/pyproject.toml packages/api/uv.lock ./
-
 # Install backend dependencies
-# --system flag installs into the system python environment, which is fine for a container
+COPY packages/api/pyproject.toml packages/api/uv.lock ./packages/api/
+WORKDIR /app/packages/api
 RUN uv sync --frozen --system
 
-# Copy Backend Application Logic
-# We rename 'packages/api' to 'backend' inside the container for clarity/import convention
-COPY packages/api/ ./backend/
+# Copy backend application logic
+COPY packages/api/ ./
 
-# Copy Frontend Build Artifacts
-# These will be served by the FastAPI app (StaticFiles)
-COPY --from=frontend-builder /app/apps/web/dist ./frontend/dist
+# Copy frontend build artifacts
+WORKDIR /app
+COPY --from=frontend-builder /app/apps/web/dist ./public/
 
 # Environment configuration
 ENV PORT=8080
 ENV HOST=0.0.0.0
-# Ensure python path includes the current directory so 'backend' module is found
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app/packages/api
+
+EXPOSE 8080
+
+# Run the application (FastAPI via uvicorn)
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
 
 # Expose the port ECS Fargate will route to
 EXPOSE 8080

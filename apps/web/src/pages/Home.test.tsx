@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
 import Home from './Home'
 
 // Mock the toast library
@@ -14,9 +15,11 @@ vi.mock('sonner', () => ({
 
 const renderHome = () => {
   return render(
-    <BrowserRouter>
-      <Home />
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    </HelmetProvider>
   )
 }
 
@@ -43,7 +46,7 @@ describe('Home - Contact Form Submission', () => {
 
     const nameInput = screen.getByPlaceholderText(/name/i)
     const emailInput = screen.getByPlaceholderText(/email/i)
-    const messageInput = screen.getByPlaceholderText(/message/i)
+    const messageInput = screen.getByLabelText(/message/i)
     const submitButton = screen.getByRole('button', { name: /send message/i })
 
     await user.type(nameInput, 'John Doe')
@@ -81,7 +84,7 @@ describe('Home - Contact Form Submission', () => {
 
     const nameInput = screen.getByPlaceholderText(/name/i)
     const emailInput = screen.getByPlaceholderText(/email/i)
-    const messageInput = screen.getByPlaceholderText(/message/i)
+    const messageInput = screen.getByLabelText(/message/i)
     const submitButton = screen.getByRole('button', { name: /send message/i })
 
     await user.type(nameInput, 'John Doe')
@@ -105,11 +108,11 @@ describe('Home - Contact Form Submission', () => {
 
     const nameInput = screen.getByPlaceholderText(/name/i)
     const emailInput = screen.getByPlaceholderText(/email/i)
-    const messageInput = screen.getByPlaceholderText(/message/i)
+    const messageInput = screen.getByLabelText(/message/i)
     const submitButton = screen.getByRole('button', { name: /send message/i })
 
     await user.type(nameInput, 'John Doe')
-    await user.type(emailInput, 'invalid-email')
+    await user.type(emailInput, 'john@example.com')
     await user.type(messageInput, 'This is a test message')
     await user.click(submitButton)
 
@@ -126,7 +129,7 @@ describe('Home - Contact Form Submission', () => {
 
     const nameInput = screen.getByPlaceholderText(/name/i)
     const emailInput = screen.getByPlaceholderText(/email/i)
-    const messageInput = screen.getByPlaceholderText(/message/i)
+    const messageInput = screen.getByLabelText(/message/i)
     const submitButton = screen.getByRole('button', { name: /send message/i })
 
     await user.type(nameInput, 'John Doe')

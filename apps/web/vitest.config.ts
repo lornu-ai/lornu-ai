@@ -11,7 +11,11 @@ export default defineConfig({
     css: true,
     testTimeout: 10000, // 10 seconds
     hookTimeout: 10000,
-    exclude: [...configDefaults.exclude],
+    exclude: [
+      ...configDefaults.exclude,
+      // Exclude Playwright E2E tests from Vitest
+      'tests/e2e/**',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

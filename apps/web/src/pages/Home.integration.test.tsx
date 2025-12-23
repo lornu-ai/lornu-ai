@@ -47,8 +47,8 @@ describe('Home Page - Contact Form Integration', () => {
     // Mock successful API response
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ success: true, message: 'Message sent successfully' }),
-    } as Response)
+      text: async () => JSON.stringify({ success: true, message: 'Message sent successfully' }),
+    } as unknown as Response)
 
     renderHome()
 
@@ -92,8 +92,8 @@ describe('Home Page - Contact Form Integration', () => {
     // Mock failed API response
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      json: async () => ({ error: 'Failed to send message' }),
-    } as Response)
+      text: async () => JSON.stringify({ error: 'Failed to send message' }),
+    } as unknown as Response)
 
     renderHome()
 

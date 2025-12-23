@@ -48,3 +48,22 @@ global.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
 } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+
+// Polyfill localStorage for JSDOM if missing or incomplete
+if (typeof window !== 'undefined' && (!('localStorage' in window) || typeof window.localStorage?.getItem !== 'function')) {
+  const store = new Map<string, string>()
+  window.localStorage = {
+    getItem: (key: string) => (store.has(key) ? store.get(key)! : null),
+    setItem: (key: string, value: string) => {
+      store.set(key, String(value))
+    },
+    removeItem: (key: string) => {
+      store.delete(key)
+    },
+    clear: () => store.clear(),
+    key: (index: number) => Array.from(store.keys())[index] ?? null,
+    get length() {
+      return store.size
+    }
+  } as unknown as Storage
+}

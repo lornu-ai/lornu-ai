@@ -1,5 +1,14 @@
+resource "aws_cloudwatch_log_group" "ecs" {
+  name              = "/ecs/lornu-ai-staging"
+  retention_in_days = 14
+
+  tags = {
+    Name = "lornu-ai-staging-logs"
+  }
+}
+
 resource "aws_ecs_cluster" "main" {
-  name = "lornu-cluster-${var.environment}"
+  name = "lornu-ai-staging-cluster"
 }
 
 # Security Group for ECS Tasks
