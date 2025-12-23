@@ -6,7 +6,7 @@ This directory contains the official Lornu AI branding assets.
 
 The new logo should be placed here:
 
-- **File:** `lornu-ai-final.png`
+- **File:** `lornu-ai-final-clear-bg.png`
 - **Format:** PNG (optimized)
 - **Size:** Keep below 500KB for optimal performance
 - **Source:** [Google Drive](https://drive.google.com/file/d/1mmpkYJHyucyz2SD94mvGUrQkHtO66hVN/view?usp=drive_link)
@@ -15,7 +15,7 @@ The new logo should be placed here:
 
 ### Setup Instructions
 
-1. Download `lornu-ai-final.png` from the Google Drive link above
+1. Download `lornu-ai-final-clear-bg.png` from the Google Drive link above
 2. Optimize the image (reduce to ~300-500KB using compression tools like TinyPNG or ImageMagick)
 3. Place the optimized PNG in this directory
 4. The Logo component will automatically use it
