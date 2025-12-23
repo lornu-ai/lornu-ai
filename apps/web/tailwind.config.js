@@ -138,7 +138,7 @@ const defaultTheme = {
     80: "var(--size-80)",
     96: "var(--size-96)",
   },
-  darkMode: ["selector", '[data-theme="dark"]', '[data-theme="open-source-pro"]'],
+  darkMode: ["selector", '[data-theme="dark"]'],
 }
 
 export default {

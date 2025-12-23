@@ -35,7 +35,7 @@ describe('Privacy Page', () => {
 
   it('renders logo in navigation', () => {
     renderPrivacy()
-    const logo = screen.getByLabelText('Lornuai Enterprise AI Logo')
+    const logo = screen.getByAltText('Lornuai Enterprise AI Logo')
     expect(logo).toBeInTheDocument()
   })
 
