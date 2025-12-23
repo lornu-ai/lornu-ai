@@ -35,7 +35,7 @@ describe('Security Page', () => {
 
   it('renders logo in navigation', () => {
     renderSecurity()
-    const logo = screen.getByLabelText('Lornuai Enterprise AI Logo')
+    const logo = screen.getByAltText('Lornuai Enterprise AI Logo')
     expect(logo).toBeInTheDocument()
   })
 

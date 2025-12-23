@@ -1,17 +1,33 @@
-# Coding Rules & Conventions
+# Project Rules & Context (Lornu AI)
 
-## General
-- **Clarity over Cleverness**: Write code that is easy for an LLM to read. Verbose variable names are preferred.
-- **Strong Typing**: Use TypeScript or Python type hints everywhere.
-- **Documentation**: All public functions must have docstrings.
+## Tech Stack
+- **Frontend:** React + Vite (located in `apps/web`)
+- **Package Manager (JS):** **Bun** (Always use `bun install`, `bun run`, `bunx`). NEVER use npm/yarn.
+- **Backend:** Python 3.11+ (located in `packages/api`)
+- **Package Manager (Python):** **uv** (Use `uv sync`, `uv pip install`).
+- **Infrastructure:** Terraform (AWS), Docker, Kubernetes (Kustomize).
+  - **Terraform Cloud Config:** Uses `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_DEFAULT_REGION` for authentication.
 
-## Patterns
-- **Functional**: Prefer pure functions where possible.
-- **Composition**: Prefer composition over inheritance.
+## Directory Structure
+- `apps/web`: Frontend application.
+- `packages/api`: Backend API/Logic.
+- `terraform/`: Infrastructure as Code.
+- `k8s/`: Kubernetes manifests (Base + Overlays).
+- `docs/`: Project documentation.
 
-## Testing
-- Write tests for all core logic.
+## Workflow Rules
+1. **Git:**
+   - Main branch: `main` (Production)
+   - Develop branch: `develop` (Staging/Integration)
+   - Feature branches: `feat/` or `feature/`
+   - **Never push directly to main/develop.** Always use PRs.
+2. **Testing:**
+   - Frontend: `bun run test` (Vitest), `bun run test:e2e` (Playwright).
+   - Backend: `uv run pytest`.
+3. **Linting:**
+   - Frontend: ESLint + Prettier.
+   - Backend: Ruff (`uv run ruff check .`).
 
-## Tooling
-- **JavaScript/TypeScript**: Always use **Bun** for dependency management and package execution.
-- **Python**: Always use **uv** for dependency management and virtual environments.
+## Specific Configurations
+- **Tailwind:** Configured in `apps/web/tailwind.config.js`. Uses `oklch` colors.
+- **Docker:** Multi-stage build located at root `Dockerfile`.
