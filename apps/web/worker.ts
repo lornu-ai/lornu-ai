@@ -511,24 +511,33 @@ export default {
 			});
 		}
 
-		// For root path, explicitly serve index.html
-		// Only handle GET and HEAD requests since ASSETS.fetch only supports these methods
-		if ((url.pathname === '/' || url.pathname === '') && (request.method === 'GET' || request.method === 'HEAD')) {
+		// Helper function to serve index.html with proper Content-Type
+		const serveIndexHtml = async (request: Request): Promise<Response | null> => {
 			const indexResponse = await env.ASSETS.fetch(
 				new Request(new URL('/index.html', request.url), request)
 			);
 
 			if (indexResponse.status === 200) {
 				const newHeaders = new Headers(indexResponse.headers);
-				newHeaders.set("Content-Type", "text/html;charset=UTF-8");
+				newHeaders.set("Content-Type", MIME_TYPES['.html'] || 'text/html;charset=UTF-8');
 				return new Response(indexResponse.body, {
 					status: 200,
 					statusText: "OK",
 					headers: newHeaders,
 				});
 			}
-			// If index.html doesn't exist, return the response (likely 404)
-			return indexResponse;
+
+			return null;
+		};
+
+		// For root path, explicitly serve index.html
+		// Only handle GET and HEAD requests since ASSETS.fetch only supports these methods
+		// This ensures the root path always serves index.html, even if ASSETS.fetch returns non-404
+		if ((url.pathname === '/' || url.pathname === '') && (request.method === 'GET' || request.method === 'HEAD')) {
+			const indexResponse = await serveIndexHtml(request);
+			if (indexResponse) {
+				return indexResponse;
+			}
 		}
 
 		// Serve static assets
@@ -543,22 +552,9 @@ export default {
 			const hasExtension = lastSegment.includes('.');
 			if (!hasExtension && !url.pathname.startsWith('/api/')) {
 				// Serve index.html for SPA routes
-				const indexResponse = await env.ASSETS.fetch(
-					new Request(new URL('/index.html', request.url), {
-						method: request.method,
-						headers: request.headers,
-					})
-				);
-
-				// If index.html exists, return it with proper Content-Type
-				if (indexResponse.status === 200) {
-					const newHeaders = new Headers(indexResponse.headers);
-					newHeaders.set("Content-Type", "text/html;charset=UTF-8");
-					return new Response(indexResponse.body, {
-						status: 200,
-						statusText: "OK",
-						headers: newHeaders,
-					});
+				const indexResponse = await serveIndexHtml(request);
+				if (indexResponse) {
+					return indexResponse;
 				}
 			}
 			// If index.html also doesn't exist, return the 404
