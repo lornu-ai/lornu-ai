@@ -68,9 +68,9 @@ lornu-ai/
 - **Deployment**: Cloudflare Workers (not Pages)
 
 ### Backend (packages/api/)
-- **Framework**: FastAPI (Python 3.11+)
+- **Framework**: FastAPI (Python 3.12+)
 - **Package Manager**: uv
-- **Runtime**: Python 3.11+ (slim base image)
+- **Runtime**: Python 3.12+ (slim base image)
 - **Deployment**: AWS ECS Fargate (via Docker)
 
 ## Development Workflow
