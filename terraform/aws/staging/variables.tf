@@ -20,7 +20,7 @@ variable "container_image" {
   description = "Docker image to deploy (ECR URI or Docker Hub)"
   type        = string
   # Placeholder until we have the ECR repo set up
-  default     = "lornu-ai/backend:0.1.0"
+  default = "lornu-ai/backend:0.1.0"
 }
 
 variable "container_port" {

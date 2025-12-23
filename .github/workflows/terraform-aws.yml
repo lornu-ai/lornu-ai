@@ -23,7 +23,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
-          aws-region: us-east-1
+          aws-region: us-east-2
+          role-session-name: GitHubActions-Terraform-Plan
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
@@ -32,10 +33,55 @@ jobs:
           terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
       - name: "Terraform Init"
+        id: init
         run: terraform -chdir=terraform/aws/staging init
 
+      - name: "Terraform Format Check"
+        id: fmt
+        run: terraform -chdir=terraform/aws/staging fmt -check
+
+      - name: "Terraform Validate"
+        id: validate
+        run: terraform -chdir=terraform/aws/staging validate
+
       - name: "Terraform Plan"
-        run: terraform -chdir=terraform/aws/staging plan
+        id: plan
+        run: terraform -chdir=terraform/aws/staging plan -no-color
+        continue-on-error: true
+
+      - name: "Comment PR with Plan"
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          PLAN: ${{ steps.plan.outputs.stdout }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: "Terraform Plan Status"
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
 
       - name: "Terraform Security Scan"
         uses: aquasecurity/tfsec-action@v1.0.0
@@ -56,7 +102,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
-          aws-region: us-east-1
+          aws-region: us-east-2
+          role-session-name: GitHubActions-Terraform-Apply
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
@@ -66,6 +113,12 @@ jobs:
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
+
+      - name: "Terraform Format Check"
+        run: terraform -chdir=terraform/aws/staging fmt -check
+
+      - name: "Terraform Validate"
+        run: terraform -chdir=terraform/aws/staging validate
 
       - name: "Terraform Apply"
         run: terraform -chdir=terraform/aws/staging apply -auto-approve

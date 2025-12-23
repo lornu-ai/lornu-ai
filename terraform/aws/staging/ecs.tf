@@ -32,7 +32,7 @@ resource "aws_ecs_task_definition" "app" {
   family                   = "lornu-app-${var.environment}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "512" # 0.5 vCPU
+  cpu                      = "512"  # 0.5 vCPU
   memory                   = "1024" # 1 GB
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
