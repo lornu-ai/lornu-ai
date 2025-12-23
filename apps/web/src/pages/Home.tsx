@@ -10,6 +10,8 @@ import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/Logo'
 import SEOHead from '@/components/SEOHead'
+import ThemeToggle from '@/components/ThemeToggle'
+import SocialLinks from '@/components/SocialLinks'
 import {
   Lightning,
   Code,
@@ -170,12 +172,16 @@ export default function Home() {
                 ))}
               </div>
 
-              <Button
-                onClick={() => scrollToSection('contact')}
-                className="hidden md:inline-flex gradient-bg hover:opacity-90 text-base px-6 py-4 h-auto"
-              >
-                Get Started
-              </Button>
+              <div className="hidden md:flex items-center space-x-4">
+                <Button
+                  onClick={() => scrollToSection('contact')}
+                  className="gradient-bg hover:opacity-90 text-base px-6 py-4 h-auto"
+                >
+                  Get Started
+                </Button>
+                <ThemeToggle />
+                <SocialLinks />
+              </div>
             </div>
           </div>
         </nav>
@@ -428,6 +434,7 @@ export default function Home() {
                 <a href="https://status.lornu.ai" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-accent transition-colors">Status</a>
                 <button onClick={() => scrollToSection('contact')} className="text-sm hover:text-accent transition-colors">Contact</button>
               </div>
+              <SocialLinks />
             </div>
           </div>
         </footer>
