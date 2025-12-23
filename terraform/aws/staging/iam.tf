@@ -1,12 +1,12 @@
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "LornuEcsTaskExecutionRole"
+  name = "lornu-ecs-task-execution-role-${var.environment}"
 
   assume_role_policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [
       {
-        Action    = "sts:AssumeRole"
-        Effect    = "Allow"
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
         Principal = {
           Service = "ecs-tasks.amazonaws.com"
         }
@@ -20,40 +20,30 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-resource "aws_iam_role" "ecs_task_role" {
-  name = "LornuEcsTaskRole"
-
-  assume_role_policy = jsonencode({
-    Version   = "2012-10-17"
-    Statement = [
-      {
-        Action    = "sts:AssumeRole"
-        Effect    = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_policy" "secrets_manager_access" {
-  name        = "LornuSecretsManagerAccess"
-  description = "Allow access to Secrets Manager"
+# Optional: Add policy to read secrets if defined
+resource "aws_iam_policy" "secrets_access" {
+  count       = var.secret_gemini_api_key_arn != "" ? 1 : 0
+  name        = "lornu-secrets-access-${var.environment}"
+  description = "Allow ECS tasks to read specific secrets"
 
   policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [
       {
-        Action   = "secretsmanager:GetSecretValue"
-        Effect   = "Allow"
-        Resource = var.secrets_manager_arn_pattern
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = [
+          var.secret_gemini_api_key_arn
+        ]
       }
     ]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_role_secrets_manager_policy" {
-  role       = aws_iam_role.ecs_task_role.name
-  policy_arn = aws_iam_policy.secrets_manager_access.arn
+resource "aws_iam_role_policy_attachment" "secrets_access_attach" {
+  count      = var.secret_gemini_api_key_arn != "" ? 1 : 0
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.secrets_access[0].arn
 }

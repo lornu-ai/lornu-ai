@@ -18,6 +18,12 @@
 - ✅ Placed alongside Privacy, Terms, Security links
 - ✅ Opens in new tab with proper security attributes
 
+### 3. Performance Monitoring
+- ✅ Cloudflare Performance Reporting configured
+- ✅ Monitoring: `https://lornu.ai/` (Desktop, US Central)
+- ✅ Available at: [Cloudflare Dashboard](https://dash.cloudflare.com/{account-id}/lornu.ai/speed/test/lornu.ai%2F/history/desktop/us-central1)
+- ✅ Tracks Core Web Vitals and performance metrics
+
 ## 📋 Pending (External Configuration)
 
 ### Subdomain Decision
@@ -100,10 +106,11 @@ If hosting status page in the same worker:
 
 - ✅ **Health Endpoint:** `/api/health` returns `200 OK` with minimal payload
 - ✅ **Status Page Link:** Footer includes link to status page
-- ⏳ **Monitoring Active:** External monitoring service pinging endpoints (pending)
-- ⏳ **Alert Channel:** Alerts routed to SRE/Operations channel (pending)
-- ⏳ **Status Page Live:** Public status page displaying operational status (pending)
-- ⏳ **Incident Workflow:** Documented workflow for manual status page updates (pending)
+- ✅ **Setup Documentation:** Comprehensive guides for monitoring setup and incident workflow
+- ⏳ **Monitoring Active:** External monitoring service pinging endpoints (pending - ready to configure)
+- ⏳ **Alert Channel:** Alerts routed to SRE/Operations channel (pending - ready to configure)
+- ⏳ **Status Page Live:** Public status page displaying operational status (pending - ready to configure)
+- ✅ **Incident Workflow:** Documented workflow for manual status page updates
 
 ## 🔗 Related Files
 
@@ -111,6 +118,8 @@ If hosting status page in the same worker:
 - `apps/web/src/pages/Home.tsx` - Footer with status page link
 - `apps/web/src/worker.test.ts` - Health endpoint tests
 - `apps/web/wrangler.toml` - Worker configuration (no changes needed for external status page)
+- `docs/UPTIME_MONITORING_SETUP.md` - Step-by-step setup guide for external monitoring
+- `docs/INCIDENT_WORKFLOW.md` - Incident response procedures and runbooks
 
 ## 📚 Resources
 
@@ -123,4 +132,9 @@ If hosting status page in the same worker:
 ---
 
 **Last Updated:** 2025-12-15
-**Next Review:** When ready to configure external monitoring service
+**Next Steps:**
+1. Review `docs/UPTIME_MONITORING_SETUP.md` for detailed setup instructions
+2. Choose monitoring service (UptimeRobot recommended for free tier)
+3. Follow setup guide to configure monitors and status page
+4. Configure DNS for `status.lornu.ai` subdomain
+5. Test monitoring and alerting
