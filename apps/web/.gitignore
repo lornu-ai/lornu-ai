@@ -38,3 +38,7 @@ pids
 .devcontainer/
 
 .spark-workbench-id
+
+# Playwright test artifacts
+playwright-report/
+test-results/

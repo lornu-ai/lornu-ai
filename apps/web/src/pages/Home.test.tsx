@@ -2,21 +2,27 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
 import Home from './Home'
 
 // Mock the toast library
+const mockToastSuccess = vi.fn()
+const mockToastError = vi.fn()
+
 vi.mock('sonner', () => ({
   toast: {
-    success: vi.fn(),
-    error: vi.fn(),
+    success: (...args: unknown[]) => mockToastSuccess(...args),
+    error: (...args: unknown[]) => mockToastError(...args),
   },
 }))
 
 const renderHome = () => {
   return render(
-    <BrowserRouter>
-      <Home />
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    </HelmetProvider>
   )
 }
 
@@ -41,9 +47,9 @@ describe('Home - Contact Form Submission', () => {
 
     renderHome()
 
-    const nameInput = screen.getByPlaceholderText(/name/i)
-    const emailInput = screen.getByPlaceholderText(/email/i)
-    const messageInput = screen.getByPlaceholderText(/message/i)
+    const nameInput = screen.getByLabelText(/name/i)
+    const emailInput = screen.getByLabelText(/email/i)
+    const messageInput = screen.getByLabelText(/message/i)
     const submitButton = screen.getByRole('button', { name: /send message/i })
 
     await user.type(nameInput, 'John Doe')
@@ -79,9 +85,9 @@ describe('Home - Contact Form Submission', () => {
 
     renderHome()
 
-    const nameInput = screen.getByPlaceholderText(/name/i)
-    const emailInput = screen.getByPlaceholderText(/email/i)
-    const messageInput = screen.getByPlaceholderText(/message/i)
+    const nameInput = screen.getByLabelText(/name/i)
+    const emailInput = screen.getByLabelText(/email/i)
+    const messageInput = screen.getByLabelText(/message/i)
     const submitButton = screen.getByRole('button', { name: /send message/i })
 
     await user.type(nameInput, 'John Doe')
@@ -98,24 +104,26 @@ describe('Home - Contact Form Submission', () => {
     const user = userEvent.setup()
     fetchMock.mockResolvedValueOnce({
       ok: false,
+      status: 400,
       text: async () => JSON.stringify({ error: 'Invalid email address' }),
     })
 
     renderHome()
 
-    const nameInput = screen.getByPlaceholderText(/name/i)
-    const emailInput = screen.getByPlaceholderText(/email/i)
-    const messageInput = screen.getByPlaceholderText(/message/i)
+    const nameInput = screen.getByLabelText(/name/i)
+    const emailInput = screen.getByLabelText(/email/i)
+    const messageInput = screen.getByLabelText(/message/i)
     const submitButton = screen.getByRole('button', { name: /send message/i })
 
     await user.type(nameInput, 'John Doe')
-    await user.type(emailInput, 'invalid-email')
+    await user.type(emailInput, 'test@example.com')
     await user.type(messageInput, 'This is a test message')
     await user.click(submitButton)
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalled()
-    })
+      expect(mockToastError).toHaveBeenCalledWith('Invalid email address')
+    }, { timeout: 3000 })
   })
 
   it('should handle network failures', async () => {
@@ -124,9 +132,9 @@ describe('Home - Contact Form Submission', () => {
 
     renderHome()
 
-    const nameInput = screen.getByPlaceholderText(/name/i)
-    const emailInput = screen.getByPlaceholderText(/email/i)
-    const messageInput = screen.getByPlaceholderText(/message/i)
+    const nameInput = screen.getByLabelText(/name/i)
+    const emailInput = screen.getByLabelText(/email/i)
+    const messageInput = screen.getByLabelText(/message/i)
     const submitButton = screen.getByRole('button', { name: /send message/i })
 
     await user.type(nameInput, 'John Doe')
