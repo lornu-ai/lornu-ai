@@ -2,6 +2,11 @@ import '@testing-library/jest-dom'
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 
+// JSDOM doesn't implement these, so we need to mock them
+if (typeof window.URL.createObjectURL === 'undefined') {
+  Object.defineProperty(window.URL, 'createObjectURL', { value: () => {} });
+}
+
 // Cleanup after each test
 afterEach(() => {
   cleanup()
