@@ -1,0 +1,48 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+namePrefix: staging-
+namespace: default
+
+# Use staging image tag from CI/CD
+images:
+  - name: lornu-ai
+    newName: <AWS_ECR_REGISTRY>/lornu-ai
+    newTag: staging-latest
+
+# ConfigMap generator for staging-specific configuration
+configMapGenerator:
+  - name: lornu-ai-config
+    behavior: merge
+    literals:
+      - LOG_LEVEL=info
+      - ENVIRONMENT=staging
+      - STAGING_DEPLOY_URL=https://staging.lornu.ai
+      - DEBUG=false
+
+# Patch for staging-specific settings
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: lornu-ai
+      spec:
+        replicas: 3
+        template:
+          spec:
+            containers:
+            - name: lornu-ai
+              resources:
+                requests:
+                  memory: "512Mi"
+                  cpu: "500m"
+                limits:
+                  memory: "1Gi"
+                  cpu: "1000m"
+              env:
+              - name: AWS_REGION
+                value: "us-east-1"

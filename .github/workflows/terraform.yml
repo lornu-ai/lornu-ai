@@ -201,3 +201,38 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: terraform apply -auto-approve -input=false
+
+      - name: Setup Kustomize
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success' && steps.validate.outcome == 'success' && steps.plan-apply.outcome == 'success'
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: "5.0.0"
+
+      - name: Build Kustomize Manifests for Staging
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success' && steps.validate.outcome == 'success' && steps.plan-apply.outcome == 'success'
+        run: |
+          cd ../../../
+          kustomize build k8s/overlays/staging > staging-manifests.yaml
+          echo "Generated staging manifests:"
+          cat staging-manifests.yaml
+
+      # Note: The actual kubectl apply step is commented out as it requires EKS cluster setup
+      # Uncomment and configure when EKS cluster is ready
+      # - name: Configure AWS Credentials for kubectl
+      #   if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success' && steps.validate.outcome == 'success' && steps.plan-apply.outcome == 'success'
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+      #
+      # - name: Update kubeconfig for EKS
+      #   if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success' && steps.validate.outcome == 'success' && steps.plan-apply.outcome == 'success'
+      #   run: |
+      #     aws eks update-kubeconfig --name lornu-ai-staging --region ${{ secrets.AWS_DEFAULT_REGION }}
+      #
+      # - name: Apply Staging Manifests to Cluster
+      #   if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success' && steps.validate.outcome == 'success' && steps.plan-apply.outcome == 'success'
+      #   run: |
+      #     cd ../../../
+      #     kubectl apply -f staging-manifests.yaml
