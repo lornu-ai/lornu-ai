@@ -47,7 +47,7 @@ describe('Home Page - Contact Form Integration', () => {
     // Mock successful API response
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ success: true, message: 'Message sent successfully' }),
+      text: async () => JSON.stringify({ success: true, message: 'Message sent successfully' }),
     } as Response)
 
     renderHome()
