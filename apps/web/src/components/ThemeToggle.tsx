@@ -1,9 +1,9 @@
 import React from 'react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme, Theme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { Sun, Moon, Terminal } from '@phosphor-icons/react';
 
-const themes = ['light', 'dark', 'open-source-pro'];
+const themes: Theme[] = ['light', 'dark', 'open-source-pro'];
 
 const ThemeToggle: React.FC = () => {
   const { theme, setTheme } = useTheme();
@@ -11,7 +11,7 @@ const ThemeToggle: React.FC = () => {
   const toggleTheme = () => {
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
-    setTheme(themes[nextIndex] as any);
+    setTheme(themes[nextIndex]);
   };
 
   const nextTheme = themes[(themes.indexOf(theme) + 1) % themes.length];
