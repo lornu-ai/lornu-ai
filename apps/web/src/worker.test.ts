@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import workerDefault, { handleContactAPI, handleHealthAPI, Env } from '../worker'
+import workerDefault, { handleContactAPI, handleHealthAPI } from '../worker'
 
 // Type for error responses from the contact API
 interface ErrorResponse {
@@ -531,7 +531,7 @@ describe('Static Assets and Routing', () => {
 			.mockResolvedValueOnce(new Response('<html>index</html>', { status: 200, headers: indexHeaders }))
 
 		const req = new Request('http://localhost/privacy')
-		const res = await workerDefault.fetch(req, env as unknown as Env)
+		const res = await workerDefault.fetch(req, env as any)
 		expect(res.status).toBe(200)
 		expect(res.headers.get('Content-Type')).toBe('text/html;charset=UTF-8')
 	})
@@ -544,7 +544,7 @@ describe('Static Assets and Routing', () => {
 		)
 
 		const req = new Request('http://localhost/data.json')
-		const res = await workerDefault.fetch(req, env as unknown as Env)
+		const res = await workerDefault.fetch(req, env as any)
 		expect(res.headers.get('Content-Type')).toBe('application/json')
 	})
 })

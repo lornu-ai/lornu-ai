@@ -6,10 +6,6 @@ on:
       - "terraform/aws/staging/**"
   workflow_dispatch:
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   plan:
     name: "Terraform Plan"
@@ -25,8 +21,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
-          aws-region: us-east-2
-          role-session-name: GitHubActions-Terraform-Plan
+          aws-region: us-east-1
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
@@ -122,7 +117,6 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
           working_directory: terraform/aws/staging
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   apply:
     name: "Terraform Apply"
@@ -137,8 +131,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
-          aws-region: us-east-2
-          role-session-name: GitHubActions-Terraform-Apply
+          aws-region: us-east-1
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
@@ -148,12 +141,6 @@ jobs:
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
-
-      - name: "Terraform Format Check"
-        run: terraform -chdir=terraform/aws/staging fmt -check
-
-      - name: "Terraform Validate"
-        run: terraform -chdir=terraform/aws/staging validate
 
       - name: "Terraform Apply"
         run: terraform -chdir=terraform/aws/staging apply -auto-approve

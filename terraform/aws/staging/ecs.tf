@@ -1,93 +1,69 @@
 resource "aws_ecs_cluster" "main" {
-  name = "lornu-cluster-${var.environment}"
+  name = "lornu-ai-staging-cluster"
 }
 
-# Security Group for ECS Tasks
-resource "aws_security_group" "ecs_tasks" {
-  name        = "lornu-ecs-tasks-sg-${var.environment}"
-  description = "Allow inbound access from the ALB only"
-  vpc_id      = module.vpc.vpc_id
-
-  ingress {
-    protocol        = "tcp"
-    from_port       = var.container_port
-    to_port         = var.container_port
-    security_groups = [aws_security_group.alb.id]
-  }
-
-  egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_cloudwatch_log_group" "logs" {
-  name              = "/ecs/lornu-app-${var.environment}"
-  retention_in_days = 14
-}
-
-resource "aws_ecs_task_definition" "app" {
-  family                   = "lornu-app-${var.environment}"
+resource "aws_ecs_task_definition" "main" {
+  family                   = "lornu-ai-staging-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "512"  # 0.5 vCPU
-  memory                   = "1024" # 1 GB
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  cpu                      = "256"
+  memory                   = "512"
+
+  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn      = aws_iam_role.ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
-      name      = "lornu-app"
-      image     = var.container_image
+      name      = "lornu-ai-staging-container"
+      image     = var.docker_image
+      cpu       = 256
+      memory    = 512
       essential = true
       portMappings = [
         {
-          containerPort = var.container_port
-          hostPort      = var.container_port
+          containerPort = 8080
+          hostPort      = 8080
         }
       ]
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-group         = aws_cloudwatch_log_group.logs.name
-          awslogs-region        = var.aws_region
-          awslogs-stream-prefix = "ecs"
-        }
-      }
-      environment = [
-        { name = "ENVIRONMENT", value = var.environment }
-      ]
-      # Add Secrets here if var.secret_gemini_api_key_arn is set
-      secrets = var.secret_gemini_api_key_arn != "" ? [
-        {
-          name      = "GEMINI_API_KEY"
-          valueFrom = var.secret_gemini_api_key_arn
-        }
-      ] : []
     }
   ])
 }
 
 resource "aws_ecs_service" "main" {
-  name            = "lornu-service-${var.environment}"
+  name            = "lornu-ai-staging-service"
   cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.app.arn
+  task_definition = aws_ecs_task_definition.main.arn
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
-    security_groups  = [aws_security_group.ecs_tasks.id]
-    subnets          = module.vpc.private_subnets
-    assign_public_ip = false
+    subnets         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    security_groups = [aws_security_group.ecs_service.id]
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.app.arn
-    container_name   = "lornu-app"
-    container_port   = var.container_port
+    target_group_arn = aws_lb_target_group.main.arn
+    container_name   = "lornu-ai-staging-container"
+    container_port   = 8080
+  }
+}
+
+resource "aws_security_group" "ecs_service" {
+  name        = "lornu-ai-staging-ecs-service"
+  description = "Allow inbound traffic from the ALB"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
   }
 
-  desired_count = 1
-
-  depends_on = [aws_lb_listener.http]
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
