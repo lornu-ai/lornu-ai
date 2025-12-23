@@ -19,7 +19,8 @@
         "test:contact": "bun run scripts/test-contact-form.ts",
         "test:e2e": "playwright test",
         "test:e2e:ui": "playwright test --ui",
-        "test:e2e:smoke": "playwright test tests/e2e/smoke-test.spec.ts --project=chromium"
+        "test:e2e:smoke": "playwright test tests/e2e/smoke-test.spec.ts --project=chromium",
+        "dev:k8s": "kustomize build ../../k8s/overlays/dev | kubectl apply -f -"
     },
     "dependencies": {
         "@github/spark": "^0.39.0",
