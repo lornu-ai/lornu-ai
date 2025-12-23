@@ -1,0 +1,8 @@
+# Large binary assets - download from Google Drive
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# Keep README
+!README.md
