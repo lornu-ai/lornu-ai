@@ -210,9 +210,18 @@ jobs:
 
       - name: Build Kustomize Manifests for Staging
         if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success' && steps.validate.outcome == 'success' && steps.plan-apply.outcome == 'success'
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: |
-          cd ../../../
-          kustomize build k8s/overlays/staging > staging-manifests.yaml
+          # Build the kustomize manifests
+          kustomize build k8s/overlays/staging > staging-manifests-template.yaml
+          
+          # Replace the ECR registry placeholder with the actual value
+          # Format: <account-id>.dkr.ecr.<region>.amazonaws.com
+          ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+          sed "s|<AWS_ECR_REGISTRY>|${ECR_REGISTRY}|g" staging-manifests-template.yaml > staging-manifests.yaml
+          
           echo "Generated staging manifests:"
           cat staging-manifests.yaml
 
@@ -233,6 +242,4 @@ jobs:
       #
       # - name: Apply Staging Manifests to Cluster
       #   if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success' && steps.validate.outcome == 'success' && steps.plan-apply.outcome == 'success'
-      #   run: |
-      #     cd ../../../
-      #     kubectl apply -f staging-manifests.yaml
+      #   run: kubectl apply -f staging-manifests.yaml

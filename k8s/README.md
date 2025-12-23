@@ -71,7 +71,26 @@ kustomize build k8s/overlays/staging | kubectl apply -f -
 The GitHub Actions workflow (`.github/workflows/terraform.yml`) automatically:
 1. Runs Terraform to provision infrastructure
 2. Builds Kustomize manifests for staging
-3. (Future) Applies manifests to EKS cluster
+3. Substitutes the `<AWS_ECR_REGISTRY>` placeholder with the actual ECR registry URL
+   - Format: `<account-id>.dkr.ecr.<region>.amazonaws.com`
+   - Uses `AWS_ACCOUNT_ID` and `AWS_DEFAULT_REGION` secrets
+4. (Future) Applies manifests to EKS cluster
+
+**Registry Placeholder Substitution:**
+
+The staging overlay uses `<AWS_ECR_REGISTRY>` as a placeholder that gets replaced during CI/CD:
+```yaml
+images:
+  - name: lornu-ai
+    newName: <AWS_ECR_REGISTRY>/lornu-ai  # Replaced at build time
+    newTag: staging-latest
+```
+
+This is automatically substituted by the CI/CD pipeline using:
+```bash
+ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+sed "s|<AWS_ECR_REGISTRY>|${ECR_REGISTRY}|g" staging-manifests-template.yaml > staging-manifests.yaml
+```
 
 ## Adding a New Environment
 
