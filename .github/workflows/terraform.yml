@@ -15,6 +15,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  id-token: write  # Required for OIDC/WIF authentication with Terraform Cloud
 
 jobs:
   terraform:
@@ -36,6 +37,8 @@ jobs:
       - name: Terraform Init
         id: init
         env:
+          # Use API token if WIF/OIDC is not configured in Terraform Cloud
+          # If WIF is properly configured in Terraform Cloud, this may not be needed
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
         continue-on-error: true
         run: terraform init
@@ -54,6 +57,7 @@ jobs:
         id: plan
         if: github.event_name == 'pull_request' && steps.init.outcome == 'success'
         env:
+          # Use API token if WIF/OIDC is not configured in Terraform Cloud
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
         run: terraform plan -no-color -input=false
         continue-on-error: true
@@ -96,8 +100,7 @@ jobs:
           script: |
             const issues = [];
             if ('${{ steps.init.outcome }}' === 'failure') {
-              issues.push('Terraform Cloud organization "lornu-ai" not found or token lacks access');
-              issues.push('Please verify the organization exists and the TF_API_TOKEN has proper permissions');
+              issues.push('Terraform Cloud authentication failed');
             }
 
             const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
@@ -105,10 +108,17 @@ jobs:
             #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
             ⚠️ **Terraform Plan Skipped**: ${issues.join('. ')}
 
-            The Terraform code has been validated and formatted correctly. To run the full plan:
-            1. Ensure Terraform Cloud organization "lornu-ai" exists
-            2. Verify \`TF_API_TOKEN\` has access to the organization
-            3. Check that the workspace "lornu-ai" exists in the organization
+            The Terraform code has been validated and formatted correctly.
+
+            **If WIF/OIDC is configured in Terraform Cloud**, this error should not occur. Please verify:
+            1. WIF/OIDC is properly configured in Terraform Cloud for this repository
+            2. The organization "lornu-ai" exists in Terraform Cloud
+            3. The workspace "lornu-ai" exists in the organization
+
+            **If using API token authentication** (WIF not configured):
+            1. Ensure \`TF_API_TOKEN\` secret is set in GitHub
+            2. Verify the token has access to organization "lornu-ai"
+            3. Check that the workspace "lornu-ai" exists
 
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
@@ -126,5 +136,6 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
         env:
+          # Use API token if WIF/OIDC is not configured in Terraform Cloud
           TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
         run: terraform apply -auto-approve -input=false
