@@ -1,7 +1,10 @@
+/// <reference types="vitest" />
+
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig, PluginOption } from "vite";
 import svgr from "vite-plugin-svgr";
+import { configDefaults } from 'vitest/config'
 
 import sparkPlugin from "@github/spark/spark-vite-plugin";
 import createIconImportProxy from "@github/spark/vitePhosphorIconProxyPlugin";
@@ -84,5 +87,27 @@ export default defineConfig({
       }
     },
     chunkSizeWarningLimit: 600, // TODO: Temporarily increased while optimizing. Revisit and reduce to 500 (default) or lower once bundle optimizations are complete.
+  },
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    setupFiles: './src/test/setup.ts',
+    css: true,
+    testTimeout: 10000, // 10 seconds
+    hookTimeout: 10000,
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    exclude: [...configDefaults.exclude, 'tests/e2e/**', 'playwright-report/**', 'test-results/**'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/test/',
+        '**/*.d.ts',
+        '**/*.config.*',
+        '**/mockData',
+        'src/main.tsx',
+      ],
+    },
   },
 });
