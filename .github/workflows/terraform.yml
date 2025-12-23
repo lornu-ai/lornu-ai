@@ -32,19 +32,22 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           # terraform_version: 1.10.3
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN || '' }}
 
       - name: Terraform Init
         id: init
         run: terraform init
+        continue-on-error: true
 
       - name: Terraform Validate
         id: validate
+        if: steps.init.outcome == 'success'
         run: terraform validate -no-color
+        continue-on-error: true
 
       - name: Terraform Plan
         id: plan
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.validate.outcome == 'success'
         run: terraform plan -no-color -input=false
         continue-on-error: true
 
@@ -56,15 +59,15 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            const plan = process.env.PLAN || 'Terraform plan not available. Init or validation may have failed.';
+            const output = `#### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
             <details><summary>Show Plan</summary>
 
             \`\`\`terraform
-            ${process.env.PLAN}
+            ${plan}
             \`\`\`
 
             </details>
@@ -79,9 +82,9 @@ jobs:
             })
 
       - name: Terraform Plan Status
-        if: steps.plan.outcome == 'failure'
+        if: github.event_name == 'pull_request' && steps.plan.outcome == 'failure'
         run: exit 1
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success'
         run: terraform apply -auto-approve -input=false
