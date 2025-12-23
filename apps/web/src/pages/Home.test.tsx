@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
+import { ThemeProvider } from '../contexts/ThemeContext'
 import Home from './Home'
 
 // Mock the toast library
@@ -20,7 +21,9 @@ const renderHome = () => {
   return render(
     <HelmetProvider>
       <BrowserRouter>
-        <Home />
+        <ThemeProvider>
+          <Home />
+        </ThemeProvider>
       </BrowserRouter>
     </HelmetProvider>
   )
