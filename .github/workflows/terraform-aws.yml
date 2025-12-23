@@ -25,9 +25,9 @@ jobs:
         continue-on-error: true
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
-          aws-region: us-east-2
-          role-session-name: github-actions-terraform-plan
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
@@ -100,7 +100,7 @@ jobs:
           script: |
             const missing = [];
             if ('${{ steps.aws-creds.outcome }}' === 'failure') {
-              missing.push('AWS_ACCOUNT_ID (or OIDC not configured)');
+              missing.push('AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY');
             }
             if ('${{ steps.init.outcome }}' === 'failure') {
               missing.push('TF_API_TOKEN');
@@ -111,7 +111,9 @@ jobs:
             ⚠️ **Terraform Plan Skipped**: Missing required configuration: ${missing.join(', ')}
 
             The Terraform code has been validated and formatted correctly. To run the full plan, configure the following:
-            - \`AWS_ACCOUNT_ID\`: AWS account ID for OIDC authentication (and ensure OIDC is configured in AWS)
+            - \`AWS_ACCESS_KEY_ID\`: AWS access key ID
+            - \`AWS_SECRET_ACCESS_KEY\`: AWS secret access key
+            - \`AWS_DEFAULT_REGION\`: AWS region (e.g., us-east-2)
             - \`TF_API_TOKEN\`: Terraform Cloud API token
             - \`TF_CLOUD_ORG\`: Terraform Cloud organization name
             - \`TF_CLOUD_WORKSPACE\`: Terraform Cloud workspace name
@@ -147,9 +149,9 @@ jobs:
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
-          aws-region: us-east-2
-          role-session-name: github-actions-terraform-apply
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
