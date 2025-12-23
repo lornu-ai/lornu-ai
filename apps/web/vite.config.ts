@@ -38,37 +38,46 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks for better caching and code splitting
           if (id.includes('node_modules')) {
-            // Icon libraries - check before generic 'react' to avoid incorrect matching
-            if (id.includes('@phosphor-icons') || id.includes('@heroicons') || id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            // Radix UI components - group all together
-            if (id.includes('@radix-ui')) {
-              return 'vendor-radix-ui';
-            }
-            // Chart libraries (lazy load if not used on initial page)
-            if (id.includes('recharts')) {
-              return 'vendor-charts';
-            }
-            // Animation library (framer-motion)
-            if (id.includes('framer-motion')) {
-              return 'vendor-animations';
-            }
-            // React core libraries and all React-dependent packages
-            // Include all react-* packages to ensure React is available when needed
+            // React core libraries - MUST be together to share context
             if (
-              id.includes('node_modules/react/') ||
-              id.includes('node_modules/react-dom/') ||
-              id.includes('node_modules/react-router') ||
-              id.includes('node_modules/react-') ||
-              id.includes('node_modules/next-themes') || // Uses React
-              id.includes('node_modules/sonner') || // Uses React
-              id.includes('node_modules/cmdk') || // Uses React
-              id.includes('node_modules/embla-carousel-react') // Uses React
+              id.includes('/react/') ||
+              id.includes('/react-dom/') ||
+              id.includes('/react-is/') ||
+              id.includes('/scheduler/')
             ) {
               return 'vendor-react';
             }
-            // Other vendor libraries
+            // React ecosystem packages that depend on React context
+            if (
+              id.includes('react-router') ||
+              id.includes('react-helmet-async') ||
+              id.includes('react-error-boundary') ||
+              id.includes('react-hook-form') ||
+              id.includes('next-themes') ||
+              id.includes('sonner') ||
+              id.includes('vaul') ||
+              id.includes('cmdk') ||
+              id.includes('embla-carousel-react')
+            ) {
+              return 'vendor-react-deps';
+            }
+            // Icon libraries
+            if (id.includes('@phosphor-icons') || id.includes('@heroicons') || id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            // Radix UI components
+            if (id.includes('@radix-ui')) {
+              return 'vendor-radix-ui';
+            }
+            // Animation library
+            if (id.includes('framer-motion')) {
+              return 'vendor-animations';
+            }
+            // Chart libraries
+            if (id.includes('recharts')) {
+              return 'vendor-charts';
+            }
+            // Other vendor libraries (non-React)
             return 'vendor-misc';
           }
         }

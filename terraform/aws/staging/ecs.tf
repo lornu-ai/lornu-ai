@@ -1,3 +1,8 @@
+resource "aws_cloudwatch_log_group" "main" {
+  name              = "/ecs/lornu-ai-staging"
+  retention_in_days = 7
+}
+
 resource "aws_ecs_cluster" "main" {
   name = "lornu-ai-staging-cluster"
 }
@@ -25,6 +30,14 @@ resource "aws_ecs_task_definition" "main" {
           hostPort      = 8080
         }
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.main.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
     }
   ])
 }

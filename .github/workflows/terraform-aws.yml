@@ -6,6 +6,10 @@ on:
       - "terraform/aws/staging/**"
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   plan:
     name: "Terraform Plan"
@@ -37,6 +41,7 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
           working_directory: terraform/aws/staging
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   apply:
     name: "Terraform Apply"
