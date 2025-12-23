@@ -5,7 +5,27 @@ import { afterEach, vi } from 'vitest'
 // Cleanup after each test
 afterEach(() => {
   cleanup()
+  // Clear localStorage after each test
+  localStorage.clear()
 })
+
+// Mock localStorage with actual storage implementation
+const localStorageMock = (() => {
+  let store: Record<string, string> = {}
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString()
+    },
+    removeItem: (key: string) => {
+      delete store[key]
+    },
+    clear: () => {
+      store = {}
+    },
+  }
+})()
+global.localStorage = localStorageMock as any // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
