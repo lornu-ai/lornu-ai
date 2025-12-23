@@ -4,7 +4,7 @@ resource "aws_ecs_cluster" "main" {
 
 resource "aws_cloudwatch_log_group" "ecs" {
   name              = "/ecs/lornu-ai-staging"
-  retention_in_days = 7
+  retention_in_days = 30
 }
 
 resource "aws_ecs_task_definition" "main" {
