@@ -20,6 +20,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "Configure AWS Credentials"
+        id: aws-creds
+        continue-on-error: true
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
@@ -32,10 +34,6 @@ jobs:
           terraform_version: 1.8.0
           terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
-      - name: "Terraform Init"
-        id: init
-        run: terraform -chdir=terraform/aws/staging init
-
       - name: "Terraform Format Check"
         id: fmt
         run: terraform -chdir=terraform/aws/staging fmt -check
@@ -44,13 +42,19 @@ jobs:
         id: validate
         run: terraform -chdir=terraform/aws/staging validate
 
+      - name: "Terraform Init"
+        id: init
+        continue-on-error: true
+        run: terraform -chdir=terraform/aws/staging init
+
       - name: "Terraform Plan"
         id: plan
+        if: steps.aws-creds.outcome == 'success' && steps.init.outcome == 'success'
         run: terraform -chdir=terraform/aws/staging plan -no-color
         continue-on-error: true
 
       - name: "Comment PR with Plan"
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.plan.outcome != 'skipped'
         uses: actions/github-script@v7
         env:
           PLAN: ${{ steps.plan.outputs.stdout }}
@@ -58,8 +62,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
             <details><summary>Show Plan</summary>
@@ -79,8 +83,39 @@ jobs:
               body: output
             })
 
+      - name: "Comment PR - Missing Credentials"
+        if: github.event_name == 'pull_request' && (steps.aws-creds.outcome == 'failure' || steps.init.outcome == 'failure' || steps.plan.outcome == 'skipped')
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const missing = [];
+            if ('${{ steps.aws-creds.outcome }}' === 'failure') {
+              missing.push('AWS_ACCOUNT_ID (or OIDC not configured)');
+            }
+            if ('${{ steps.init.outcome }}' === 'failure') {
+              missing.push('TERRAFORM_API_TOKEN');
+            }
+
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            ⚠️ **Terraform Plan Skipped**: Missing required configuration: ${missing.join(', ')}
+
+            The Terraform code has been validated and formatted correctly. To run the full plan, configure the following:
+            - \`AWS_ACCOUNT_ID\`: AWS account ID for OIDC authentication (and ensure OIDC is configured in AWS)
+            - \`TERRAFORM_API_TOKEN\`: Terraform Cloud API token
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
       - name: "Terraform Plan Status"
-        if: steps.plan.outcome == 'failure'
+        if: steps.plan.outcome == 'failure' && steps.plan.outcome != 'skipped'
         run: exit 1
 
       - name: "Terraform Security Scan"
