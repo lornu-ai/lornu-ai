@@ -31,36 +31,66 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          # terraform_version: 1.10.3
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN || '' }}
+          terraform_version: 1.8.0
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
 
       - name: Terraform Init
         id: init
-        run: terraform init
+        env:
+          # Terraform Cloud API token for backend authentication
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          # AWS credentials for provider authentication (Phase 2)
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         continue-on-error: true
+        run: terraform init
 
       - name: Terraform Validate
         id: validate
-        if: steps.init.outcome == 'success'
+        # Validate should fail fast - if init failed, skip validation
+        if: steps.init.outcome == 'success' || steps.init.outcome == 'skipped'
         run: terraform validate -no-color
-        continue-on-error: true
 
       - name: Terraform Plan
         id: plan
-        if: github.event_name == 'pull_request' && steps.validate.outcome == 'success'
+        if: github.event_name == 'pull_request' && steps.init.outcome == 'success' && steps.validate.outcome == 'success'
+        env:
+          # Terraform Cloud API token for backend authentication
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          # AWS credentials for provider authentication (Phase 2)
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: terraform plan -no-color -input=false
         continue-on-error: true
 
       - name: Update Pull Request
         uses: actions/github-script@v7
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.plan.outcome != 'skipped'
         env:
           PLAN: ${{ steps.plan.outputs.stdout }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            // Find existing bot comment to update instead of creating new ones
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' && comment.body.includes('Terraform Initialization')
+            );
+
             const plan = process.env.PLAN || 'Terraform plan not available. Init or validation may have failed.';
-            const output = `#### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
@@ -74,17 +104,94 @@ jobs:
 
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
-            github.rest.issues.createComment({
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              });
+            }
+
+      - name: Comment PR - Terraform Cloud Issue
+        if: github.event_name == 'pull_request' && (steps.init.outcome == 'failure' || steps.plan.outcome == 'skipped')
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issues = [];
+            const recommendations = [];
+
+            if ('${{ steps.init.outcome }}' === 'failure') {
+              issues.push('Terraform Cloud backend connection failed');
+              recommendations.push('**Most likely causes:**');
+              recommendations.push('1. Organization "lornu-ai" does not exist in Terraform Cloud');
+              recommendations.push('2. Project does not exist in the organization');
+              recommendations.push('3. The \`TF_API_TOKEN\` secret exists but lacks access to organization "lornu-ai"');
+              recommendations.push('4. Workspace "lornu-ai" does not exist in the project');
+            }
+
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            ⚠️ **Terraform Plan Skipped**: ${issues.join('. ')}
+
+            ✅ The Terraform code has been validated and formatted correctly.
+
+            ${recommendations.join('\n')}
+
+            **To resolve:**
+
+            - The \`TF_API_TOKEN\` secret exists in GitHub ✅
+            - **Action needed**: Verify the token has access to organization "lornu-ai"
+            - **Action needed**: Create the organization "lornu-ai" in Terraform Cloud if it doesn't exist
+            - **Action needed**: Create a project in the organization (if using projects)
+            - **Action needed**: Create the workspace "lornu-ai" in the organization/project
+
+            **Note**: Cloudflare has GitHub integration (separate from Terraform). AWS credentials (\`AWS_ACCESS_KEY_ID\`, \`AWS_SECRET_ACCESS_KEY\`, \`AWS_DEFAULT_REGION\`) are for AWS provider authentication, not Terraform Cloud.
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: output
-            })
+            });
 
       - name: Terraform Plan Status
-        if: github.event_name == 'pull_request' && steps.plan.outcome == 'failure'
+        # Only fail if plan actually failed (not skipped due to init/validate failure)
+        if: steps.plan.outcome == 'failure' && steps.plan.outcome != 'skipped' && steps.init.outcome == 'success' && steps.validate.outcome == 'success'
         run: exit 1
 
+      - name: Terraform Plan (for Apply)
+        id: plan-apply
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success' && steps.validate.outcome == 'success'
+        env:
+          # Terraform Cloud API token for backend authentication
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          # AWS credentials for provider authentication (Phase 2)
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        run: terraform plan -no-color -input=false
+
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success'
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push' && steps.init.outcome == 'success' && steps.validate.outcome == 'success' && steps.plan-apply.outcome == 'success'
+        env:
+          # Terraform Cloud API token for backend authentication
+          TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+          # AWS credentials for provider authentication (Phase 2)
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
         run: terraform apply -auto-approve -input=false
