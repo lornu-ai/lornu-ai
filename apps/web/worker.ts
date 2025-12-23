@@ -512,12 +512,10 @@ export default {
 		}
 
 		// For root path, explicitly serve index.html
-		if (url.pathname === '/' || url.pathname === '') {
+		// Only handle GET and HEAD requests since ASSETS.fetch only supports these methods
+		if ((url.pathname === '/' || url.pathname === '') && (request.method === 'GET' || request.method === 'HEAD')) {
 			const indexResponse = await env.ASSETS.fetch(
-				new Request(new URL('/index.html', request.url), {
-					method: request.method,
-					headers: request.headers,
-				})
+				new Request(new URL('/index.html', request.url), request)
 			);
 
 			if (indexResponse.status === 200) {
