@@ -28,7 +28,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Terraform Format Check"
         id: fmt
@@ -37,6 +37,11 @@ jobs:
       - name: "Terraform Validate"
         id: validate
         run: terraform -chdir=terraform/aws/staging validate
+
+      - name: "Configure Terraform Cloud Backend"
+        run: |
+          sed -i 's/organization = "lornu-ai"/organization = "${{ secrets.TF_CLOUD_ORG }}"/' terraform/aws/staging/main.tf
+          sed -i 's/name = "lornu-ai-staging-aws"/name = "${{ secrets.TF_CLOUD_WORKSPACE }}"/' terraform/aws/staging/main.tf
 
       - name: "Terraform Init"
         id: init
@@ -90,7 +95,7 @@ jobs:
               missing.push('AWS_ACCOUNT_ID (or OIDC not configured)');
             }
             if ('${{ steps.init.outcome }}' === 'failure') {
-              missing.push('TERRAFORM_API_TOKEN');
+              missing.push('TF_API_TOKEN');
             }
 
             const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
@@ -99,7 +104,9 @@ jobs:
 
             The Terraform code has been validated and formatted correctly. To run the full plan, configure the following:
             - \`AWS_ACCOUNT_ID\`: AWS account ID for OIDC authentication (and ensure OIDC is configured in AWS)
-            - \`TERRAFORM_API_TOKEN\`: Terraform Cloud API token
+            - \`TF_API_TOKEN\`: Terraform Cloud API token
+            - \`TF_CLOUD_ORG\`: Terraform Cloud organization name
+            - \`TF_CLOUD_WORKSPACE\`: Terraform Cloud workspace name
 
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
@@ -140,7 +147,12 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: "Configure Terraform Cloud Backend"
+        run: |
+          sed -i 's/organization = "lornu-ai"/organization = "${{ secrets.TF_CLOUD_ORG }}"/' terraform/aws/staging/main.tf
+          sed -i 's/name = "lornu-ai-staging-aws"/name = "${{ secrets.TF_CLOUD_WORKSPACE }}"/' terraform/aws/staging/main.tf
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
