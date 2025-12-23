@@ -11,7 +11,7 @@ const ThemeToggle: React.FC = () => {
   const toggleTheme = () => {
     const currentIndex = themes.indexOf(theme);
     const nextIndex = (currentIndex + 1) % themes.length;
-    setTheme(themes[nextIndex] as any);
+    setTheme(themes[nextIndex] as 'light' | 'dark' | 'open-source-pro');
   };
 
   const nextTheme = themes[(themes.indexOf(theme) + 1) % themes.length];
