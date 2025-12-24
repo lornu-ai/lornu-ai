@@ -1,0 +1,77 @@
+src/components/SocialLinks.test.tsx(8,1): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+src/components/SocialLinks.test.tsx(9,3): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+src/components/SocialLinks.test.tsx(13,5): error TS2304: Cannot find name 'expect'.
+src/components/SocialLinks.test.tsx(14,5): error TS2304: Cannot find name 'expect'.
+src/components/SocialLinks.test.tsx(17,5): error TS2304: Cannot find name 'expect'.
+src/components/SocialLinks.test.tsx(18,5): error TS2304: Cannot find name 'expect'.
+src/components/ThemeToggle.test.tsx(14,1): error TS2593: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+src/components/ThemeToggle.test.tsx(15,3): error TS2593: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha` and then add 'jest' or 'mocha' to the types field in your tsconfig.
+src/components/ThemeToggle.test.tsx(26,5): error TS2304: Cannot find name 'expect'.
+src/components/ThemeToggle.test.tsx(30,5): error TS2304: Cannot find name 'expect'.
+src/components/ThemeToggle.test.tsx(34,5): error TS2304: Cannot find name 'expect'.
+src/components/ThemeToggle.test.tsx(38,5): error TS2304: Cannot find name 'expect'.
+src/worker.test.ts(40,7): error TS2774: This condition will always return true since this function is always defined. Did you mean to call it instead?
+src/worker.test.ts(53,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(76,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(90,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(110,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(130,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(146,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(165,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(183,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(203,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(232,54): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(252,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(270,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(288,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(303,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(338,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(380,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(404,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(417,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(436,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(455,53): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+src/worker.test.ts(483,54): error TS2345: Argument of type '{ ASSETS: { fetch: Mock<Procedure>; }; RESEND_API_KEY: string; CONTACT_EMAIL: string; RATE_LIMIT_KV: { get: Mock<Procedure>; put: Mock<Procedure>; delete: Mock<...>; }; }' is not assignable to parameter of type 'Env'.
+  Types of property 'ASSETS' are incompatible.
+    Property 'connect' is missing in type '{ fetch: Mock<Procedure>; }' but required in type '{ fetch(input: URL | RequestInfo, init?: RequestInit<CfProperties<unknown>> | undefined): Promise<Response>; connect(address: string | SocketAddress, options?: SocketOptions | undefined): Socket; }'.
+error: "tsc" exited with code 2
