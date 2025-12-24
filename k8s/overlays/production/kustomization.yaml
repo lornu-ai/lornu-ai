@@ -1,8 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: default
+namespace: lornu-ai
 resources:
 - ../../base
+- ../../base/namespace.yaml
+- external-secrets/cluster-secret-store.yaml
+- external-secrets/external-secret.yaml
 namePrefix: prod-
 commonLabels:
   environment: production
