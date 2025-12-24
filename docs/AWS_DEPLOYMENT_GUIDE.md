@@ -30,6 +30,9 @@ Configure the following secrets in the GitHub repository:
 | `TERRAFORM_API_TOKEN` | Terraform Cloud API token | `xxxxxxxx.atlasv1.xxxxxxxxx` |
 | `ACM_CERTIFICATE_ARN` | ARN of ACM certificate | `arn:aws:acm:us-east-1:123456789012:certificate/xxx` |
 | `SECRETS_MANAGER_ARN_PATTERN` | ARN pattern for secrets | `arn:aws:secretsmanager:us-east-1:123456789012:secret:lornu-*` |
+| `TF_CLOUD_ORG` | Terraform Cloud organization | `lornu-ai` |
+| `TF_CLOUD_WORKSPACE` | Terraform Cloud workspace | `lornu-ai-staging-aws` |
+| `AWS_DEFAULT_REGION` | AWS region for deployment | `us-east-1` |
 
 ### Terraform Cloud Setup
 1. **Organization**: `lornu-ai`

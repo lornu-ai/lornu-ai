@@ -4,16 +4,28 @@ on:
   pull_request:
     paths:
       - "terraform/aws/staging/**"
-      - "apps/web/**"
-      - "packages/api/**"
+      - "apps/web/src/**"
+      - "apps/web/package.json"
+      - "apps/web/bun.lock"
+      - "apps/web/vite.config.*"
+      - "apps/web/tsconfig.json"
+      - "packages/api/main.py"
+      - "packages/api/pyproject.toml"
+      - "packages/api/uv.lock"
       - "Dockerfile"
   push:
     branches:
       - main
     paths:
       - "terraform/aws/staging/**"
-      - "apps/web/**"
-      - "packages/api/**"
+      - "apps/web/src/**"
+      - "apps/web/package.json"
+      - "apps/web/bun.lock"
+      - "apps/web/vite.config.*"
+      - "apps/web/tsconfig.json"
+      - "packages/api/main.py"
+      - "packages/api/pyproject.toml"
+      - "packages/api/uv.lock"
       - "Dockerfile"
   workflow_dispatch:
 
@@ -21,15 +33,21 @@ permissions:
   contents: read
   id-token: write  # Required for OIDC authentication with AWS
 
+env:
+  TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORG }}
+  TF_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
+  AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+  ECR_REPOSITORY: "lornu-ai-staging"
+
 jobs:
-  build-and-push:
+  build:
     name: "Build and Push Docker Image"
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write  # Required for AWS OIDC
     outputs:
-      image-tag: ${{ steps.image-tag.outputs.tag }}
+      image-uri: ${{ steps.build-image.outputs.image-uri }}
 
     steps:
       - name: "Checkout"
@@ -39,32 +57,27 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: "Login to Amazon ECR"
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: "Generate Docker tag"
-        id: image-tag
+      - name: "Build and push Docker image"
+        id: build-image
         run: |
-          TAG="${{ steps.login-ecr.outputs.registry }}/lornu-ai-staging:${{ github.sha }}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-
-      - name: "Build and push"
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.image-tag.outputs.tag }}
-          labels: |
-            org.opencontainers.image.source=${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
+          IMAGE_TAG="${{ github.sha }}"
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${IMAGE_TAG}"
+          
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+          
+          echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
 
   plan:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: build
     permissions:
       contents: read
       id-token: write  # Required for AWS OIDC
@@ -77,7 +90,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
@@ -89,7 +102,7 @@ jobs:
         run: terraform -chdir=terraform/aws/staging init
 
       - name: "Terraform Plan"
-        run: terraform -chdir=terraform/aws/staging plan -var="docker_image=${{ needs.build-and-push.outputs.image-tag }}"
+        run: terraform -chdir=terraform/aws/staging plan -var="docker_image=${{ needs.build.outputs.image-uri }}"
         env:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
@@ -102,7 +115,7 @@ jobs:
   apply:
     name: "Terraform Apply"
     runs-on: ubuntu-latest
-    needs: [build-and-push, plan]
+    needs: [build, plan]
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     permissions:
       contents: read
@@ -116,7 +129,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
@@ -128,7 +141,7 @@ jobs:
         run: terraform -chdir=terraform/aws/staging init
 
       - name: "Terraform Apply"
-        run: terraform -chdir=terraform/aws/staging apply -auto-approve -var="docker_image=${{ needs.build-and-push.outputs.image-tag }}"
+        run: terraform -chdir=terraform/aws/staging apply -auto-approve -var="docker_image=${{ needs.build.outputs.image-uri }}"
         env:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
