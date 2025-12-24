@@ -10,7 +10,7 @@ terraform {
     organization = "lornu-ai"
 
     workspaces {
-      name = "lornu-ai-prod-aws"
+      tags = ["prod", "aws"]
     }
   }
 }
