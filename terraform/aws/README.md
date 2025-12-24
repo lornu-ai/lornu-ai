@@ -42,6 +42,7 @@ The following secrets must be configured in GitHub repository settings (Settings
 | `SECRETS_MANAGER_ARN_PATTERN_PROD` | ARN pattern for Secrets Manager access |
 | `ECR_REPOSITORY` | ECR repository name (e.g., `lornu-ai-prod`) |
 | `EKS_CLUSTER_NAME` | EKS cluster name (for K8s deployments) |
+| `PROD_DOMAIN` | Production domain (e.g., `lornu.ai`) |
 
 #### Staging (`develop` branch)
 
@@ -49,6 +50,7 @@ The following secrets must be configured in GitHub repository settings (Settings
 |-------------|-------------|
 | `ACM_CERTIFICATE_ARN` | ARN of ACM certificate for staging ALB |
 | `SECRETS_MANAGER_ARN_PATTERN` | ARN pattern for staging Secrets Manager access |
+| `STAGE_DOMAIN` | Staging domain (e.g., `staging.lornu.ai`) |
 
 ## Workflows
 

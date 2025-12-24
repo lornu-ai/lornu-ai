@@ -67,6 +67,7 @@ jobs:
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN_PROD }}
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}
+          TF_VAR_domain: ${{ secrets.PROD_DOMAIN }}
         run: terraform -chdir=terraform/aws/prod plan
 
       - name: Terraform Security Scan
@@ -108,4 +109,5 @@ jobs:
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN_PROD }}
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}
+          TF_VAR_domain: ${{ secrets.PROD_DOMAIN }}
         run: terraform -chdir=terraform/aws/prod apply -auto-approve

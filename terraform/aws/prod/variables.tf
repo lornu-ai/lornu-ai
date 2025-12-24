@@ -24,3 +24,8 @@ variable "git_sha" {
   description = "Git commit SHA used for image tagging."
   type        = string
 }
+
+variable "domain" {
+  description = "The domain name for the application (e.g., lornu.ai)"
+  type        = string
+}

@@ -1,5 +1,5 @@
 resource "aws_route53_zone" "main" {
-  name = "lornu.ai"
+  name = var.domain
 
   tags = {
     Name        = "lornu-ai-prod-zone"
@@ -9,7 +9,7 @@ resource "aws_route53_zone" "main" {
 
 resource "aws_route53_record" "root" {
   zone_id = aws_route53_zone.main.zone_id
-  name    = "lornu.ai"
+  name    = var.domain
   type    = "A"
 
   alias {
@@ -21,7 +21,7 @@ resource "aws_route53_record" "root" {
 
 resource "aws_route53_record" "www" {
   zone_id = aws_route53_zone.main.zone_id
-  name    = "www.lornu.ai"
+  name    = "www.${var.domain}"
   type    = "A"
 
   alias {
@@ -32,7 +32,7 @@ resource "aws_route53_record" "www" {
 }
 
 output "nameservers" {
-  description = "Nameservers for lornu.ai - update these at your domain registrar"
+  description = "Nameservers for the domain - update these at your domain registrar"
   value       = aws_route53_zone.main.name_servers
 }
 
