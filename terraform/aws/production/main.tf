@@ -7,10 +7,10 @@ terraform {
   }
 
   cloud {
-    organization = "lornu-ai"
+    organization = "disposable-org"
 
     workspaces {
-      tags = ["prod", "aws"]
+      name = "lornu-ai"
     }
   }
 }

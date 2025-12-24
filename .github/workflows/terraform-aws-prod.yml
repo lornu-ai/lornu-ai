@@ -20,7 +20,6 @@ permissions:
   contents: read
 
 env:
-  TF_CLOUD_ORG: ${{ secrets.TF_CLOUD_ORG }}
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
