@@ -1,28 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-bases:
+resources:
 - ../../base
 namePrefix: staging-
 images:
 - name: lornu-ai
   newName: <AWS_ECR_REGISTRY>
-  newTag: ${{ github.sha }}
-patchesStrategicMerge:
-- |-
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: lornu-ai
-  spec:
-    replicas: 3
-    template:
-      spec:
-        containers:
-        - name: lornu-ai
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "500m"
-            limits:
-              memory: "1Gi"
-              cpu: "1000m"
+<<<<<<< HEAD
+  newTag: <IMAGE_TAG>
+patches:
+- path: deployment-patch.yaml
