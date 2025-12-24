@@ -13,10 +13,7 @@ output "cluster_name" {
   value       = module.eks.cluster_name
 }
 
-output "alb_dns_name" {
-  description = "DNS name of the Application Load Balancer"
-  value       = aws_lb.main.dns_name
-}
+
 
 output "db_cluster_endpoint" {
   description = "The cluster endpoint for the Aurora database"
