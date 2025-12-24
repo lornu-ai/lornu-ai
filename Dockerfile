@@ -25,4 +25,5 @@ COPY --from=frontend-builder /app/apps/web/dist ./apps/web/dist
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["uv", "run", "python", "-m", "packages.api.main"]
+# Run the application directly
+CMD ["uv", "run", "python", "packages/api/main.py"]

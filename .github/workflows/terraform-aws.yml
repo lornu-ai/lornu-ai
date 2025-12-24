@@ -22,7 +22,7 @@ jobs:
     name: "Build and Push Docker Image"
     runs-on: ubuntu-latest
     outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
+      image-tag: ${{ steps.image-tag.outputs.tag }}
 
     steps:
       - name: "Checkout"
@@ -38,23 +38,21 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: "Docker meta"
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ steps.login-ecr.outputs.registry }}/lornu-ai-staging
-          tags: |
-            type=sha,prefix=,format=long
-            type=ref,event=branch
-            type=ref,event=pr
+      - name: "Generate Docker tag"
+        id: image-tag
+        run: |
+          TAG="${{ steps.login-ecr.outputs.registry }}/lornu-ai-staging:${{ github.sha }}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: "Build and push"
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.image-tag.outputs.tag }}
+          labels: |
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
 
   plan:
     name: "Terraform Plan"

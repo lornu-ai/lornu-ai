@@ -10,9 +10,10 @@ from pathlib import Path
 app = FastAPI(title="Lornu AI", version="0.1.0")
 
 # CORS configuration
+# TODO: Restrict CORS origins in production to specific domains
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Allow all origins for staging; restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
