@@ -1,19 +1,14 @@
-output "cluster_name" {
-  description = "Name of the ECS Cluster"
-  value       = aws_ecs_cluster.main.name
+output "vpc_id" {
+  description = "The ID of the VPC"
+  value       = aws_vpc.main.id
 }
 
-output "service_name" {
-  description = "Name of the ECS Service"
-  value       = aws_ecs_service.main.name
+output "public_subnet_ids" {
+  description = "List of public subnet IDs"
+  value       = aws_subnet.public[*].id
 }
 
-output "task_definition_arn" {
-  description = "ARN of the Task Definition"
-  value       = aws_ecs_task_definition.app.arn
-}
-
-output "alb_dns_name" {
-  description = "DNS name of the Application Load Balancer"
-  value       = aws_lb.main.dns_name
+output "private_subnet_ids" {
+  description = "List of private subnet IDs"
+  value       = aws_subnet.private[*].id
 }
