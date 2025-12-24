@@ -42,7 +42,7 @@ This epic outlines the strategy to decouple the "Dev" environment (hosted on Clo
 ### Phase 2: Execution (The Fork & Split)
 *   **Goal**: Perform the physical separation of code and config.
 *   **Tasks**:
-    *   [ ] **Create Fork**: Initialize `lornu-ai-dev` as a fork of `stevei101/lornuai-inc`.
+    *   [ ] **Create Fork**: Initialize `lornu-ai-dev` as a fork of the main organization repository.
     *   [ ] **Link Dev Dashboard**: Connect `lornu-ai-dev:main` to Cloudflare Dashboard.
     *   [ ] **Prune Main Repo**: Remove `wrangler.toml` and `wrangler` dependencies from `lornu-ai`.
     *   [ ] **Harden CI/CD**: Finalize AWS ECS deployment workflows in `lornu-ai`.
