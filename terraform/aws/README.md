@@ -41,6 +41,7 @@ The following secrets must be configured in GitHub repository settings (Settings
 | `ACM_CERTIFICATE_ARN_PROD` | ARN of ACM certificate for HTTPS on ALB |
 | `SECRETS_MANAGER_ARN_PATTERN_PROD` | ARN pattern for Secrets Manager access |
 | `ECR_REPOSITORY` | ECR repository name (e.g., `lornu-ai-prod`) |
+| `EKS_CLUSTER_NAME` | EKS cluster name (for K8s deployments) |
 
 #### Staging (`develop` branch)
 
@@ -53,8 +54,9 @@ The following secrets must be configured in GitHub repository settings (Settings
 
 | Workflow | Trigger | Description |
 |----------|---------|-------------|
-| `terraform-aws-prod.yml` | Push to `main`, manual | Production deployment |
-| `terraform-aws.yml` | PR to `develop`, manual | Staging deployment |
+| `terraform-aws-prod.yml` | Push to `main`, manual | Production ECS/Fargate deployment |
+| `terraform-aws.yml` | PR to `develop`, manual | Staging ECS/Fargate deployment |
+| `k8s-prod.yml` | Manual | Production EKS deployment via Kustomize |
 
 ## Infrastructure Components
 
