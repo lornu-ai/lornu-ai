@@ -17,4 +17,12 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
+
+  default_tags {
+    tags = {
+      Project   = var.resource_prefix
+      ManagedBy = "Terraform"
+      Repo      = var.github_repo
+    }
+  }
 }

@@ -19,3 +19,13 @@ variable "secrets_manager_arn_pattern" {
   description = "The ARN pattern for the secrets the application needs to access."
   type        = string
 }
+
+variable "resource_prefix" {
+  description = "Prefix for all resources"
+  type        = string
+}
+
+variable "github_repo" {
+  description = "The name of the GitHub repository"
+  type        = string
+}

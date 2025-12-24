@@ -37,3 +37,13 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
+variable "resource_prefix" {
+  description = "Prefix for all resources"
+  type        = string
+}
+
+variable "github_repo" {
+  description = "The name of the GitHub repository"
+  type        = string
+}
