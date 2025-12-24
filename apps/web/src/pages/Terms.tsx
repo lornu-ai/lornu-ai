@@ -6,6 +6,8 @@ import { Separator } from '@/components/ui/separator'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { Logo } from '@/components/Logo'
 import SEOHead from '@/components/SEOHead'
+import ThemeToggle from '@/components/ThemeToggle'
+import SocialLinks from '@/components/SocialLinks'
 
 export default function Terms() {
   return (
@@ -18,19 +20,23 @@ export default function Terms() {
       <div className="min-h-screen bg-background">
       <nav className="bg-card/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="text-2xl font-bold gradient-text" aria-label="LornuAI home">
-              <Logo width={120} height={40} />
-            </Link>
-            <Link to="/">
-              <Button variant="ghost" className="gap-2">
-                <ArrowLeft weight="bold" />
-                Back to Home
-              </Button>
-            </Link>
+            <div className="flex items-center justify-between h-16">
+              <Link to="/" className="text-2xl font-bold gradient-text" aria-label="LornuAI home">
+                <Logo width={120} height={40} />
+              </Link>
+              <div className="flex items-center gap-3">
+                <Link to="/">
+                  <Button variant="ghost" className="gap-2">
+                    <ArrowLeft weight="bold" />
+                    Back to Home
+                  </Button>
+                </Link>
+                <ThemeToggle />
+                <SocialLinks />
+              </div>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-12">
         <motion.div

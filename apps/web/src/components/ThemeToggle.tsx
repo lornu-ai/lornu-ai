@@ -2,8 +2,9 @@ import React from 'react';
 import { useTheme, Theme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { Sun, Moon, Terminal } from '@phosphor-icons/react';
+import { Monitor } from 'lucide-react';
 
-const themes: Theme[] = ['light', 'dark', 'open-source-pro'];
+const themes: Theme[] = ['system', 'light', 'dark', 'open-source-pro'];
 
 const ThemeToggle: React.FC = () => {
   const { theme, setTheme } = useTheme();
@@ -17,13 +18,16 @@ const ThemeToggle: React.FC = () => {
   const nextTheme = themes[(themes.indexOf(theme) + 1) % themes.length];
 
   const renderIcon = () => {
+    if (theme === 'system') {
+      return <Monitor className="h-5 w-5" />;
+    }
     if (theme === 'light') {
       return <Sun size={24} />;
-    } else if (theme === 'dark') {
-      return <Moon size={24} />;
-    } else {
-      return <Terminal size={24} />;
     }
+    if (theme === 'dark') {
+      return <Moon size={24} />;
+    }
+    return <Terminal size={24} />;
   };
 
   return (
