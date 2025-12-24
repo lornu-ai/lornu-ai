@@ -4,10 +4,11 @@ Concise guidance for AI agents to be immediately productive in this monorepo. Do
 
 ## Big Picture
 - Monorepo with three areas:
-  - `apps/web`: React + Vite app using Cloudflare Workers for asset serving and lightweight APIs.
-  - `packages/api`: Python package (uv-managed) currently minimal; FastAPI is declared but not yet used.
-  - `terraform/aws/staging`: AWS infra (ALB, ECS, IAM, VPC) with a Terraform Cloud remote backend.
-- Primary runtime is the Cloudflare Worker in `apps/web/worker.ts` that serves built assets from `dist/` and implements `/api` endpoints.
+  - `apps/web`: React + Vite frontend app (built static assets).
+  - `packages/api`: Python FastAPI backend serving React assets and handling API endpoints.
+  - `terraform/aws/staging`: AWS infra (EKS cluster, ALB, ECR, IAM, VPC) with Terraform Cloud remote backend.
+- Primary runtime is AWS EKS (Kubernetes) running containerized FastAPI backend serving React frontend from `apps/web/dist/` and implementing `/api` endpoints.
+- Kubernetes manifests managed with Kustomize in `k8s/` directory.
 
 ## Developer Workflows
 - Package manager: Bun.
@@ -26,22 +27,25 @@ Concise guidance for AI agents to be immediately productive in this monorepo. Do
   bun run lint        # eslint over repo
   bun run test:run    # vitest unit+integration
   bun run test:e2e    # playwright e2e (starts dev server)
-  bunx wrangler dev   # run worker locally against built assets
-  bunx wrangler deploy
+  ```
+- Backend (from `packages/api`):
+  ```bash
+  uv sync             # install dependencies
+  uv run python -m packages.api.main  # run FastAPI server
   ```
 
 ## Web App Architecture & Patterns
-- Worker entry: `apps/web/worker.ts` with `ASSETS` binding (configured in `apps/web/wrangler.toml`).
-- Explicit `MIME_TYPES` mapping used when `ASSETS` lacks `Content-Type` — ensure new asset types are added here.
-- API endpoints implemented in worker:
+- Backend entry: `packages/api/main.py` FastAPI application.
+- Serves React static assets from `apps/web/dist/` via StaticFiles mount.
+- API endpoints implemented in FastAPI:
   - `GET /api/health`: simple JSON `{ "status": "ok" }`.
-  - `POST /api/contact`: validates input, rate-limits per IP, sends email via Resend.
+  - `POST /api/contact`: validates input (Pydantic), rate-limits per IP, sends email via Resend.
 - Rate limiting:
-  - Uses optional KV namespace `RATE_LIMIT_KV`; limits 5 requests/hour/IP.
-  - Bypass headers for CI: `X-Bypass-Rate-Limit` and `X-Bypass-Email` when matching corresponding secrets.
-- Secrets required in Cloudflare:
-  - `RESEND_API_KEY` (required), `CONTACT_EMAIL` (optional), `RATE_LIMIT_BYPASS_SECRET` (optional), `EMAIL_BYPASS_SECRET` (optional).
-- CORS for `/api/contact`: `Access-Control-Allow-Origin: *` and `POST, OPTIONS` allowed.
+  - In-memory store; limits 5 requests/hour/IP.
+  - Bypass headers for CI: `X-Bypass-Rate-Limit` when matching `RATE_LIMIT_BYPASS_SECRET`.
+- Environment variables:
+  - `RESEND_API_KEY` (required for email), `CONTACT_EMAIL` (optional), `RATE_LIMIT_BYPASS_SECRET` (optional for CI), `PORT` (default 8080).
+- CORS configured via FastAPI middleware: `allow_origins=["*"]`, all methods and headers allowed.
 
 ## Testing Conventions
 - Unit/Integration: Vitest (`apps/web/vitest.config.ts`).
@@ -62,30 +66,42 @@ Concise guidance for AI agents to be immediately productive in this monorepo. Do
 - SEO and consent patterns: `apps/web/src/components/SEOHead.tsx`, `CookieConsent.tsx`.
 
 ## Configuration & Deployment
-- Worker config: `apps/web/wrangler.toml`.
-  - `assets.directory` is `./dist`; build via `bun run build` before `wrangler dev/deploy`.
-  - Routes configured for `lornu.ai` and `www.lornu.ai`; staging env `env.staging` uses `workers_dev`.
-- Cloudflare Git integration recommended; ensure Bun is configured for builds (see web README).
-- Environment vars can be added to `wrangler.toml [vars]` and secrets via `wrangler secret`.
+- Docker build: Multi-stage build in `Dockerfile` (Bun for frontend, Python for backend).
+  - Stage 1: Builds React app with Bun → `apps/web/dist/`.
+  - Stage 2: Python image with uv, copies API code and built frontend assets.
+- AWS EKS deployment:
+  - Docker images pushed to ECR (`lornu-ai-staging` repository).
+  - EKS cluster pulls from ECR and runs pods.
+  - Kubernetes service exposes pods via ALB ingress.
+  - Manifests deployed via Kustomize (`k8s/overlays/staging`).
+- CI/CD: `.github/workflows/terraform-aws.yml` builds Docker image, pushes to ECR, runs Terraform, applies k8s manifests.
+- Environment vars managed via Kubernetes ConfigMaps and AWS Secrets Manager.
 
 ## Python API
-- Minimal hello-world at `packages/api/main.py`; FastAPI declared in `pyproject.toml`.
+- FastAPI application at `packages/api/main.py` serving both API and frontend assets.
+- Endpoints: `/api/health`, `/api/contact` (with rate limiting and Resend integration).
+- Mounts React static files at root path `/`.
 - Install/run via uv:
   ```bash
   cd packages/api
-  uv pip install -e .
-  uv run python main.py
+  uv sync
+  uv run python -m packages.api.main
   ```
 
 ## Terraform
-- Staging stack under `terraform/aws/staging/*` with remote backend:
-  - Organization `lornu-ai`, workspace `lornu-ai` in Terraform Cloud.
-- Files include `alb.tf`, `ecs.tf`, `iam.tf`, `vpc.tf`, `variables.tf`, `outputs.tf`.
+- Staging stack under `terraform/aws/staging/*` with Terraform Cloud remote backend:
+  - Organization `lornu-ai`, workspace `lornu-ai-staging-aws`.
+- Resources: VPC, EKS cluster, ALB Ingress Controller, ECR, IAM roles, Security Groups.
+- Files: `eks.tf`, `ecr.tf`, `iam.tf`, `vpc.tf`, `main.tf`, `variables.tf`, `outputs.tf`.
+- Terraform variables passed via GitHub Secrets: `ACM_CERTIFICATE_ARN`, `SECRETS_MANAGER_ARN_PATTERN`, plus Docker image URI.
+- AWS authentication via OIDC (GitHub Actions assumes IAM role).
+- Post-Terraform: Apply Kustomize manifests to EKS cluster.
 
 ## Examples
-- Adding a new worker route: Update `apps/web/worker.ts` `fetch()` handler to route `/api/your-endpoint`, keep CORS + JSON responses consistent.
-- Serving a new asset type: Add its extension to `MIME_TYPES` in `apps/web/worker.ts`.
+- Adding a new API endpoint: Add route to `packages/api/main.py` using FastAPI decorator (`@app.get`, `@app.post`), keep CORS configured via middleware.
+- Building Docker image locally: `docker build -t lornu-ai .` from repo root.
 - Writing an integration test: Place in `apps/web/src/*/*.integration.test.tsx`; use Testing Library with jsdom.
+- Testing API locally: Run `uv run python -m packages.api.main` and access `http://localhost:8080`.
 
 ---
 Questions or gaps? Tell us where this feels thin (e.g., API usage, deployment specifics), and we’ll refine this file.

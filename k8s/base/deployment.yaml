@@ -14,12 +14,18 @@ spec:
       labels:
         app: lornu-ai
     spec:
+      serviceAccountName: lornu-ai
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       containers:
       - name: lornu-ai
         image: lornu-ai:latest
+        imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 8080
-          name: http
+        - name: http
+          containerPort: 8080
           protocol: TCP
         env:
         - name: PORT
@@ -31,6 +37,9 @@ spec:
         envFrom:
         - configMapRef:
             name: lornu-ai-config
+        - secretRef:
+            name: lornu-ai-secrets
+            optional: true
         resources:
           requests:
             memory: "256Mi"
@@ -38,15 +47,31 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
         readinessProbe:
           httpGet:
-            path: /health
-            port: 8080
+            path: /
+            port: http
           initialDelaySeconds: 5
-          periodSeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}

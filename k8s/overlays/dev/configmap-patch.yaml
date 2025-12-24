@@ -3,5 +3,4 @@ kind: ConfigMap
 metadata:
   name: lornu-ai-config
 data:
-  environment: "base"
-  contact-email: ""
+  LOG_LEVEL: "debug"

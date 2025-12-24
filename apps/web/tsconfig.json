@@ -12,9 +12,7 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "strictNullChecks": true,
-    "types": [
-      "@cloudflare/workers-types"
-    ],
+    "types": ["vitest/globals"],
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -32,7 +30,14 @@
     }
   },
   "include": [
-    "src",
-    "worker.ts"
+    "src"
+  ],
+  "exclude": [
+    "src/**/*.test.tsx",
+    "src/**/*.test.ts",
+    "src/**/*.integration.test.tsx",
+    "src/test/**/*",
+    "tests/**/*",
+    "node_modules"
   ]
 }

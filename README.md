@@ -1,7 +1,10 @@
 # Lornu AI
 
+**Environment:** AWS/GCP (Staging & Production)
+**Deployment Status:** See `.ai/ARCHITECTURE.md` for deployment details
+
 ## For Developers & AI Agents
-This repository is structured to be "AI-Native". 
+This repository is structured to be "AI-Native".
 All high-level context, architectural decisions, and coding standards are located in the `.ai/` directory.
 
 ### Quick Start
@@ -11,4 +14,4 @@ All high-level context, architectural decisions, and coding standards are locate
 
 ## Project Structure
 - `.ai/`: AI context and documentation.
-- `src/`: Source code (To be created).
+- `src/`: Source code.
