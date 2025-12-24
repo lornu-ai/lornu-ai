@@ -34,6 +34,7 @@ resource "random_password" "db_password" {
 resource "aws_secretsmanager_secret" "db_credentials" {
   name        = "${local.name}-credentials"
   description = "Database credentials for Lornu AI production"
+  kms_key_id  = aws_kms_key.rds.arn
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials" {
