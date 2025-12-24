@@ -4,7 +4,15 @@ on:
   pull_request:
     paths:
       - "terraform/aws/staging/**"
+      - "terraform/aws/production/**"
   workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
 jobs:
   plan:
@@ -18,17 +26,17 @@ jobs:
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
-          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-      - name: "Terraform Init"
-        run: terraform -chdir=terraform/aws/staging init
+      - name: "Terraform Init (no backend for PR validation)"
+        run: terraform -chdir=terraform/aws/staging init -backend=false
 
       - name: "Terraform Plan"
         run: terraform -chdir=terraform/aws/staging plan
@@ -50,14 +58,14 @@ jobs:
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
-          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
