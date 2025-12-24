@@ -48,17 +48,17 @@ resource "aws_lb_listener" "https" {
 
 resource "aws_security_group" "alb" {
   name        = "lornu-ai-production-alb"
-  description = "Allow inbound HTTP and HTTPS traffic from CloudFront and public"
+  description = "Allow HTTPS traffic only from CloudFront"
   vpc_id      = aws_vpc.main.id
 
+  # Restrict ALB ingress to CloudFront-managed prefix list over HTTPS only
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow HTTP from public (redirects to HTTPS)"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    prefix_list_ids = [data.aws_ec2_managed_prefix_list.cloudfront.id]
+    description     = "Allow HTTPS from CloudFront"
   }
-
 
   egress {
     from_port   = 0
@@ -75,19 +75,6 @@ resource "aws_security_group" "alb" {
   }
 }
 
-# Security group for CloudFront to ALB restriction (optional hardening)
-resource "aws_security_group_rule" "alb_from_cloudfront" {
-  type              = "ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  security_group_id = aws_security_group.alb.id
-  cidr_blocks       = data.aws_ec2_managed_prefix_list.cloudfront.cidrs
-
-  description = "Allow HTTPS from CloudFront only (production hardening)"
-  depends_on  = [aws_security_group.alb]
-}
-
 data "aws_ec2_managed_prefix_list" "cloudfront" {
-  name = "com.amazonaws.cloudfront.origin-facing"
+  name = "com.amazonaws.global.cloudfront.origin-facing"
 }

@@ -150,7 +150,7 @@ resource "aws_cloudfront_distribution" "api" {
   }
 
   logging_config {
-    include_cookies = true
+    include_cookies = false
     bucket          = aws_s3_bucket.cloudfront_logs.bucket_regional_domain_name
     prefix          = "cloudfront-logs"
   }
