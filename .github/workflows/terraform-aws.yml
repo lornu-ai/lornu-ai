@@ -4,12 +4,62 @@ on:
   pull_request:
     paths:
       - "terraform/aws/staging/**"
+      - "apps/web/**"
+      - "packages/api/**"
+      - "Dockerfile"
+  push:
+    branches:
+      - main
+    paths:
+      - "terraform/aws/staging/**"
+      - "apps/web/**"
+      - "packages/api/**"
+      - "Dockerfile"
   workflow_dispatch:
 
 jobs:
+  build-and-push:
+    name: "Build and Push Docker Image"
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          aws-region: us-east-1
+
+      - name: "Login to Amazon ECR"
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: "Docker meta"
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/lornu-ai-staging
+          tags: |
+            type=sha,prefix=,format=long
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: "Build and push"
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
   plan:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
+    needs: build-and-push
 
     steps:
       - name: "Checkout"
@@ -31,7 +81,10 @@ jobs:
         run: terraform -chdir=terraform/aws/staging init
 
       - name: "Terraform Plan"
-        run: terraform -chdir=terraform/aws/staging plan
+        run: terraform -chdir=terraform/aws/staging plan -var="docker_image=${{ needs.build-and-push.outputs.image-tag }}"
+        env:
+          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
+          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
 
       - name: "Terraform Security Scan"
         uses: aquasecurity/tfsec-action@v1.0.0
@@ -41,7 +94,8 @@ jobs:
   apply:
     name: "Terraform Apply"
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
+    needs: [build-and-push, plan]
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
 
     steps:
       - name: "Checkout"
@@ -63,4 +117,8 @@ jobs:
         run: terraform -chdir=terraform/aws/staging init
 
       - name: "Terraform Apply"
-        run: terraform -chdir=terraform/aws/staging apply -auto-approve
+        run: terraform -chdir=terraform/aws/staging apply -auto-approve -var="docker_image=${{ needs.build-and-push.outputs.image-tag }}"
+        env:
+          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
+          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
+
