@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lornu-ai-config
+  labels:
+    app: lornu-ai
+data:
+  # Base configuration - environment-agnostic
+  LOG_LEVEL: "info"
+  ENVIRONMENT: "production"
