@@ -26,6 +26,27 @@ resource "aws_db_subnet_group" "main" {
   }
 }
 
+resource "random_password" "db_password" {
+  length  = 16
+  special = false
+}
+
+resource "aws_secretsmanager_secret" "db_credentials" {
+  name        = "${local.name}-credentials"
+  description = "Database credentials for Lornu AI production"
+}
+
+resource "aws_secretsmanager_secret_version" "db_credentials" {
+  secret_id = aws_secretsmanager_secret.db_credentials.id
+  secret_string = jsonencode({
+    username = var.db_username
+    password = random_password.db_password.result
+    host     = aws_rds_cluster.main.endpoint
+    port     = aws_rds_cluster.main.port
+    dbname   = var.db_name
+  })
+}
+
 resource "aws_rds_cluster" "main" {
   cluster_identifier      = local.name
   engine                  = "aurora-postgresql"
@@ -33,7 +54,7 @@ resource "aws_rds_cluster" "main" {
   engine_version          = "14.6"
   database_name           = var.db_name
   master_username         = var.db_username
-  master_password         = var.db_password
+  master_password         = random_password.db_password.result
   db_subnet_group_name    = aws_db_subnet_group.main.name
   vpc_security_group_ids  = [aws_security_group.rds.id]
   skip_final_snapshot     = false
