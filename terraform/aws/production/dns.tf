@@ -16,7 +16,7 @@ resource "aws_acm_certificate" "main" {
 
   tags = {
     Environment = "production"
-    Name        = "lornu-ai-production-cert"
+    Name        = "${var.domain_name}-production-cert"
   }
 }
 
