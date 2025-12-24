@@ -10,10 +10,10 @@ permissions:
   contents: read
 
 env:
-  TF_CLOUD_ORGANIZATION: "lornu-ai"
-  TF_WORKSPACE: "lornu-ai-prod-aws"
-  AWS_REGION: "us-east-1"
-  ECR_REPOSITORY: "lornu-ai-prod"
+  TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORGANIZATION }}
+  TF_WORKSPACE: ${{ secrets.TF_WORKSPACE }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
 jobs:
   plan:
