@@ -8,8 +8,8 @@ data "aws_cloudfront_origin_request_policy" "all_viewer" {
 
 # S3 bucket for CloudFront access logs
 resource "aws_s3_bucket" "cloudfront_logs" {
-  bucket              = "lornu-ai-cloudfront-logs-${data.aws_caller_identity.current.account_id}"
-  force_destroy       = false
+  bucket        = "lornu-ai-cloudfront-logs-${data.aws_caller_identity.current.account_id}"
+  force_destroy = false
 
   tags = {
     Name        = "lornu-ai-cloudfront-logs"
@@ -87,6 +87,8 @@ resource "aws_route53_record" "cloudfront_cert_validation" {
   type    = each.value.type
   ttl     = 60
   records = [each.value.record]
+
+  depends_on = [aws_acm_certificate.cloudfront]
 }
 
 resource "aws_acm_certificate_validation" "cloudfront" {
