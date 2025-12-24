@@ -1,9 +1,9 @@
 resource "aws_ecs_cluster" "main" {
-  name = "lornu-ai-prod-cluster"
+  name = "lornu-ai-production-cluster"
 }
 
 resource "aws_ecs_task_definition" "main" {
-  family                   = "lornu-ai-prod-task"
+  family                   = "lornu-ai-production-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
@@ -14,7 +14,7 @@ resource "aws_ecs_task_definition" "main" {
 
   container_definitions = jsonencode([
     {
-      name      = "lornu-ai-prod-container"
+      name      = "lornu-ai-production-container"
       image     = var.docker_image
       cpu       = 256
       memory    = 512
@@ -30,7 +30,7 @@ resource "aws_ecs_task_definition" "main" {
 }
 
 resource "aws_ecs_service" "main" {
-  name            = "lornu-ai-prod-service"
+  name            = "lornu-ai-production-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.main.arn
   desired_count   = 1
@@ -38,18 +38,18 @@ resource "aws_ecs_service" "main" {
 
   network_configuration {
     subnets         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-    security_groups = [aws_security_group.ecs_service.id]
+    security_groups = [aws_security_group.ecs_tasks.id]
   }
 
   load_balancer {
     target_group_arn = aws_lb_target_group.main.arn
-    container_name   = "lornu-ai-prod-container"
+    container_name   = "lornu-ai-production-container"
     container_port   = 8080
   }
 }
 
-resource "aws_security_group" "ecs_service" {
-  name        = "lornu-ai-prod-ecs-service"
+resource "aws_security_group" "ecs_tasks" {
+  name        = "lornu-ai-production-ecs-service"
   description = "Allow inbound traffic from the ALB"
   vpc_id      = aws_vpc.main.id
 

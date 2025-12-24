@@ -1,5 +1,5 @@
 resource "aws_lb" "main" {
-  name               = "lornu-ai-prod-alb"
+  name               = "lornu-ai-production-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
@@ -7,7 +7,7 @@ resource "aws_lb" "main" {
 }
 
 resource "aws_lb_target_group" "main" {
-  name        = "lornu-ai-prod-tg"
+  name        = "lornu-ai-production-tg"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
@@ -47,7 +47,7 @@ resource "aws_lb_listener" "https" {
 }
 
 resource "aws_security_group" "alb" {
-  name        = "lornu-ai-prod-alb"
+  name        = "lornu-ai-production-alb"
   description = "Allow inbound HTTP and HTTPS traffic"
   vpc_id      = aws_vpc.main.id
 
