@@ -3,6 +3,10 @@ name: Terraform AWS Production
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'terraform/aws/prod/**'
+      - 'Dockerfile'
+      - '.github/workflows/terraform-aws-prod.yml'
   workflow_dispatch:
 
 permissions:
