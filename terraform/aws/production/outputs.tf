@@ -10,10 +10,20 @@ output "service_name" {
 
 output "task_definition_arn" {
   description = "ARN of the Task Definition"
-  value       = aws_ecs_task_definition.app.arn
+  value       = aws_ecs_task_definition.main.arn
 }
 
 output "alb_dns_name" {
   description = "DNS name of the Application Load Balancer"
   value       = aws_lb.main.dns_name
+}
+
+output "db_cluster_endpoint" {
+  description = "The cluster endpoint for the Aurora database"
+  value       = aws_rds_cluster.main.endpoint
+}
+
+output "db_cluster_reader_endpoint" {
+  description = "The cluster reader endpoint for the Aurora database"
+  value       = aws_rds_cluster.main.reader_endpoint
 }

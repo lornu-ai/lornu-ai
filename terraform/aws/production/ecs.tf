@@ -38,7 +38,7 @@ resource "aws_ecs_service" "main" {
 
   network_configuration {
     subnets         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-    security_groups = [aws_security_group.ecs_service.id]
+    security_groups = [aws_security_group.ecs_tasks.id]
   }
 
   load_balancer {
@@ -48,7 +48,7 @@ resource "aws_ecs_service" "main" {
   }
 }
 
-resource "aws_security_group" "ecs_service" {
+resource "aws_security_group" "ecs_tasks" {
   name        = "lornu-ai-production-ecs-service"
   description = "Allow inbound traffic from the ALB"
   vpc_id      = aws_vpc.main.id

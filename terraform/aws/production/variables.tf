@@ -19,3 +19,21 @@ variable "secrets_manager_arn_pattern" {
   description = "The ARN pattern for the secrets the application needs to access."
   type        = string
 }
+
+variable "db_name" {
+  description = "The name of the database to create."
+  type        = string
+  default     = "lornu_production"
+}
+
+variable "db_username" {
+  description = "The master username for the database."
+  type        = string
+  default     = "lornu_admin"
+}
+
+variable "db_password" {
+  description = "The master password for the database."
+  type        = string
+  sensitive   = true
+}
