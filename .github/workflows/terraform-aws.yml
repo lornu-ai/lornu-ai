@@ -2,6 +2,7 @@ name: "Terraform AWS"
 
 on:
   pull_request:
+    branches: [ develop ]
     paths:
       - "terraform/aws/staging/**"
       - "terraform/aws/production/**"
