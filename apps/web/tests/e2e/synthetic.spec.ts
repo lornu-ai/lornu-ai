@@ -15,8 +15,9 @@ import { test, expect } from '@playwright/test';
  * - Validates Contact section
  * - (Auth steps commented out until feature deployment)
  */
-test('Synthetic Monitor: Critical User Journey', async ({ page, request }) => {
-    const BASE_URL = process.env.BASE_URL || 'https://lornu.ai';
+test('Synthetic Monitor: Critical User Journey', async ({ page, request, baseURL }) => {
+    // Priority: Env Var (Better Stack) -> Fixture (CI/Local) -> Fallback (Production)
+    const BASE_URL = process.env.BASE_URL || baseURL || 'https://lornu.ai';
 
     // 1. Visit Home
     console.log(`Navigating to ${BASE_URL}`);
