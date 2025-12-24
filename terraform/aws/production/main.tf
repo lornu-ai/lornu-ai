@@ -7,7 +7,7 @@ terraform {
   }
 
   cloud {
-    organization = "lornu-ai"
+    organization = var.tf_cloud_org
 
     workspaces {
       tags = ["prod", "aws"]
