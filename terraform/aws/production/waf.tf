@@ -1,3 +1,13 @@
+resource "aws_cloudwatch_log_group" "waf" {
+  name              = "/aws/wafv2/lornu-ai-production"
+  retention_in_days = 30
+
+  tags = {
+    Name        = "lornu-ai-production-waf-logs"
+    Environment = "production"
+  }
+}
+
 resource "aws_wafv2_web_acl" "main" {
   name        = "lornu-ai-production-waf"
   description = "WAFv2 Web ACL for Lornu AI Production"
@@ -62,4 +72,9 @@ resource "aws_wafv2_web_acl" "main" {
     Environment = "production"
     GithubRepo  = var.github_repo
   }
+}
+
+resource "aws_wafv2_web_acl_logging_configuration" "main" {
+  resource_arn            = aws_wafv2_web_acl.main.arn
+  log_destination_configs = [aws_cloudwatch_log_group.waf.arn]
 }
