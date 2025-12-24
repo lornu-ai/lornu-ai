@@ -5,9 +5,9 @@ Fast track to production deployment with cost-effective local testing.
 ## Overview
 
 ```
-Local Testing (minikube) → AWS Staging (ECS Fargate) → AWS Production
-    ↓ $0/hour              ↓ ~$0.04/hour           ↓ ~$0.08/hour
-    ✅ Fast iteration       ✅ Real AWS infra       ✅ Production ready
+Local Testing (minikube) → AWS Staging (EKS) → AWS Production (EKS)
+    ↓ $0/hour              ↓ ~$0.10/hour       ↓ ~$0.20/hour
+    ✅ Fast iteration       ✅ Real K8s infra   ✅ Production ready
 ```
 
 ## Phase 1: Local Testing (Start Here)
@@ -106,12 +106,13 @@ curl https://staging.lornu.ai/api/health
 ```
 
 ### What's Deployed
-- ✅ ECS Fargate with 3 replicas
-- ✅ Application Load Balancer
+- ✅ EKS cluster (Kubernetes v1.28+)
+- ✅ Node group with 2-4 nodes
+- ✅ ALB Ingress Controller
 - ✅ ECR for images
 - ✅ VPC with public/private subnets
 - ✅ Security groups
-- ✅ IAM roles
+- ✅ IAM roles for IRSA (Pod identity)
 
 ## Phase 3: Production Deployment
 
@@ -182,8 +183,8 @@ kubectl scale deployment/lornu-ai --replicas=2
 | Environment | Hours/Month | Cost/Month | Use Case |
 |------------|-------------|------------|----------|
 | Local | Unlimited | $0 | Development, testing |
-| Staging | 730 | ~$30 | Integration, QA |
-| Production | 730 | ~$60 | Live users |
+| Staging | 730 | ~$75 | Integration, QA (2 t3.medium nodes) |
+| Production | 730 | ~$150 | Live users (2-4 t3.medium nodes) |
 
 **Savings**: Testing locally saves ~$720/year in staging costs! 💰
 

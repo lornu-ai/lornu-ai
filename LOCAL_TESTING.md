@@ -24,8 +24,9 @@ kubectl port-forward svc/lornu-ai 8080:8080
 
 1. **local-k8s-setup.sh**: 
    - Starts minikube with minimal resources (2 CPU, 4GB RAM)
+   - Auto-detects podman or docker as container runtime
    - Enables registry, ingress, and metrics
-   - Builds Docker image in minikube's environment
+   - Builds container image in minikube's environment
 
 2. **local-k8s-deploy.sh**:
    - Applies Kustomize manifests from `k8s/overlays/dev`

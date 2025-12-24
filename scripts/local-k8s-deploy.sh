@@ -5,13 +5,20 @@ set -e
 
 echo "🚀 Deploying Lornu AI to local Kubernetes..."
 
-# Ensure we're using minikube's docker environment
+# Detect container runtime
+if command -v podman >/dev/null 2>&1; then
+    CONTAINER_RUNTIME="podman"
+else
+    CONTAINER_RUNTIME="docker"
+fi
+
+# Ensure we're using minikube's container environment
 eval $(minikube docker-env)
 
 # Check if image exists
-if ! docker images | grep -q "lornu-ai.*local"; then
+if ! $CONTAINER_RUNTIME images | grep -q "lornu-ai.*local"; then
     echo "⚠️  Image not found. Building..."
-    docker build -t lornu-ai:local -f Dockerfile .
+    $CONTAINER_RUNTIME build -t lornu-ai:local -f Dockerfile .
 fi
 
 # Apply kustomize configuration

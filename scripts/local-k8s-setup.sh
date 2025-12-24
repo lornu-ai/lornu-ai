@@ -11,15 +11,27 @@ command -v minikube >/dev/null 2>&1 || { echo "❌ minikube not found. Install: 
 command -v kubectl >/dev/null 2>&1 || { echo "❌ kubectl not found. Install: brew install kubectl"; exit 1; }
 command -v kustomize >/dev/null 2>&1 || { echo "❌ kustomize not found. Install: brew install kustomize"; exit 1; }
 
+# Detect container runtime (prefer podman, fallback to docker)
+if command -v podman >/dev/null 2>&1; then
+    CONTAINER_RUNTIME="podman"
+    DRIVER="podman"
+    echo "🐳 Using Podman as container runtime"
+else
+    CONTAINER_RUNTIME="docker"
+    DRIVER="docker"
+    echo "🐳 Using Docker as container runtime"
+fi
+
 # Start minikube with minimal resources (saves $$)
-echo "📦 Starting minikube cluster..."
+echo "📦 Starting minikube cluster with $CONTAINER_RUNTIME..."
 if ! minikube status >/dev/null 2>&1; then
     minikube start \
-        --driver=docker \
+        --driver=$DRIVER \
         --cpus=2 \
         --memory=4096 \
         --disk-size=20g \
-        --kubernetes-version=v1.28.0
+        --kubernetes-version=v1.28.0 \
+        --container-runtime=$CONTAINER_RUNTIME
 else
     echo "✅ Minikube already running"
 fi
@@ -30,10 +42,10 @@ minikube addons enable registry
 minikube addons enable ingress
 minikube addons enable metrics-server
 
-# Build Docker image in minikube's docker environment
-echo "🐳 Building Docker image in minikube..."
+# Build image in minikube's container environment
+echo "🐳 Building container image in minikube..."
 eval $(minikube docker-env)
-docker build -t lornu-ai:local -f Dockerfile .
+$CONTAINER_RUNTIME build -t lornu-ai:local -f Dockerfile .
 
 echo ""
 echo "✅ Local Kubernetes environment ready!"
