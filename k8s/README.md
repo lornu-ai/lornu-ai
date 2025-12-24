@@ -39,11 +39,20 @@ This executes `kustomize build ../../k8s/overlays/dev | kubectl apply -f -`.
 
 ### Staging
 
-The staging manifests are built and applied automatically by the CI/CD pipeline in `.github/workflows/terraform.yml` when changes are pushed to the `develop` branch.
+The staging manifests use placeholder values that are dynamically replaced during CI/CD deployment. The CI/CD pipeline should use Kustomize's `edit set image` command to set the correct image before building:
+
+```bash
+cd k8s/overlays/staging
+kustomize edit set image lornu-ai=${AWS_ECR_REGISTRY}/lornu-ai-staging:${GITHUB_SHA}
+kustomize build . | kubectl apply -f -
+```
+
+This approach keeps the checked-in `kustomization.yaml` file clean and environment-agnostic, while allowing CI/CD to inject the correct registry and tag at deployment time.
 
 ## CI/CD Integration
 
-The `.github/workflows/terraform.yml` workflow includes steps to:
-1. **Setup Kustomize**: Installs the Kustomize CLI.
-2. **Build Staging Manifests**: Substitutes the `<AWS_ECR_REGISTRY>` placeholder with the actual ECR registry and builds the final manifests.
-3. **Deploy to EKS**: (Currently commented out) Applies the generated manifests to the EKS cluster.
+The `.github/workflows/terraform-aws.yml` workflow includes steps to:
+1. **Build and Push Docker Image**: Builds the multi-stage Docker image and pushes to AWS ECR.
+2. **Setup Kustomize**: Installs the Kustomize CLI.
+3. **Set Image**: Uses `kustomize edit set image` to configure the correct ECR registry and commit SHA.
+4. **Build & Deploy**: Builds the final manifests and applies them to the EKS cluster.
