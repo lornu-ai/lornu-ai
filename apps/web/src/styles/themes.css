@@ -24,3 +24,8 @@
   --color-accent: #00ff41;
   --color-accent-secondary: #ff00ff;
 }
+
+[data-theme='dark'] .logo-image,
+[data-theme='open-source-pro'] .logo-image {
+  filter: brightness(0) invert(1);
+}

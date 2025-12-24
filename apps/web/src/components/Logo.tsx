@@ -52,7 +52,7 @@ export function Logo({
     <img
       src={LogoPng}
       alt="Lornuai Enterprise AI Logo"
-      className={`${sizeClass} w-auto object-contain ${className}`}
+      className={`logo-image ${sizeClass} w-auto object-contain ${className}`}
       style={style}
     />
   )
