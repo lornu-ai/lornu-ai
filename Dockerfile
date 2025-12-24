@@ -13,7 +13,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy uv from pinned version for supply chain security
-COPY --from=ghcr.io/astral-sh/uv:0.5.11@sha256:2eb7a6045100ebc45c88530c73ce6f8050b2aa57b44e1b48c8e2e9d6574e8c24 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /bin/uv
 
 # Install Python dependencies
 COPY packages/api/pyproject.toml packages/api/uv.lock ./
