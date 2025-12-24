@@ -14,7 +14,9 @@ resource "aws_subnet" "public_a" {
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
-    Name = "lornu-ai-production-public-a"
+    Name                                           = "lornu-ai-production-public-a"
+    "kubernetes.io/cluster/lornu-ai-production-cluster" = "shared"
+    "kubernetes.io/role/elb"                       = "1"
   }
 }
 
@@ -24,7 +26,9 @@ resource "aws_subnet" "public_b" {
   availability_zone = data.aws_availability_zones.available.names[1]
 
   tags = {
-    Name = "lornu-ai-production-public-b"
+    Name                                           = "lornu-ai-production-public-b"
+    "kubernetes.io/cluster/lornu-ai-production-cluster" = "shared"
+    "kubernetes.io/role/elb"                       = "1"
   }
 }
 
@@ -34,7 +38,9 @@ resource "aws_subnet" "private_a" {
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
-    Name = "lornu-ai-production-private-a"
+    Name                                           = "lornu-ai-production-private-a"
+    "kubernetes.io/cluster/lornu-ai-production-cluster" = "shared"
+    "kubernetes.io/role/internal-elb"              = "1"
   }
 }
 
@@ -44,7 +50,9 @@ resource "aws_subnet" "private_b" {
   availability_zone = data.aws_availability_zones.available.names[1]
 
   tags = {
-    Name = "lornu-ai-production-private-b"
+    Name                                           = "lornu-ai-production-private-b"
+    "kubernetes.io/cluster/lornu-ai-production-cluster" = "shared"
+    "kubernetes.io/role/internal-elb"              = "1"
   }
 }
 
