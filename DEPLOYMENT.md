@@ -1,4 +1,4 @@
-# 🚀 Deployment Guide: Local → AWS Fargate
+# 🚀 Deployment Guide: Local → AWS EKS
 
 Fast track to production deployment with cost-effective local testing.
 

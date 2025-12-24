@@ -12,6 +12,7 @@ import { Logo } from '@/components/Logo'
 import SEOHead from '@/components/SEOHead'
 import ThemeToggle from '@/components/ThemeToggle'
 import SocialLinks from '@/components/SocialLinks'
+import { Github } from 'lucide-react'
 import {
   Lightning,
   Code,
@@ -178,6 +179,17 @@ export default function Home() {
                   className="gradient-bg hover:opacity-90 text-base px-6 py-4 h-auto"
                 >
                   Get Started
+                </Button>
+                <Button asChild variant="outline" size="sm" className="gap-2">
+                  <a
+                    href="https://github.com/lornu-ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Star Lornu AI on GitHub"
+                  >
+                    <Github className="h-4 w-4" />
+                    Star
+                  </a>
                 </Button>
                 <ThemeToggle />
                 <SocialLinks />
@@ -422,19 +434,31 @@ export default function Home() {
 
         <footer className="bg-primary text-primary-foreground py-12 px-4">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="text-2xl font-bold gradient-text"><Logo width={120} height={40} /></div>
-              <p className="text-sm text-center md:text-left opacity-80">
-                © 2025 LornuAI Inc. Building the future with intelligent solutions.
-              </p>
-              <div className="flex gap-6">
-                <Link to="/privacy" className="text-sm hover:text-accent transition-colors">Privacy</Link>
-                <Link to="/terms" className="text-sm hover:text-accent transition-colors">Terms</Link>
-                <Link to="/security" className="text-sm hover:text-accent transition-colors">Security</Link>
-                <a href="https://status.lornu.ai" target="_blank" rel="noopener noreferrer" className="text-sm hover:text-accent transition-colors">Status</a>
-                <button onClick={() => scrollToSection('contact')} className="text-sm hover:text-accent transition-colors">Contact</button>
+            <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr] items-start">
+              <div className="space-y-3">
+                <div className="text-2xl font-bold gradient-text"><Logo width={120} height={40} /></div>
+                <p className="text-sm opacity-80 max-w-sm">
+                  © 2025 LornuAI Inc. Building the future with intelligent solutions.
+                </p>
               </div>
-              <SocialLinks />
+              <div className="space-y-3">
+                <p className="text-sm font-semibold uppercase tracking-wide">Resources</p>
+                <div className="flex flex-col gap-2 text-sm">
+                  <Link to="/privacy" className="hover:text-accent transition-colors">Privacy</Link>
+                  <Link to="/terms" className="hover:text-accent transition-colors">Terms</Link>
+                  <Link to="/security" className="hover:text-accent transition-colors">Security</Link>
+                  <a href="https://status.lornu.ai" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Status</a>
+                  <button onClick={() => scrollToSection('contact')} className="text-left hover:text-accent transition-colors">Contact</button>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className="text-sm font-semibold uppercase tracking-wide">Community</p>
+                <div className="flex flex-col gap-2 text-sm">
+                  <a href="https://github.com/lornu-ai" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">GitHub</a>
+                  <a href="https://www.youtube.com/@lornu-ai" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">YouTube</a>
+                </div>
+                <SocialLinks />
+              </div>
             </div>
           </div>
         </footer>

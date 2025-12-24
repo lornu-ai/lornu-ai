@@ -6,7 +6,7 @@ data "aws_iam_openid_connect_provider" "github" {
 }
 
 resource "aws_iam_role" "github_actions" {
-  name               = "github-actions-prod"
+  name = "github-actions-prod"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -54,6 +54,12 @@ resource "aws_iam_policy" "github_ecr_push" {
           "ecr:UploadLayerPart",
           "ecr:CompleteLayerUpload",
           "ecr:BatchCheckLayerAvailability",
+        ]
+        Resource = aws_ecr_repository.main.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "ecr:GetAuthorizationToken",
         ]
         Resource = "*"

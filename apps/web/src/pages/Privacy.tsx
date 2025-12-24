@@ -6,6 +6,8 @@ import { Separator } from '@/components/ui/separator'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { Logo } from '@/components/Logo'
 import SEOHead from '@/components/SEOHead'
+import ThemeToggle from '@/components/ThemeToggle'
+import SocialLinks from '@/components/SocialLinks'
 
 export default function Privacy() {
   return (
@@ -22,12 +24,16 @@ export default function Privacy() {
               <Link to="/" className="text-2xl font-bold gradient-text" aria-label="LornuAI home">
                 <Logo width={120} height={40} />
               </Link>
-              <Link to="/">
-                <Button variant="ghost" className="gap-2">
-                  <ArrowLeft weight="bold" />
-                  Back to Home
-                </Button>
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link to="/">
+                  <Button variant="ghost" className="gap-2">
+                    <ArrowLeft weight="bold" />
+                    Back to Home
+                  </Button>
+                </Link>
+                <ThemeToggle />
+                <SocialLinks />
+              </div>
             </div>
           </div>
         </nav>

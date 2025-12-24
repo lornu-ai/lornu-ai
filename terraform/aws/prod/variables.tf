@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "docker_image" {
   description = "The Docker image to deploy to the ECS cluster."
   type        = string
-  default     = "lornuai/lornu-ai:latest"  # placeholder, will be overridden via TF_VAR
+  default     = "lornuai/lornu-ai:latest" # placeholder, will be overridden via TF_VAR
 }
 
 variable "secrets_manager_arn_pattern" {
