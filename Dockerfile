@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc libc6-dev make curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Securely install uv via image copy (Supply Chain Security)
-COPY --from=ghcr.io/astral-sh/uv:0.5.11@sha256:2eb7a6045100ebc45c88530c73ce6f8050b2aa57b44e1b48c8e2e9d6574e8c24 /uv /bin/uv
+# Install uv via official image (no digest to avoid staleness issues)
+COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /bin/uv
 
 # Create venv and install dependencies
 ENV UV_COMPILE_BYTECODE=1 
