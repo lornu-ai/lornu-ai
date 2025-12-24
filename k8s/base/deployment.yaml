@@ -2,10 +2,16 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: lornu-ai
+<<<<<<< HEAD
+=======
+  labels:
+    app: lornu-ai
+>>>>>>> origin/main
 spec:
   replicas: 2
   selector:
     matchLabels:
+<<<<<<< HEAD
       app.kubernetes.io/name: lornu-ai
   template:
     metadata:
@@ -24,10 +30,25 @@ spec:
         ports:
         - name: http
           containerPort: 8080
+=======
+      app: lornu-ai
+  template:
+    metadata:
+      labels:
+        app: lornu-ai
+    spec:
+      containers:
+      - name: lornu-ai
+        image: lornu-ai:latest
+        ports:
+        - containerPort: 8080
+          name: http
+>>>>>>> origin/main
           protocol: TCP
         env:
         - name: PORT
           value: "8080"
+<<<<<<< HEAD
         - name: ENVIRONMENT
           valueFrom:
             configMapKeyRef:
@@ -51,6 +72,15 @@ spec:
               name: lornu-ai-secrets
               key: rate-limit-bypass-secret
               optional: true
+=======
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PYTHONPATH
+          value: "/app"
+        envFrom:
+        - configMapRef:
+            name: lornu-ai-config
+>>>>>>> origin/main
         resources:
           requests:
             memory: "256Mi"
@@ -58,6 +88,7 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
+<<<<<<< HEAD
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -86,3 +117,17 @@ spec:
       volumes:
       - name: tmp
         emptyDir: {}
+=======
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+>>>>>>> origin/main

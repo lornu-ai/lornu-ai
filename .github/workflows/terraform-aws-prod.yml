@@ -56,7 +56,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
@@ -73,7 +73,6 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
           working_directory: terraform/aws/production
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   apply:
     name: Terraform Apply
@@ -97,7 +96,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
