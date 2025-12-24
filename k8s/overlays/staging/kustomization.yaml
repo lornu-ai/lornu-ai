@@ -8,21 +8,4 @@ images:
   newName: <AWS_ECR_REGISTRY>
   newTag: ${{ github.sha }}
 patches:
-- patch: |-
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: lornu-ai
-    spec:
-      replicas: 3
-      template:
-        spec:
-          containers:
-          - name: lornu-ai
-            resources:
-              requests:
-                memory: "512Mi"
-                cpu: "500m"
-              limits:
-                memory: "1Gi"
-                cpu: "1000m"
+- path: deployment-patch.yaml
