@@ -33,12 +33,6 @@ variable "db_username" {
   default     = "lornu_admin"
 }
 
-variable "db_password" {
-  description = "The master password for the database."
-  type        = string
-  sensitive   = true
-}
-
 variable "resource_prefix" {
   description = "The resource prefix for naming (e.g., lornu-ai)"
   type        = string
