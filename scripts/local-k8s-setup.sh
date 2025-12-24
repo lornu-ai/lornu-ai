@@ -1,8 +1,8 @@
 #!/bin/bash
-# Local Kubernetes Setup for Lornu AI Testing
-# Uses minikube with minimal resources to test builds before AWS deployment
+# Local Kubernetes setup for Lornu AI (minikube + podman preferred)
+# Boots a small cluster and builds the local image inside it so we can deploy immediately.
 
-set -e
+set -euo pipefail
 
 echo "🚀 Setting up local Kubernetes environment for Lornu AI"
 
@@ -22,42 +22,42 @@ else
     echo "🐳 Using Docker as container runtime"
 fi
 
-# Start minikube with minimal resources (saves $$)
+# Start minikube with minimal resources
 echo "📦 Starting minikube cluster with $CONTAINER_RUNTIME..."
 if ! minikube status >/dev/null 2>&1; then
     minikube start \
-        --driver=$DRIVER \
+        --driver="$DRIVER" \
         --cpus=2 \
         --memory=4096 \
         --disk-size=20g \
         --kubernetes-version=v1.28.0 \
-        --container-runtime=$CONTAINER_RUNTIME
+        --container-runtime="$CONTAINER_RUNTIME"
 else
     echo "✅ Minikube already running"
 fi
 
-# Enable minikube registry addon (alternative to local registry)
+# Enable helpful addons
 echo "🔧 Configuring minikube..."
 minikube addons enable registry
 minikube addons enable ingress
 minikube addons enable metrics-server
 
-# Build image in minikube's container environment
+# Build image inside the minikube runtime (works for podman or docker)
 echo "🐳 Building container image in minikube..."
-eval $(minikube docker-env)
-$CONTAINER_RUNTIME build -t lornu-ai:local -f Dockerfile .
+eval "$(minikube docker-env)"
+"$CONTAINER_RUNTIME" build -t lornu-ai:local -f Dockerfile .
 
 echo ""
 echo "✅ Local Kubernetes environment ready!"
 echo ""
 echo "📋 Next steps:"
-echo "  1. Deploy to minikube:  ./scripts/local-k8s-deploy.sh"
-echo "  2. Check status:        kubectl get pods"
-echo "  3. View logs:           kubectl logs -l app.kubernetes.io/name=lornu-ai"
-echo "  4. Port forward:        kubectl port-forward svc/lornu-ai 8080:8080"
-echo "  5. Access app:          http://localhost:8080"
+echo "  1. Deploy manifests:    ./scripts/local-k8s-deploy.sh"
+echo "  2. Run smoke tests:     ./scripts/local-k8s-test.sh"
+echo "  3. Check status:        kubectl get pods"
+echo "  4. View logs:           kubectl logs -l app.kubernetes.io/name=lornu-ai"
+echo "  5. Port forward:        kubectl port-forward svc/lornu-ai 8080:8080"
 echo ""
 echo "💡 Tips:"
-echo "  - Use minikube dashboard for GUI"
-echo "  - Use minikube tunnel to expose LoadBalancer services"
-echo "  - Clean up with: minikube delete"
+echo "  - minikube dashboard    # GUI"
+echo "  - minikube tunnel       # exposes LoadBalancer"
+echo "  - Clean up with:        ./scripts/local-k8s-cleanup.sh"

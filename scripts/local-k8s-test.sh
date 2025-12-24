@@ -1,7 +1,7 @@
 #!/bin/bash
-# Test Lornu AI deployment in local Kubernetes
+# Smoke-test Lornu AI deployment in local Kubernetes
 
-set -e
+set -euo pipefail
 
 echo "🧪 Testing Lornu AI deployment..."
 
@@ -29,7 +29,7 @@ echo ""
 
 # Test health endpoint
 echo "🏥 Testing /api/health endpoint..."
-HEALTH_RESPONSE=$(kubectl exec $POD_NAME -- curl -s http://localhost:8080/api/health || echo "FAILED")
+HEALTH_RESPONSE=$(kubectl exec "$POD_NAME" -- curl -s http://localhost:8080/api/health || echo "FAILED")
 
 if echo "$HEALTH_RESPONSE" | grep -q "ok"; then
     echo "✅ Health check passed: $HEALTH_RESPONSE"
@@ -41,7 +41,7 @@ fi
 # Test frontend (check for HTML)
 echo ""
 echo "🌐 Testing frontend..."
-FRONTEND_RESPONSE=$(kubectl exec $POD_NAME -- curl -s http://localhost:8080/ || echo "FAILED")
+FRONTEND_RESPONSE=$(kubectl exec "$POD_NAME" -- curl -s http://localhost:8080/ || echo "FAILED")
 
 if echo "$FRONTEND_RESPONSE" | grep -q "<!DOCTYPE html>"; then
     echo "✅ Frontend serving correctly"
@@ -54,9 +54,4 @@ fi
 echo ""
 echo "✅ All tests passed!"
 echo ""
-echo "📋 Deployment ready for AWS!"
-echo ""
-echo "🚀 To deploy to AWS Fargate:"
-echo "  1. Merge PR #146"
-echo "  2. Push to develop branch"
-echo "  3. Run: gh workflow run terraform-aws.yml"
+echo "📋 Ready to ship to AWS EKS via CI once images/manifests are pushed."
