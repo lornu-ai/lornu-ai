@@ -36,12 +36,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     applyTheme();
 
-    if (theme !== 'system') {
-      return undefined;
-    }
-
-    if (!window.matchMedia) {
-      return undefined;
+    if (theme !== 'system' || !window.matchMedia) {
+      return;
     }
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
