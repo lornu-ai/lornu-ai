@@ -7,10 +7,8 @@ terraform {
   }
 
   cloud {
-    organization = "lornu-ai"
-
     workspaces {
-      name = "lornu-ai-prod-aws"
+      name = "lornu-ai-staging-aws"
     }
   }
 }
