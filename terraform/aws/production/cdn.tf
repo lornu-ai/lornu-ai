@@ -47,13 +47,6 @@ resource "aws_s3_bucket_public_access_block" "cloudfront_logs" {
 
 data "aws_caller_identity" "current" {}
 
-# CloudFront Origin Access Identity for ALB
-resource "aws_cloudfront_origin_access_control" "alb" {
-  name                              = "lornu-ai-alb-oac"
-  origin_access_control_origin_type = "http"
-  signing_behavior                  = "always"
-  signing_protocol                  = "sigv4"
-}
 
 data "aws_route53_zone" "primary" {
   count        = var.create_route53_zone ? 0 : 1
@@ -114,9 +107,8 @@ resource "aws_cloudfront_distribution" "api" {
   depends_on = [aws_acm_certificate_validation.cloudfront]
 
   origin {
-    domain_name              = aws_lb.main.dns_name
-    origin_id                = "alb-origin"
-    origin_access_control_id = aws_cloudfront_origin_access_control.alb.id
+    domain_name = aws_lb.main.dns_name
+    origin_id   = "alb-origin"
 
     custom_origin_config {
       http_port              = 80
@@ -131,10 +123,9 @@ resource "aws_cloudfront_distribution" "api" {
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
     target_origin_id = "alb-origin"
 
-    viewer_protocol_policy       = "redirect-to-https"
-    cache_policy_id              = data.aws_cloudfront_cache_policy.caching_disabled.id
-    origin_request_policy_id     = data.aws_cloudfront_origin_request_policy.all_viewer.id
-    origin_access_control_header_override = "CloudFront-Authorization"
+    viewer_protocol_policy   = "redirect-to-https"
+    cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer.id
   }
 
   restrictions {
