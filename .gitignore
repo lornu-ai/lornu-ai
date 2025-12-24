@@ -95,3 +95,9 @@ logs
 *.njsproj
 *.sln
 *.sw?
+
+# Cloudflare Workers (use lornu-ai-dev fork for Cloudflare development)
+wrangler.toml
+apps/web/worker.ts
+.wrangler/
+.dev.vars
