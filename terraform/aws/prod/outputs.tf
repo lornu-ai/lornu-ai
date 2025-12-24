@@ -10,7 +10,7 @@ output "service_name" {
 
 output "task_definition_arn" {
   description = "ARN of the Task Definition"
-  value       = aws_ecs_task_definition.app.arn
+  value       = aws_ecs_task_definition.main.arn
 }
 
 output "alb_dns_name" {
