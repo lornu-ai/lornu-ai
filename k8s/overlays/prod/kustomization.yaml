@@ -7,10 +7,10 @@ resources:
 namePrefix: prod-
 namespace: default
 
-# Use production image tag from CI/CD
+# Use production ECR image
 images:
   - name: lornu-ai
-    newName: <AWS_ECR_REGISTRY>/lornu-ai-prod
+    newName: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/lornu-ai-prod
     newTag: latest
 
 # ConfigMap generator for production-specific configuration
@@ -20,7 +20,6 @@ configMapGenerator:
     literals:
       - LOG_LEVEL=warn
       - ENVIRONMENT=production
-      - PRODUCTION_DEPLOY_URL=https://lornu.ai
       - DEBUG=false
 
 # Patch for production-specific settings
@@ -38,11 +37,8 @@ patches:
             - name: lornu-ai
               resources:
                 requests:
+                  memory: "512Mi"
+                  cpu: "500m"
+                limits:
                   memory: "1Gi"
                   cpu: "1000m"
-                limits:
-                  memory: "2Gi"
-                  cpu: "2000m"
-              env:
-              - name: AWS_REGION
-                value: "us-east-1"
