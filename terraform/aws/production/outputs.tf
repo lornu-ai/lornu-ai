@@ -1,16 +1,16 @@
+output "cluster_endpoint" {
+  description = "Endpoint for EKS control plane"
+  value       = module.eks.cluster_endpoint
+}
+
+output "cluster_security_group_id" {
+  description = "Security group ids attached to the cluster control plane"
+  value       = module.eks.cluster_security_group_id
+}
+
 output "cluster_name" {
-  description = "Name of the ECS Cluster"
-  value       = aws_ecs_cluster.main.name
-}
-
-output "service_name" {
-  description = "Name of the ECS Service"
-  value       = aws_ecs_service.main.name
-}
-
-output "task_definition_arn" {
-  description = "ARN of the Task Definition"
-  value       = aws_ecs_task_definition.main.arn
+  description = "Kubernetes Cluster Name"
+  value       = module.eks.cluster_name
 }
 
 output "alb_dns_name" {
