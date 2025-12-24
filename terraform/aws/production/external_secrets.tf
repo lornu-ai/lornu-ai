@@ -52,18 +52,15 @@ resource "helm_release" "external_secrets" {
   create_namespace = true
   version          = "0.9.13" # Pin version
 
-  set {
-    name  = "installCRDs"
-    value = "true"
-  }
-
-  set {
-    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-    value = module.eso_role.iam_role_arn
-  }
-
-  set {
-    name  = "serviceAccount.name"
-    value = "external-secrets"
-  }
+  values = [
+    yamlencode({
+      installCRDs = true
+      serviceAccount = {
+        name = "external-secrets"
+        annotations = {
+          "eks.amazonaws.com/role-arn" = module.eso_role.iam_role_arn
+        }
+      }
+    })
+  ]
 }
