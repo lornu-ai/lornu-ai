@@ -42,3 +42,7 @@ pids
 # Playwright test artifacts
 playwright-report/
 test-results/
+
+# Build output files
+lint_output.txt
+tsc_output.txt
