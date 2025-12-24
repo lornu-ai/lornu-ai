@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "terraform/aws/staging/**"
+      - "terraform/aws/production/**"
   workflow_dispatch:
 
 jobs:
@@ -18,14 +19,14 @@ jobs:
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
           aws-region: us-east-1
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          terraform_api_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
@@ -50,17 +51,76 @@ jobs:
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
           aws-region: us-east-1
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          terraform_api_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
 
       - name: "Terraform Apply"
         run: terraform -chdir=terraform/aws/staging apply -auto-approve
+
+  prod-plan:
+    name: "Production Plan"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.0
+          terraform_api_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: "Terraform Init"
+        run: terraform -chdir=terraform/aws/production init
+
+      - name: "Terraform Plan"
+        run: terraform -chdir=terraform/aws/production plan
+
+      - name: "Terraform Security Scan"
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: terraform/aws/production
+
+  prod-apply:
+    name: "Production Apply"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.0
+          terraform_api_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: "Terraform Init"
+        run: terraform -chdir=terraform/aws/production init
+
+      - name: "Terraform Apply"
+        run: terraform -chdir=terraform/aws/production apply -auto-approve
