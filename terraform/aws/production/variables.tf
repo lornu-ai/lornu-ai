@@ -51,7 +51,3 @@ variable "github_repo" {
   default     = "lornu-ai"
 }
 
-variable "tf_cloud_org" {
-  description = "Terraform Cloud organization name"
-  type        = string
-}

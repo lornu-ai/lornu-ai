@@ -48,7 +48,6 @@ jobs:
 
       - name: Terraform Plan
         env:
-          TF_VAR_tf_cloud_org: ${{ env.TF_CLOUD_ORG }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
           TF_VAR_docker_image: placeholder-will-be-built-after-apply
           TF_VAR_git_sha: ${{ github.sha }}
@@ -87,7 +86,6 @@ jobs:
 
       - name: Terraform Apply (Create ECR & Infrastructure)
         env:
-          TF_VAR_tf_cloud_org: ${{ env.TF_CLOUD_ORG }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
           TF_VAR_docker_image: placeholder-will-update-after-build
           TF_VAR_git_sha: ${{ github.sha }}
