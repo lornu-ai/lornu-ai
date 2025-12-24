@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'terraform/aws/prod/**'
+      - 'terraform/aws/production/**'
       - 'Dockerfile'
       - '.github/workflows/terraform-aws-prod.yml'
   workflow_dispatch:
@@ -16,7 +16,7 @@ permissions:
 env:
   TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORGANIZATION }}
   TF_WORKSPACE: ${{ secrets.TF_WORKSPACE }}
-  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
 jobs:
@@ -59,7 +59,7 @@ jobs:
           terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/aws/prod init
+        run: terraform -chdir=terraform/aws/production init
 
       - name: Terraform Plan
         env:
@@ -67,12 +67,12 @@ jobs:
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}
           TF_VAR_domain: ${{ secrets.PROD_DOMAIN }}
-        run: terraform -chdir=terraform/aws/prod plan
+        run: terraform -chdir=terraform/aws/production plan
 
       - name: Terraform Security Scan
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
-          working_directory: terraform/aws/prod
+          working_directory: terraform/aws/production
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   apply:
@@ -100,7 +100,7 @@ jobs:
           terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/aws/prod init
+        run: terraform -chdir=terraform/aws/production init
 
       - name: Terraform Apply
         env:
@@ -108,4 +108,4 @@ jobs:
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}
           TF_VAR_domain: ${{ secrets.PROD_DOMAIN }}
-        run: terraform -chdir=terraform/aws/prod apply -auto-approve
+        run: terraform -chdir=terraform/aws/production apply -auto-approve
