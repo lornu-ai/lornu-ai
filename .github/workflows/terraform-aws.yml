@@ -2,22 +2,27 @@ name: "Terraform AWS"
 
 on:
   pull_request:
-    branches: [ develop ]
     paths:
       - "terraform/aws/staging/**"
+      - "apps/web/**"
+      - "packages/api/**"
+      - "Dockerfile"
   workflow_dispatch:
 
 permissions:
   id-token: write
   contents: read
 
+env:
+  TF_CLOUD_ORGANIZATION: "lornu-ai"
+  TF_WORKSPACE: "lornu-ai-staging-aws"
+  AWS_REGION: "us-east-1"
+  ECR_REPOSITORY: "lornu-ai-staging"
+
 jobs:
   plan:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
-    env:
-      TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORG }}
-      TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
 
     steps:
       - name: "Checkout"
@@ -26,33 +31,46 @@ jobs:
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: "Login to Amazon ECR"
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: "Build Docker Image"
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
 
       - name: "Terraform Plan"
+        env:
+          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
+          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
+          TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
         run: terraform -chdir=terraform/aws/staging plan
 
       - name: "Terraform Security Scan"
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
           working_directory: terraform/aws/staging
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   apply:
     name: "Terraform Apply"
     runs-on: ubuntu-latest
-    env:
-      TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORG }}
-      TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
     if: github.event_name == 'workflow_dispatch'
 
     steps:
@@ -62,91 +80,35 @@ jobs:
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: "Login to Amazon ECR"
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: "Build, Tag, and Push Docker Image"
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
 
       - name: "Terraform Apply"
+        env:
+          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
+          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
+          TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
         run: terraform -chdir=terraform/aws/staging apply -auto-approve
-
-  prod-plan:
-    name: "Production Plan"
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    env:
-      TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORG }}
-      TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
-      TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
-      TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
-      TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
-
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Configure AWS Credentials"
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: "Setup Terraform"
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-      - name: "Terraform Init"
-        run: terraform -chdir=terraform/aws/production init
-
-      - name: "Terraform Plan"
-        run: terraform -chdir=terraform/aws/production plan
-
-      - name: "Terraform Security Scan"
-        uses: aquasecurity/tfsec-action@v1.0.0
-        with:
-          working_directory: terraform/aws/production
-
-  prod-apply:
-    name: "Production Apply"
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    env:
-      TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORG }}
-      TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
-      TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
-      TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
-      TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
-
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Configure AWS Credentials"
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: "Setup Terraform"
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-      - name: "Terraform Init"
-        run: terraform -chdir=terraform/aws/production init
-
-      - name: "Terraform Apply"
-        run: terraform -chdir=terraform/aws/production apply -auto-approve
