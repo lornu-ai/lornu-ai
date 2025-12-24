@@ -1,4 +1,4 @@
-# Repository Guidelines
+# Agent Contributor Guidelines
 
 Welcome to the Lornu AI repository. This document summarizes how to navigate the codebase and contribute safely.
 
