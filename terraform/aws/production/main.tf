@@ -15,10 +15,10 @@ terraform {
   }
 
   cloud {
-    organization = "lornu-ai"
+    organization = "disposable-org"
 
     workspaces {
-      name = "lornu-ai-prod-aws"
+      name = "lornu-ai"
     }
   }
 }
