@@ -4,7 +4,7 @@
 **Related Issue:** #127
 
 ## Executive Summary
-This epic outlines the strategy to decouple the "Dev" environment (hosted on Cloudflare Workers for speed/agility) from the "Enterprise" environment (hosted on AWS ECS/Fargate or GKE for compliance and security). This involves splitting the repository structure, identifying a clear migration path, and ensuring ensuring strict synchronization between the two environments.
+This epic outlines the strategy to decouple the "Dev" environment (hosted on Cloudflare Workers for speed/agility) from the "Enterprise" environment (hosted on AWS ECS/Fargate or GKE for compliance and security). This involves splitting the repository structure, identifying a clear migration path, and ensuring strict synchronization between the two environments.
 
 ## 1. Objectives
 *   **Decouple Environments:** Separate the fast-iteration Dev environment from the stable, secure Enterprise environment.
