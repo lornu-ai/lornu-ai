@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'terraform/aws/prod/**'
+      - 'terraform/aws/production/**'
       - 'Dockerfile'
       - '.github/workflows/terraform-aws-prod.yml'
   workflow_dispatch:
@@ -59,7 +59,7 @@ jobs:
           terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/aws/prod init
+        run: terraform -chdir=terraform/aws/production init
 
       - name: Terraform Plan
         env:
@@ -67,12 +67,16 @@ jobs:
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}
           TF_VAR_domain: ${{ secrets.PROD_DOMAIN }}
-        run: terraform -chdir=terraform/aws/prod plan
+          TF_VAR_cloudfront_acm_certificate_arn: ${{ secrets.CLOUDFRONT_ACM_CERT_ARN }}
+          TF_VAR_route53_zone_id: ${{ secrets.ROUTE53_ZONE_ID }}
+          TF_VAR_api_domain: ${{ secrets.PROD_API_DOMAIN }}
+          TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
+        run: terraform -chdir=terraform/aws/production plan
 
       - name: Terraform Security Scan
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
-          working_directory: terraform/aws/prod
+          working_directory: terraform/aws/production
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   apply:
@@ -100,7 +104,7 @@ jobs:
           terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/aws/prod init
+        run: terraform -chdir=terraform/aws/production init
 
       - name: Terraform Apply
         env:
@@ -108,4 +112,8 @@ jobs:
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}
           TF_VAR_domain: ${{ secrets.PROD_DOMAIN }}
-        run: terraform -chdir=terraform/aws/prod apply -auto-approve
+          TF_VAR_cloudfront_acm_certificate_arn: ${{ secrets.CLOUDFRONT_ACM_CERT_ARN }}
+          TF_VAR_route53_zone_id: ${{ secrets.ROUTE53_ZONE_ID }}
+          TF_VAR_api_domain: ${{ secrets.PROD_API_DOMAIN }}
+          TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
+        run: terraform -chdir=terraform/aws/production apply -auto-approve

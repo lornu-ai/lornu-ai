@@ -18,6 +18,16 @@ output "alb_dns_name" {
   value       = aws_lb.main.dns_name
 }
 
+output "cloudfront_distribution_id" {
+  description = "ID of the CloudFront distribution for api.lornu.ai"
+  value       = aws_cloudfront_distribution.api.id
+}
+
+output "cloudfront_domain_name" {
+  description = "Domain name of the CloudFront distribution"
+  value       = aws_cloudfront_distribution.api.domain_name
+}
+
 output "db_cluster_endpoint" {
   description = "The cluster endpoint for the Aurora database"
   value       = aws_rds_cluster.main.endpoint

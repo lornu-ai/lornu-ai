@@ -15,6 +15,28 @@ variable "acm_certificate_arn" {
   type        = string
 }
 
+variable "cloudfront_acm_certificate_arn" {
+  description = "The ARN of the ACM certificate (us-east-1) for the CloudFront distribution."
+  type        = string
+}
+
+variable "route53_zone_id" {
+  description = "Route53 hosted zone ID for lornu.ai."
+  type        = string
+}
+
+variable "api_domain" {
+  description = "DNS name for the API CloudFront distribution."
+  type        = string
+  default     = "api.lornu.ai"
+}
+
+variable "cloudfront_web_acl_id" {
+  description = "Optional WAFv2 Web ACL ID to associate with CloudFront."
+  type        = string
+  default     = ""
+}
+
 variable "secrets_manager_arn_pattern" {
   description = "The ARN pattern for the secrets the application needs to access."
   type        = string
