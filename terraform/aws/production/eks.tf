@@ -5,7 +5,9 @@ module "eks" {
   cluster_name    = "lornu-ai-production-cluster"
   cluster_version = "1.29"
 
-  cluster_endpoint_public_access = true
+  cluster_endpoint_public_access       = true
+  cluster_endpoint_private_access      = true
+  cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
 
   vpc_id                   = aws_vpc.main.id
   subnet_ids               = [aws_subnet.private_a.id, aws_subnet.private_b.id]
