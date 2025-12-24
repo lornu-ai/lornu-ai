@@ -44,3 +44,8 @@ variable "github_repo" {
   type        = string
   default     = "lornu-ai"
 }
+variable "db_password" {
+  description = "The master password for the database."
+  type        = string
+  sensitive   = true
+}
