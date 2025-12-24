@@ -112,3 +112,26 @@ jobs:
           TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
           TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
         run: terraform -chdir=terraform/aws/production apply -auto-approve
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name lornu-ai-production \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Install Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Deploy to EKS with Kustomize
+        run: |
+          kustomize build k8s/overlays/production | \
+          kubectl set image deployment/production-lornu-ai \
+            lornu-ai=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
+            --filename - | \
+          kubectl apply -f -
+
+      - name: Wait for Deployment
+        run: |
+          kubectl rollout status deployment/production-lornu-ai -n default --timeout=5m
