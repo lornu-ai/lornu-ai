@@ -136,3 +136,225 @@ Following the Kubernetes pivot, here's the revised gaps list:
 **Reference**: See `docs/EKS_PIVOT_SUMMARY.md` for a full breakdown of what's changed and current status.
 
 ---
+
+## Reusable Snippets
+
+---
+
+### Status Update
+
+Quick update on progress:
+- ✅ Done: <what shipped>
+- 🚧 In progress: <what's being implemented>
+- ⏱ ETA: <date/time>
+- 🔗 PR/Run: <link>
+
+### Blocker
+
+Currently blocked by:
+- 🔒 <dependency/secret/approval>
+Impact:
+- <scope of impact>
+Ask:
+- <specific action needed> by <owner/role>
+
+### Action Required
+
+Please complete the following to unblock deploy:
+- [ ] Provide <secret/var> (e.g., RESEND_API_KEY)
+- [ ] Approve Terraform apply (prod)
+- [ ] Confirm DNS cutover window
+
+---
+
+## Deployment Announcement (Staging/Prod)
+
+Use this when promoting a release via Kubernetes on EKS.
+
+### Announce + Verify
+
+Deploying build to <env> via Kustomize on EKS.
+
+Details:
+- Image: `<account>.dkr.ecr.<region>.amazonaws.com/lornu-ai-<env>:<tag>`
+- Manifests: `k8s/overlays/<env>`
+- Health endpoint: `/api/health`
+
+Planned Steps:
+1) Apply manifests
+```bash
+kubectl apply -k k8s/overlays/<env>
+```
+2) Verify rollout
+```bash
+kubectl -n default rollout status deploy/lornu-ai
+kubectl -n default get pods
+```
+3) Verify ingress
+```bash
+kubectl -n default get ingress
+```
+4) Health check
+```bash
+curl -sf https://<domain>/api/health
+```
+
+Post-Deploy Checks:
+- [ ] Rollout completed without restarts/crashloops
+- [ ] `/api/health` returns 200 OK
+- [ ] Frontend loads and serves built assets
+- [ ] Logs show no error spikes
+
+---
+
+## K8s Rollout Status
+
+Use this to summarize a rollout and provide quick triage pointers.
+
+Rollout Summary (<env>):
+- Deployment: `lornu-ai`
+- Replicas: desired=<D> updated=<U> available=<A>
+- Strategy: RollingUpdate
+
+Current Signals:
+```bash
+kubectl -n default rollout status deploy/lornu-ai
+kubectl -n default get pods -o wide
+kubectl -n default describe deploy lornu-ai | sed -n '/Events/,$p'
+```
+
+If failing:
+- Check liveness/readiness probe failures
+- Inspect pod logs: `kubectl -n default logs <pod> --tail=100`
+- Confirm ConfigMap/Secret mounts
+- Validate ALB Ingress annotations and target health
+
+---
+
+## Terraform Plan Summary (PR Comment)
+
+Post this on infra PRs after running a plan.
+
+Plan Summary:
+- Directory: `terraform/aws/<env>`
+- Backend: Terraform Cloud (`lornu-ai` / `lornu-ai-<env>-aws`)
+
+Changes:
+- Adds: <count>
+- Changes: <count>
+- Destroys: <count>
+
+Highlights:
+- <notable resource 1>
+- <notable resource 2>
+
+Next:
+- [ ] Reviewer confirms plan matches intent
+- [ ] Apply gated behind approval
+
+---
+
+## Smoke Test Results (Post-Deploy)
+
+Summarize Playwright smoke tests for web + API.
+
+Execution:
+```bash
+cd apps/web
+bun install
+bun run test:e2e:smoke
+```
+
+Results:
+- Suites: <n> passed / <n> failed
+- Duration: <mm:ss>
+- Links: <artifact/report>
+
+Follow-ups:
+- [ ] Investigate failing specs (attach logs/screens)
+- [ ] Re-run after fix
+
+---
+
+## E2E/Integration Results (CI)
+
+Include unit/integration when relevant.
+
+Commands:
+```bash
+cd apps/web
+bun run test:run   # vitest unit+integration
+bun run test:e2e   # playwright e2e (dev server auto-start)
+```
+
+Summary:
+- Unit/Integration: <coverage>% covered, <pass>/<fail>
+- E2E: <pass>/<fail>
+
+---
+
+## Incident Follow-Up (RCA)
+
+Use after an incident per `docs/INCIDENT_WORKFLOW.md`.
+
+Summary:
+- Impact: <scope/duration>
+- Detection: <how it was caught>
+- Root Cause: <concise cause>
+- Contributing Factors: <optional>
+
+Timeline:
+- <t1>: <event>
+- <t2>: <event>
+
+Remediations:
+- [ ] Short-term: <fix>
+- [ ] Long-term: <systemic prevention>
+
+Verification:
+- [ ] Added tests/monitors
+- [ ] Runbooks updated
+
+---
+
+## Secrets / Config Request
+
+Requesting required secrets/config for <env> to proceed.
+
+Needed:
+- `RESEND_API_KEY` (email)
+- `CONTACT_EMAIL` (optional)
+- `RATE_LIMIT_BYPASS_SECRET` (CI/testing)
+
+Options:
+- Prefer AWS Secrets Manager + IRSA
+- Alternatively, provide as Kubernetes Secret (base64-encoded)
+
+Confirmation Checklist:
+- [ ] Secret created in AWS SM and policy allows access
+- [ ] IRSA mapped to service account in `k8s/base/serviceaccount.yaml`
+- [ ] App verifies secret presence on startup
+
+---
+
+## PR Review: EKS Infra Changes
+
+Checklist for reviewing EKS-related PRs.
+
+Review Focus:
+- Security: IRSA, least-privilege IAM, no plaintext secrets
+- Reliability: replicas, PDBs, probes, autoscaler config
+- Networking: ALB Ingress annotations, SGs, TLS
+- Cost: instance types, spot vs on-demand strategy
+
+Validation Steps:
+```bash
+terraform -chdir=terraform/aws/<env> init
+terraform -chdir=terraform/aws/<env> plan
+```
+- Confirm state and workspace bindings
+- Verify no unintended destroys
+
+Approve when:
+- Plan matches design doc
+- Runbook and docs updated
