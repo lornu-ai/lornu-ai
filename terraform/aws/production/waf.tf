@@ -58,8 +58,8 @@ resource "aws_wafv2_web_acl" "main" {
   }
 
   tags = {
-    Name        = "lornu-ai-production-waf"
+    Name        = "${var.resource_prefix}-production-waf"
     Environment = "production"
-    GithubRepo  = "lornu-ai"
+    GithubRepo  = var.github_repo
   }
 }
