@@ -63,7 +63,6 @@ jobs:
 
       - name: Terraform Plan
         env:
-          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN_PROD }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN_PROD }}
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}
@@ -105,7 +104,6 @@ jobs:
 
       - name: Terraform Apply
         env:
-          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN_PROD }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN_PROD }}
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}

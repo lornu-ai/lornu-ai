@@ -38,7 +38,6 @@ The following secrets must be configured in GitHub repository settings (Settings
 
 | Secret Name | Description |
 |-------------|-------------|
-| `ACM_CERTIFICATE_ARN_PROD` | ARN of ACM certificate for HTTPS on ALB |
 | `SECRETS_MANAGER_ARN_PATTERN_PROD` | ARN pattern for Secrets Manager access |
 | `ECR_REPOSITORY` | ECR repository name (e.g., `lornu-ai-prod`) |
 | `EKS_CLUSTER_NAME` | EKS cluster name (for K8s deployments) |

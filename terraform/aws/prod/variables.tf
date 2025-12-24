@@ -10,11 +10,6 @@ variable "docker_image" {
   default     = "lornuai/lornu-ai:latest"  # placeholder, will be overridden via TF_VAR
 }
 
-variable "acm_certificate_arn" {
-  description = "The ARN of the ACM certificate to use for the ALB (prod)."
-  type        = string
-}
-
 variable "secrets_manager_arn_pattern" {
   description = "The ARN pattern for the secrets the application needs to access (prod)."
   type        = string
