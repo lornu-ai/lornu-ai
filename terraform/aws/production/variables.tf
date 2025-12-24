@@ -5,15 +5,43 @@ variable "aws_region" {
 }
 
 variable "docker_image" {
-  description = "The Docker image to deploy to the ECS cluster."
+  description = "The Docker image to deploy to the EKS cluster."
   type        = string
-  default     = "lornuai/lornu-ai:commit-sha"
 }
 
 variable "domain_name" {
   description = "The domain name for the application (e.g. lornu.ai)"
   type        = string
   default     = "lornu.ai"
+}
+
+variable "api_domain" {
+  description = "DNS name for the API CloudFront distribution (e.g. api.lornu.ai)"
+  type        = string
+  default     = "api.lornu.ai"
+}
+
+variable "acm_certificate_arn" {
+  description = "The ARN of the ACM certificate for the ALB"
+  type        = string
+}
+
+variable "route53_zone_name" {
+  description = "The Route53 hosted zone name"
+  type        = string
+  default     = "lornu.ai"
+}
+
+variable "create_route53_zone" {
+  description = "Whether to create the Route53 hosted zone"
+  type        = bool
+  default     = false
+}
+
+variable "cloudfront_web_acl_id" {
+  description = "Optional WAFv2 Web ACL ID to associate with CloudFront"
+  type        = string
+  default     = ""
 }
 
 variable "secrets_manager_arn_pattern" {
