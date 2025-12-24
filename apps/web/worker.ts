@@ -298,7 +298,12 @@ ${data.message}
 		});
 
 		if (!response.ok) {
-			const errorData = await response.json().catch(() => ({})) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+			// Define expected error structure from Resend API
+			interface ResendErrorResponse {
+				message?: string;
+				name?: string;
+			}
+			const errorData = await response.json().catch(() => ({})) as ResendErrorResponse;
 			console.error('Resend API error:', {
 				status: response.status,
 				statusText: response.statusText,
