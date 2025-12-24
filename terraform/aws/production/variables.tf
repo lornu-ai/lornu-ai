@@ -60,6 +60,11 @@ variable "db_username" {
   type        = string
   default     = "lornu_admin"
 }
+variable "db_password" {
+  description = "The master password for the database."
+  type        = string
+  sensitive   = true
+}
 
 variable "resource_prefix" {
   description = "The resource prefix for naming (e.g., lornu-ai)"
@@ -71,4 +76,23 @@ variable "github_repo" {
   description = "The GitHub repository name for tagging resources"
   type        = string
   default     = "lornu-ai"
+}
+
+variable "AWS_DEFAULT_REGION" {
+  description = "TFC injected variable"
+  type        = string
+  default     = ""
+}
+
+variable "AWS_ACCESS_KEY_ID" {
+  description = "TFC injected variable"
+  type        = string
+  default     = ""
+}
+
+variable "AWS_SECRET_ACCESS_KEY" {
+  description = "TFC injected variable"
+  type        = string
+  default     = ""
+  sensitive   = true
 }
