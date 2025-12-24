@@ -11,3 +11,4 @@ labels:
     app.kubernetes.io/name: lornu-ai
     app.kubernetes.io/part-of: lornu-ai
   includeSelectors: true
+
