@@ -7,10 +7,10 @@ resources:
 namePrefix: prod-
 namespace: default
 
-# Use production ECR image
+# Image will be set dynamically via: kustomize edit set image lornu-ai=<ECR_IMAGE>
 images:
   - name: lornu-ai
-    newName: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/lornu-ai-prod
+    newName: lornu-ai
     newTag: latest
 
 # ConfigMap generator for production-specific configuration
