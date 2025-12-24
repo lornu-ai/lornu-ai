@@ -11,9 +11,10 @@ variable "docker_image" {
   default     = "lornuai/lornu-ai:commit-sha"
 }
 
-variable "acm_certificate_arn" {
-  description = "The ARN of the ACM certificate to use for the ALB."
+variable "domain_name" {
+  description = "The domain name for the application (e.g. lornu.ai)"
   type        = string
+  default     = "lornu.ai"
 }
 
 variable "secrets_manager_arn_pattern" {
