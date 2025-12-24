@@ -7,6 +7,12 @@ on:
       - 'terraform/aws/production/**'
       - 'Dockerfile'
       - '.github/workflows/terraform-aws-prod.yml'
+  pull_request:
+    branches: [ develop, main ]
+    paths:
+      - 'terraform/aws/production/**'
+      - 'Dockerfile'
+      - '.github/workflows/terraform-aws-prod.yml'
   workflow_dispatch:
 
 permissions:
