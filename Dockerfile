@@ -12,6 +12,13 @@ RUN cd apps/web && bun run build
 FROM python:3.11-slim
 WORKDIR /app
 
+# Install build dependencies for Rust-based packages (vtracer, rembg)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy uv from a tagged version (digest removed to unblock build)
 COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /bin/uv
 
