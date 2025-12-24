@@ -6,7 +6,7 @@ Welcome to the Lornu AI repository. This document summarizes how to navigate the
 
 - `.ai/` contains mission, architecture, and coding standards.
 - `apps/web/` is the React + Vite frontend plus the Cloudflare Worker (`worker.ts`) and assets in `apps/web/src/assets/`.
-- `packages/api/` hosts the FastAPI backend (`packages/api/src/`) with entrypoint `packages/api/main.py`.
+- `packages/api/` hosts the FastAPI backend with its entrypoint at `packages/api/main.py`.
 - `docs/` stores technical strategy and ops notes; `terraform/aws/staging/` contains AWS staging infrastructure.
 
 ## Build, Test, and Development Commands
