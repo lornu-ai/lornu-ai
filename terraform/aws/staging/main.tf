@@ -6,23 +6,15 @@ terraform {
     }
   }
 
-  # Terraform Cloud Backend Configuration
-  backend "remote" {
+  cloud {
     organization = "lornu-ai"
+
     workspaces {
-      name = "lornu-ai"
+      name = "lornu-ai-staging-aws"
     }
   }
 }
 
 provider "aws" {
   region = var.aws_region
-
-  default_tags {
-    tags = {
-      Project     = "lornu-ai"
-      Environment = var.environment
-      ManagedBy   = "Terraform"
-    }
-  }
 }

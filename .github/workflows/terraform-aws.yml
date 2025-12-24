@@ -1,0 +1,66 @@
+name: "Terraform AWS"
+
+on:
+  pull_request:
+    paths:
+      - "terraform/aws/staging/**"
+  workflow_dispatch:
+
+jobs:
+  plan:
+    name: "Terraform Plan"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          aws-region: us-east-1
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.0
+          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+
+      - name: "Terraform Init"
+        run: terraform -chdir=terraform/aws/staging init
+
+      - name: "Terraform Plan"
+        run: terraform -chdir=terraform/aws/staging plan
+
+      - name: "Terraform Security Scan"
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: terraform/aws/staging
+
+  apply:
+    name: "Terraform Apply"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          aws-region: us-east-1
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.0
+          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+
+      - name: "Terraform Init"
+        run: terraform -chdir=terraform/aws/staging init
+
+      - name: "Terraform Apply"
+        run: terraform -chdir=terraform/aws/staging apply -auto-approve
