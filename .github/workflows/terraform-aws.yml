@@ -14,9 +14,9 @@ permissions:
   contents: read
 
 env:
-  TF_CLOUD_ORGANIZATION: "lornu-ai"
-  TF_WORKSPACE: "lornu-ai-staging-aws"
-  AWS_REGION: "us-east-1"
+  TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORG }}
+  TF_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
+  AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   ECR_REPOSITORY: "lornu-ai-staging"
 
 jobs:
