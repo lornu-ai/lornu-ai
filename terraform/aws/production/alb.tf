@@ -59,13 +59,6 @@ resource "aws_security_group" "alb" {
     description = "Allow HTTP from public (redirects to HTTPS)"
   }
 
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow HTTPS from public and CloudFront"
-  }
 
   egress {
     from_port   = 0
