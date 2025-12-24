@@ -7,11 +7,8 @@ terraform {
   }
 
   cloud {
-    organization = "lornu-ai"
-
-    workspaces {
-      name = "lornu-ai-prod-aws"
-    }
+    # Organization and workspace are set via environment variables:
+    # TF_CLOUD_ORGANIZATION and TF_WORKSPACE (from GitHub secrets)
   }
 }
 

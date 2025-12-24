@@ -1,7 +1,7 @@
 data "aws_availability_zones" "available" {}
 
 resource "aws_vpc" "main" {
-  cidr_block = "10.1.0.0/16"
+  cidr_block = "10.2.0.0/16"
 
   tags = {
     Name = "lornu-ai-prod-vpc"
@@ -10,7 +10,7 @@ resource "aws_vpc" "main" {
 
 resource "aws_subnet" "public_a" {
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.1.1.0/24"
+  cidr_block        = "10.2.1.0/24"
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
@@ -20,7 +20,7 @@ resource "aws_subnet" "public_a" {
 
 resource "aws_subnet" "public_b" {
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.1.2.0/24"
+  cidr_block        = "10.2.2.0/24"
   availability_zone = data.aws_availability_zones.available.names[1]
 
   tags = {
@@ -30,7 +30,7 @@ resource "aws_subnet" "public_b" {
 
 resource "aws_subnet" "private_a" {
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.1.3.0/24"
+  cidr_block        = "10.2.3.0/24"
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
@@ -40,7 +40,7 @@ resource "aws_subnet" "private_a" {
 
 resource "aws_subnet" "private_b" {
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.1.4.0/24"
+  cidr_block        = "10.2.4.0/24"
   availability_zone = data.aws_availability_zones.available.names[1]
 
   tags = {

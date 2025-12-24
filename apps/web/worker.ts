@@ -542,6 +542,7 @@ export default {
 			return response;
 		}
 
+
 		// Serve static assets
 		const response = await env.ASSETS.fetch(request);
 

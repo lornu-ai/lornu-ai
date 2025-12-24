@@ -1,5 +1,5 @@
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "LornuEcsTaskExecutionRole"
+  name = "LornuEcsTaskExecutionRoleProd"
 
   assume_role_policy = jsonencode({
     Version   = "2012-10-17"
@@ -21,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 }
 
 resource "aws_iam_role" "ecs_task_role" {
-  name = "LornuEcsTaskRole"
+  name = "LornuEcsTaskRoleProd"
 
   assume_role_policy = jsonencode({
     Version   = "2012-10-17"
@@ -38,7 +38,7 @@ resource "aws_iam_role" "ecs_task_role" {
 }
 
 resource "aws_iam_policy" "secrets_manager_access" {
-  name        = "LornuSecretsManagerAccess"
+  name        = "LornuSecretsManagerAccessProd"
   description = "Allow access to Secrets Manager"
 
   policy = jsonencode({
