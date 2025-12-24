@@ -67,6 +67,7 @@ jobs:
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}
           TF_VAR_domain: ${{ secrets.PROD_DOMAIN }}
+          TF_VAR_create_route53_zone: "true"
           TF_VAR_api_domain: ${{ secrets.PROD_API_DOMAIN }}
           TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
         run: terraform -chdir=terraform/aws/production plan
@@ -110,6 +111,7 @@ jobs:
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}
           TF_VAR_domain: ${{ secrets.PROD_DOMAIN }}
+          TF_VAR_create_route53_zone: "true"
           TF_VAR_api_domain: ${{ secrets.PROD_API_DOMAIN }}
           TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
         run: terraform -chdir=terraform/aws/production apply -auto-approve
