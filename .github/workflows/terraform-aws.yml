@@ -2,18 +2,6 @@ name: "Terraform AWS"
 
 on:
   pull_request:
-    paths:
-      - "terraform/aws/staging/**"
-      - "terraform/aws/production/**"
-      - "apps/web/src/**"
-      - "apps/web/package.json"
-      - "apps/web/bun.lock"
-      - "apps/web/vite.config.*"
-      - "apps/web/tsconfig.json"
-      - "packages/api/main.py"
-      - "packages/api/pyproject.toml"
-      - "packages/api/uv.lock"
-      - "Dockerfile"
   workflow_dispatch:
 
 permissions:
