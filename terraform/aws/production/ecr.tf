@@ -1,3 +1,18 @@
+resource "aws_kms_key" "ecr" {
+  description             = "KMS key for ECR encryption"
+  deletion_window_in_days = 10
+  enable_key_rotation     = true
+
+  tags = {
+    Name = "lornu-ai-production-ecr-kms"
+  }
+}
+
+resource "aws_kms_alias" "ecr" {
+  name          = "alias/lornu-ai-production-ecr"
+  target_key_id = aws_kms_key.ecr.key_id
+}
+
 resource "aws_ecr_repository" "main" {
   name                 = "lornu-ai-production"
   image_tag_mutability = "IMMUTABLE"
@@ -7,7 +22,8 @@ resource "aws_ecr_repository" "main" {
   }
 
   encryption_configuration {
-    encryption_type = "AES256"
+    encryption_type = "KMS"
+    kms_key         = aws_kms_key.ecr.arn
   }
 
   force_delete = false

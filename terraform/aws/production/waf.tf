@@ -1,6 +1,12 @@
+# Reference the KMS key from vpc.tf for CloudWatch encryption
+data "aws_kms_key" "cloudwatch" {
+  key_id = "alias/lornu-ai-production-cloudwatch"
+}
+
 resource "aws_cloudwatch_log_group" "waf" {
   name              = "/aws/wafv2/lornu-ai-production"
   retention_in_days = 30
+  kms_key_id        = data.aws_kms_key.cloudwatch.arn
 
   tags = {
     Name        = "lornu-ai-production-waf-logs"

@@ -9,6 +9,8 @@ module "eks" {
   cluster_endpoint_private_access      = true
   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
 
+  cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+
   vpc_id                   = aws_vpc.main.id
   subnet_ids               = [aws_subnet.private_a.id, aws_subnet.private_b.id]
   control_plane_subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]

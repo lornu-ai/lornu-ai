@@ -1,5 +1,20 @@
 data "aws_availability_zones" "available" {}
 
+resource "aws_kms_key" "cloudwatch" {
+  description             = "KMS key for CloudWatch Logs encryption"
+  deletion_window_in_days = 10
+  enable_key_rotation     = true
+
+  tags = {
+    Name = "lornu-ai-production-cloudwatch-kms"
+  }
+}
+
+resource "aws_kms_alias" "cloudwatch" {
+  name          = "alias/lornu-ai-production-cloudwatch"
+  target_key_id = aws_kms_key.cloudwatch.key_id
+}
+
 resource "aws_vpc" "main" {
   cidr_block           = "10.1.0.0/16"
   enable_dns_hostnames = true
@@ -24,6 +39,7 @@ resource "aws_flow_log" "main" {
 resource "aws_cloudwatch_log_group" "vpc_flow_log" {
   name              = "/aws/vpc/lornu-ai-production"
   retention_in_days = 30
+  kms_key_id        = aws_kms_key.cloudwatch.arn
 
   tags = {
     Name = "lornu-ai-production-vpc-flow-log"
