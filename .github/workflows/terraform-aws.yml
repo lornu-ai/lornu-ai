@@ -6,6 +6,10 @@ on:
       - "terraform/aws/staging/**"
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   plan:
     name: "Terraform Plan"
@@ -18,14 +22,14 @@ jobs:
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
           aws-region: us-east-1
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          terraform_api_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
@@ -50,14 +54,14 @@ jobs:
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
           aws-region: us-east-1
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          terraform_api_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
