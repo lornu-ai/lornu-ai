@@ -486,6 +486,29 @@ export async function handleContactAPI(request: Request, env: Env): Promise<Resp
 	);
 }
 
+/**
+ * Helper function to serve index.html with correct headers
+ */
+async function serveIndexHtml(request: Request, env: Env): Promise<Response> {
+	const indexResponse = await env.ASSETS.fetch(
+		new Request(new URL('/index.html', request.url), {
+			method: request.method === 'HEAD' ? 'HEAD' : 'GET',
+			headers: request.headers
+		})
+	);
+
+	if (indexResponse.status === 200) {
+		const newHeaders = new Headers(indexResponse.headers);
+		newHeaders.set("Content-Type", "text/html;charset=UTF-8");
+		return new Response(indexResponse.body, {
+			status: 200,
+			statusText: "OK",
+			headers: newHeaders,
+		});
+	}
+	return indexResponse;
+}
+
 export default {
 	async fetch(request: Request, env: Env): Promise<Response> {
 		const url = new URL(request.url);
@@ -511,6 +534,15 @@ export default {
 			});
 		}
 
+		// For root path, explicitly serve index.html
+		// Only handle GET and HEAD requests since ASSETS.fetch only supports these methods
+		if ((url.pathname === '/' || url.pathname === '') && (request.method === 'GET' || request.method === 'HEAD')) {
+			const response = await serveIndexHtml(request, env);
+			// If index.html doesn't exist (unlikely in prod), return response
+			return response;
+		}
+
+
 		// Serve static assets
 		const response = await env.ASSETS.fetch(request);
 
@@ -523,22 +555,11 @@ export default {
 			const hasExtension = lastSegment.includes('.');
 			if (!hasExtension && !url.pathname.startsWith('/api/')) {
 				// Serve index.html for SPA routes
-				const indexResponse = await env.ASSETS.fetch(
-					new Request(new URL('/index.html', request.url), {
-						method: request.method,
-						headers: request.headers,
-					})
-				);
+				const indexResponse = await serveIndexHtml(request, env);
 
-				// If index.html exists, return it with proper Content-Type
+				// If index.html exists, return it
 				if (indexResponse.status === 200) {
-					const newHeaders = new Headers(indexResponse.headers);
-					newHeaders.set("Content-Type", "text/html;charset=UTF-8");
-					return new Response(indexResponse.body, {
-						status: 200,
-						statusText: "OK",
-						headers: newHeaders,
-					});
+					return indexResponse;
 				}
 			}
 			// If index.html also doesn't exist, return the 404
