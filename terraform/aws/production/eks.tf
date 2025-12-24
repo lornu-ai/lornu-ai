@@ -21,6 +21,9 @@ module "eks" {
         },
         {
           namespace = "kube-system"
+        },
+        {
+          namespace = "external-secrets"
         }
       ]
     }
