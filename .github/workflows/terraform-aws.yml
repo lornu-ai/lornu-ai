@@ -99,6 +99,17 @@ jobs:
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
 
+      - name: "Setup TFLint"
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: "Run TFLint"
+        run: |
+          cd terraform/aws/staging
+          tflint --init
+          tflint --format compact
+
       - name: "Terraform Plan"
         env:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
@@ -190,6 +201,17 @@ jobs:
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/production init
+
+      - name: "Setup TFLint"
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: "Run TFLint"
+        run: |
+          cd terraform/aws/production
+          tflint --init
+          tflint --format compact
 
       - name: "Terraform Plan"
         run: terraform -chdir=terraform/aws/production plan
