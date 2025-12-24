@@ -12,7 +12,7 @@ Welcome to the Lornu AI repository. This document summarizes how to navigate the
 ## Build, Test, and Development Commands
 
 Frontend (Bun only; do not use npm/yarn):
-- `bun install` install dependencies in `apps/web/`.
+- `bun install` Install dependencies in `apps/web/`.
 - `bun run dev` start the Vite dev server.
 - `bun run build` build the production bundle to `apps/web/dist/`.
 - `bun run lint` run ESLint.
