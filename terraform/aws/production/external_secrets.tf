@@ -27,8 +27,6 @@ resource "aws_iam_policy" "eso" {
   policy      = data.aws_iam_policy_document.eso.json
 }
 
-data "aws_caller_identity" "current" {}
-
 data "aws_iam_policy_document" "eso" {
   statement {
     effect = "Allow"
