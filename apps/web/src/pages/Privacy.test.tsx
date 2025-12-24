@@ -3,14 +3,17 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import Privacy from './Privacy'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 
 describe('Privacy Page', () => {
   const renderPrivacy = () => {
     return render(
       <HelmetProvider>
-        <BrowserRouter>
-          <Privacy />
-        </BrowserRouter>
+        <ThemeProvider>
+          <BrowserRouter>
+            <Privacy />
+          </BrowserRouter>
+        </ThemeProvider>
       </HelmetProvider>
     )
   }
