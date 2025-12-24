@@ -213,6 +213,7 @@ jobs:
         if: steps.apply.outcome == 'success'
         run: |
           sed -i "s|<AWS_ECR_REGISTRY>|${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/lornu-ai|" k8s/overlays/staging/kustomization.yaml
+          sed -i "s|<IMAGE_TAG>|${{ github.sha }}|" k8s/overlays/staging/kustomization.yaml
           kustomize build k8s/overlays/staging > staging-manifests.yaml
         working-directory: .
 
