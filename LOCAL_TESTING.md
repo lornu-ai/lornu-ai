@@ -1,11 +1,11 @@
 # Local Development & Testing Guide
 
-Fast workflow for testing before deploying to AWS Fargate.
+Fast workflow for testing before deploying to AWS EKS.
 
 ## Quick Start (5 minutes)
 
 ```bash
-# 1. Setup local Kubernetes with minikube
+# 1. Setup local Kubernetes with k3s (k3d)
 chmod +x scripts/local-k8s-*.sh
 ./scripts/local-k8s-setup.sh
 
@@ -16,17 +16,17 @@ chmod +x scripts/local-k8s-*.sh
 ./scripts/local-k8s-test.sh
 
 # 4. Access the app
-kubectl port-forward svc/lornu-ai 8080:8080
+kubectl port-forward svc/dev-lornu-ai 8080:80
 # Visit http://localhost:8080
 ```
 
 ## What This Does
 
 1. **local-k8s-setup.sh**: 
-   - Starts minikube with minimal resources (2 CPU, 4GB RAM)
+   - Creates a k3d k3s cluster (`lornu-dev`)
    - Auto-detects podman or docker as container runtime
-   - Enables registry, ingress, and metrics
-   - Builds container image in minikube's environment
+   - Creates a local registry (`lornu-registry.localhost:5000`)
+   - Builds and pushes the local image
 
 2. **local-k8s-deploy.sh**:
    - Applies Kustomize manifests from `k8s/overlays/dev`
@@ -40,8 +40,8 @@ kubectl port-forward svc/lornu-ai 8080:8080
 
 4. **local-k8s-cleanup.sh**:
    - Removes all k8s resources
-   - Optionally removes Docker images
-   - Optionally stops minikube
+   - Optionally removes local images
+   - Optionally deletes k3d cluster and registry
 
 ## Development Workflow
 
@@ -50,9 +50,9 @@ kubectl port-forward svc/lornu-ai 8080:8080
 vim apps/web/src/App.tsx
 
 # Rebuild and redeploy
-eval $(minikube docker-env)
-docker build -t lornu-ai:local .
-kubectl rollout restart deployment/lornu-ai
+podman build -t lornu-registry.localhost:5000/lornu-ai:local .
+podman push lornu-registry.localhost:5000/lornu-ai:local
+kubectl rollout restart deployment -l app.kubernetes.io/name=lornu-ai
 
 # Watch logs
 kubectl logs -f -l app.kubernetes.io/name=lornu-ai
@@ -82,10 +82,10 @@ gh workflow run terraform-aws.yml
 
 ### Image not found
 ```bash
-eval $(minikube docker-env)
-docker images | grep lornu-ai
+podman images | grep lornu-registry.localhost:5000/lornu-ai
 # If missing, rebuild:
-docker build -t lornu-ai:local .
+podman build -t lornu-registry.localhost:5000/lornu-ai:local .
+podman push lornu-registry.localhost:5000/lornu-ai:local
 ```
 
 ### Pod CrashLoopBackOff
@@ -97,17 +97,16 @@ kubectl describe pod -l app.kubernetes.io/name=lornu-ai
 ### Port forward not working
 ```bash
 # Check service exists
-kubectl get svc lornu-ai
+kubectl get svc -l app=lornu-ai
 
-# Use minikube service instead
-minikube service lornu-ai
+# Port-forward using the dev service name
+kubectl port-forward svc/dev-lornu-ai 8080:80
 ```
 
-### Minikube issues
+### k3d issues
 ```bash
-# Restart minikube
-minikube stop
-minikube delete
+# Restart k3d
+k3d cluster delete lornu-dev
 ./scripts/local-k8s-setup.sh
 ```
 
@@ -115,7 +114,7 @@ minikube delete
 
 | Environment | CPU | Memory | Cost |
 |------------|-----|--------|------|
-| Local (minikube) | 250m | 256Mi | $0 |
+| Local (k3d) | 250m | 256Mi | $0 |
 | AWS Staging | 500m | 512Mi | ~$30/mo |
 | AWS Production | 1000m | 1Gi | ~$60/mo |
 

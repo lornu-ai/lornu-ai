@@ -6,7 +6,7 @@ set -euo pipefail
 echo "🧪 Testing Lornu AI deployment..."
 
 # Check if deployment exists
-if ! kubectl get deployment lornu-ai >/dev/null 2>&1; then
+if ! kubectl get deployment -l app.kubernetes.io/name=lornu-ai --no-headers 2>/dev/null | grep -q lornu-ai; then
     echo "❌ Deployment not found. Run ./scripts/local-k8s-deploy.sh first"
     exit 1
 fi

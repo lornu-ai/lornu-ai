@@ -5,7 +5,7 @@ resources:
 namePrefix: dev-
 images:
 - name: lornu-ai
-  newName: lornu-ai
+  newName: lornu-registry.localhost:5000/lornu-ai
   newTag: local
 patches:
 - path: deployment-patch.yaml

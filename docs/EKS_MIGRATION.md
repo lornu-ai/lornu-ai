@@ -4,7 +4,7 @@
 
 ## Why EKS Instead of ECS?
 
-1. **Native Kubernetes**: We already have k8s manifests and local minikube testing
+1. **Native Kubernetes**: We already have k8s manifests and local k3d testing
 2. **Portability**: Can run same manifests locally, AWS, GCP, or on-prem
 3. **Ecosystem**: Better tooling (kubectl, helm, kustomize, istio, etc.)
 4. **Consistency**: Local dev environment matches production
@@ -91,7 +91,7 @@ spec:
 - [ ] Update VPC for EKS requirements
 - [ ] Remove ECS resources
 - [ ] Update ALB for ingress
-- [ ] Test locally with minikube
+- [ ] Test locally with k3d
 - [ ] Deploy to AWS
 - [ ] Validate end-to-end
 - [ ] Update production plan

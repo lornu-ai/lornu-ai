@@ -13,7 +13,7 @@ This directory contains the Kubernetes manifests for the Lornu AI application, m
 
 - `overlays/`: Contains environment-specific overlays.
   - `dev/`: Configuration for local development.
-    - **Image**: `localhost:5000/lornu-ai:dev` (local registry)
+    - **Image**: `lornu-registry.localhost:5000/lornu-ai:local` (local registry)
     - **Replicas**: 1
     - **Resources**: Requests and limits of 256Mi memory / 250m CPU.
     - **Logging**: `DEBUG`
@@ -29,7 +29,7 @@ To apply the configuration for a specific environment, use `kustomize build` wit
 
 ### Local Development
 
-To deploy the application to a local Kubernetes cluster (e.g., Kind, K3s), run the following command from the `apps/web` directory:
+To deploy the application to a local Kubernetes cluster (k3d/k3s), run the following command from the `apps/web` directory:
 
 ```bash
 bun run dev:k8s

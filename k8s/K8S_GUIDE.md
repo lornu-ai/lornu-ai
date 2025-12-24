@@ -1,6 +1,6 @@
 # Kubernetes Configuration (Kustomize)
 
-Deploy Lornu AI to AWS EKS and local Kubernetes clusters (minikube, K3s) using Kustomize.
+Deploy Lornu AI to AWS EKS and local Kubernetes clusters (k3d/k3s) using Kustomize.
 
 ## Directory Structure
 
@@ -14,7 +14,7 @@ k8s/
 │   ├── ingress.yaml
 │   └── kustomization.yaml
 └── overlays/             # Environment-specific patches
-    ├── dev/              # Local development (minikube/K3s)
+    ├── dev/              # Local development (k3d/k3s)
     ├── staging/          # AWS EKS Staging
     └── production/       # AWS EKS Production
 ```
@@ -51,7 +51,7 @@ kubectl create secret generic lornu-ai-secrets \
 
 ### Development (`k8s/overlays/dev`)
 
-Local minikube or K3s setup with:
+Local k3d/k3s setup with:
 - 1 replica (minimal resource usage)
 - Local image (`lornu-ai:local`)
 - Debug logging
@@ -85,14 +85,14 @@ kustomize build k8s/overlays/production | kubectl apply -f -
 
 ## Local Development
 
-### Quick Start with Minikube
+### Quick Start with k3d (k3s)
 
-1. Start the local cluster and build the image:
+1. Start the local cluster and build/push the image:
    ```bash
    ./scripts/local-k8s-setup.sh
    ```
 
-2. Deploy to minikube:
+2. Deploy to k3d:
    ```bash
    ./scripts/local-k8s-deploy.sh
    ```
@@ -104,7 +104,7 @@ kustomize build k8s/overlays/production | kubectl apply -f -
 
 4. Access the app:
    ```bash
-   kubectl port-forward svc/lornu-ai 8080:8080
+   kubectl port-forward svc/dev-lornu-ai 8080:80
    open http://localhost:8080
    ```
 

@@ -23,7 +23,7 @@ All other components remain aligned with your vision:
 - ✅ **CI/CD**: GitHub Actions with OIDC + manual approval gates
 
 #### Why EKS?
-1. **Local Parity**: Developers can run identical config on minikube/K3s locally, eliminating "works on my machine" issues
+1. **Local Parity**: Developers can run identical config on k3d/k3s locally, eliminating "works on my machine" issues
 2. **Portability**: Kustomize overlays make it trivial to deploy the same manifests across staging, production, and even GCP
 3. **Community Standard**: EKS aligns with industry-standard Kubernetes tooling and reduces vendor lock-in
 4. **ADK/A2A Readiness**: Kubernetes is the de facto standard for orchestrating agent-to-agent communication at scale

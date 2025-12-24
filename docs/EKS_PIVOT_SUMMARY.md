@@ -1,14 +1,14 @@
 # Issue Updates: ECS → EKS Kubernetes Pivot Summary
 
 ## Overview
-We have pivoted the entire infrastructure strategy from **AWS ECS Fargate** to **AWS EKS with Kubernetes orchestration**, using **Kustomize** for environment-specific overlays. This enables local parity (minikube/K3s) and cloud-native deployments.
+We have pivoted the entire infrastructure strategy from **AWS ECS Fargate** to **AWS EKS with Kubernetes orchestration**, using **Kustomize** for environment-specific overlays. This enables local parity (k3d/k3s) and cloud-native deployments.
 
 ## Key Changes
 
 ### Staging Infrastructure (#79, #103)
 - **Old**: ECS Fargate tasks → ALB
 - **New**: EKS cluster + Managed Node Groups → ALB Ingress Controller
-- **Local Dev**: Minikube/K3s with Kustomize overlays (identical to staging/prod)
+- **Local Dev**: k3d/k3s with Kustomize overlays (identical to staging/prod)
 - **Status**: ✅ COMPLETE via PR #161 rework
 
 ### Production Infrastructure (#150)
@@ -43,7 +43,7 @@ We have pivoted the entire infrastructure strategy from **AWS ECS Fargate** to *
 | #80 | Cloud-Native Kustomize Strategy | N/A | Kustomize | ✅ Complete |
 | #102 | Kustomize Base Manifests | N/A | k8s/base/ | ✅ Complete |
 | #103 | Staging Overlay & CI | ECS workflow | kubectl deploy | ✅ Complete |
-| #104 | Local Dev Overlay | N/A | Minikube + Kustomize | ✅ Complete |
+| #104 | Local Dev Overlay | N/A | k3d + Kustomize | ✅ Complete |
 | #150 | Production Infrastructure | ECS + RDS + CF + WAF | EKS + RDS + CF + WAF | 🔄 In Progress |
 | #159 | What's Next (Issue #150) | ECS staging reference | EKS reference | 🔄 In Progress |
 
@@ -67,7 +67,7 @@ We have pivoted the entire infrastructure strategy from **AWS ECS Fargate** to *
 - `.github/workflows/terraform-aws.yml` – Replaced ECS task apply with kubectl deploy
 
 ### Documentation
-- `docs/LOCAL_TESTING.md` – Minikube quick-start (new)
+- `docs/LOCAL_TESTING.md` – k3d quick-start (new)
 - `k8s/K8S_GUIDE.md` – Comprehensive Kustomize guide (new)
 - `.github/copilot-instructions.md` – Updated to EKS/Kustomize
 
