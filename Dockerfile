@@ -12,11 +12,11 @@ RUN cd apps/web && bun run build
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install build dependencies for Rust-based packages (vtracer, rembg) and curl for uv
+# Install minimal build dependencies (gcc for Rust linker, curl for uv)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
-    g++ \
-    build-essential \
+    libc6-dev \
+    make \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
