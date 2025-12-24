@@ -54,6 +54,12 @@ resource "aws_iam_policy" "github_ecr_push" {
           "ecr:UploadLayerPart",
           "ecr:CompleteLayerUpload",
           "ecr:BatchCheckLayerAvailability",
+        ]
+        Resource = aws_ecr_repository.main.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "ecr:GetAuthorizationToken",
         ]
         Resource = "*"
