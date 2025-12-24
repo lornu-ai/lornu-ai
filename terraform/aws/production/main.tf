@@ -10,7 +10,7 @@ terraform {
     organization = "disposable-org"
 
     workspaces {
-      name = "lornu-ai-prod-aws"
+      name = "lornu-ai"
     }
   }
 }
