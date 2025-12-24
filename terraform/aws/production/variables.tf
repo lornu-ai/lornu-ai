@@ -35,7 +35,7 @@ variable "route53_zone_name" {
 variable "create_route53_zone" {
   description = "Whether to create the Route53 hosted zone"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "cloudfront_web_acl_id" {
