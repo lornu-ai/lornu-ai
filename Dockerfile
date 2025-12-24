@@ -9,7 +9,7 @@ COPY apps/web/ ./apps/web/
 RUN cd apps/web && bun run build
 
 # Stage 2: Python FastAPI Backend
-FROM python:3.11-slim
+FROM python:3.12-slim
 WORKDIR /app
 
 # Copy uv from pinned version for supply chain security

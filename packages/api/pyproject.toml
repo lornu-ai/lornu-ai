@@ -3,11 +3,12 @@ name = "api"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
-    "fastapi>=0.124.4",
-    "uvicorn>=0.40.0",
-    "vtracer>=0.6.11",
-    "rembg>=2.0.50",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "vtracer>=0.6.0",
+    "rembg>=2.0.60",
+    "numba>=0.57.0",
     "pillow>=10.0.0",
 ]
