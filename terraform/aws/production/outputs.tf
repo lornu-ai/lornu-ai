@@ -13,8 +13,6 @@ output "cluster_name" {
   value       = module.eks.cluster_name
 }
 
-
-
 output "db_cluster_endpoint" {
   description = "The cluster endpoint for the Aurora database"
   value       = aws_rds_cluster.main.endpoint
