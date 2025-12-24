@@ -7,7 +7,7 @@ COPY apps/web/ ./apps/web/
 RUN cd apps/web && bun run build
 
 # Stage 2: Backend Builder (Compilers included for dependencies)
-FROM python:3.11-slim AS backend-builder
+FROM python:3.12-slim AS backend-builder
 WORKDIR /app
 
 # Install build dependencies (gcc, make for any native python modules)
@@ -27,7 +27,7 @@ COPY packages/api/pyproject.toml packages/api/uv.lock ./
 RUN uv sync --frozen --no-dev --no-editable
 
 # Stage 3: Final Runtime (Slim, Secure, Non-root)
-FROM python:3.11-slim AS runtime
+FROM python:3.12-slim AS runtime
 WORKDIR /app
 
 # Create non-root user for security (best practice for EKS)
