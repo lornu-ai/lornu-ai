@@ -169,6 +169,7 @@ jobs:
       TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
       TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
       TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
+      TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
 
     steps:
       - name: "Checkout"
@@ -207,6 +208,7 @@ jobs:
       TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
       TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
       TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
+      TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
 
     steps:
       - name: "Checkout"
