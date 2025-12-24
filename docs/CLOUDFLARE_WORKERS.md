@@ -6,7 +6,7 @@
 
 If you need to work with Cloudflare Workers, please use the **`lornu-ai-dev`** fork:
 
-- **Repository**: [lornu-ai/lornu-ai-dev](https://github.com/lornu-ai/lornu-ai-dev) (if exists)
+- **Repository**: [lornu-ai/lornu-ai-dev](https://github.com/lornu-ai/lornu-ai-dev)
 - **Purpose**: Rapid prototyping and development environment
 - **Infrastructure**: Cloudflare Workers (Edge)
 - **Artifacts**: `wrangler.toml`, Worker scripts
