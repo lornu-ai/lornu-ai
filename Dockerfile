@@ -1,18 +1,19 @@
 # Stage 1: Build React Frontend
 FROM oven/bun:alpine AS frontend-builder
-WORKDIR /app
-COPY apps/web/package.json apps/web/bun.lock ./apps/web/
-RUN cd apps/web && bun install --frozen-lockfile
-COPY apps/web/ ./apps/web/
-RUN cd apps/web && bun run build
+WORKDIR /app/apps/web
+COPY apps/web/package.json apps/web/bun.lock ./
+RUN bun install --frozen-lockfile
+COPY apps/web/ ./
+RUN bun run build
 
 # Stage 2: Backend Builder (Compilers included for dependencies)
 FROM python:3.12-slim AS backend-builder
 WORKDIR /app
 
 # Install build dependencies (gcc, make for any native python modules)
+# Removed curl as we copy uv from image
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libc6-dev make curl && \
+    gcc libc6-dev make && \
     rm -rf /var/lib/apt/lists/*
 
 # Securely install uv via image copy (Supply Chain Security)
@@ -31,7 +32,8 @@ FROM python:3.12-slim AS runtime
 WORKDIR /app
 
 # Create non-root user for security (best practice for EKS)
-RUN groupadd -r lornu && useradd -r -g lornu lornu
+# Use fixed UID 1000 to match k8s/base/deployment.yaml runAsUser context
+RUN groupadd -r -g 1000 lornu && useradd -r -u 1000 -g lornu lornu
 
 # Copy Virtual Environment from builder (contains all installed deps)
 COPY --from=backend-builder /app/.venv /app/.venv
