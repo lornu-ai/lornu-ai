@@ -6,7 +6,12 @@ resource "aws_eks_cluster" "main" {
   version  = "1.28"
 
   vpc_config {
-    subnet_ids              = concat(aws_subnet.private[*].id, aws_subnet.public[*].id)
+    subnet_ids              = [
+      aws_subnet.private_a.id,
+      aws_subnet.private_b.id,
+      aws_subnet.public_a.id,
+      aws_subnet.public_b.id,
+    ]
     endpoint_private_access = true
     endpoint_public_access  = true
     public_access_cidrs     = ["0.0.0.0/0"]
@@ -30,7 +35,7 @@ resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.main.name
   node_group_name = "lornu-ai-staging-nodes"
   node_role_arn   = aws_iam_role.eks_node_role.arn
-  subnet_ids      = aws_subnet.private[*].id
+  subnet_ids      = [aws_subnet.private_a.id, aws_subnet.private_b.id]
 
   scaling_config {
     desired_size = 2

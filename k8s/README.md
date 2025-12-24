@@ -8,7 +8,7 @@ This directory contains the Kubernetes manifests for the Lornu AI application, m
   - `deployment.yaml`: Defines the Lornu AI application deployment with 2 replicas.
     - **Resources**: Container resource requests of 256Mi memory / 250m CPU, with limits of 512Mi memory / 500m CPU.
   - `service.yaml`: Exposes the application via a ClusterIP service.
-  - `configmap.yaml`: Provides a base configuration with `LOG_LEVEL: "info"` and `ENVIRONMENT: "base"`.
+  - `configmap.yaml`: Provides a base configuration with `environment: "base"` and `contact-email`.
   - `kustomization.yaml`: Defines the base resources and common labels.
 
 - `overlays/`: Contains environment-specific overlays.

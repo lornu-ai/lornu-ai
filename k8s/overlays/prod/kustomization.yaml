@@ -19,7 +19,7 @@ configMapGenerator:
     behavior: merge
     literals:
       - LOG_LEVEL=warn
-      - ENVIRONMENT=production
+      - environment=production
       - DEBUG=false
 
 # Patch for production-specific settings

@@ -115,6 +115,18 @@ kustomize build k8s/overlays/production | kubectl apply -f -
 - EKS cluster running (provisioned via `terraform/aws/staging/eks.tf`)
 - kubectl configured with EKS cluster credentials
 - kustomize installed
+- AWS Load Balancer Controller installed (required for ALB Ingress)
+
+Example (Helm):
+```bash
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update
+helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  --namespace kube-system \
+  --set clusterName=lornu-ai-staging \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller
+```
 
 ### Staging Deployment
 
