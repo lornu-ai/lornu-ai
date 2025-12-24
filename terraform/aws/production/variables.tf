@@ -13,7 +13,6 @@ variable "docker_image" {
 variable "domain_name" {
   description = "The domain name for the application (e.g. lornu.ai)"
   type        = string
-  default     = "lornu.ai"
 }
 
 variable "secrets_manager_arn_pattern" {
