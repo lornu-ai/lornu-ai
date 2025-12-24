@@ -408,7 +408,6 @@ export async function handleContactAPI(request: Request, env: Env): Promise<Resp
 	}
 
 	// Validate request size to prevent DoS attacks
-	// Validate request size to prevent DoS attacks
 	const contentLength = request.headers.get('content-length');
 	if (contentLength && parseInt(contentLength, 10) > MAX_REQUEST_SIZE) {
 		return new Response(
