@@ -14,6 +14,11 @@ spec:
       labels:
         app: lornu-ai
     spec:
+      serviceAccountName: lornu-ai
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       containers:
       - name: lornu-ai
         image: lornu-ai:latest
@@ -31,6 +36,9 @@ spec:
         envFrom:
         - configMapRef:
             name: lornu-ai-config
+        - secretRef:
+            name: lornu-ai-secrets
+            optional: true
         resources:
           requests:
             memory: "256Mi"
@@ -38,15 +46,27 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
         livenessProbe:
           httpGet:
-            path: /health
-            port: 8080
+            path: /
+            port: http
           initialDelaySeconds: 30
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /health
-            port: 8080
+            path: /
+            port: http
           initialDelaySeconds: 5
           periodSeconds: 5
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}

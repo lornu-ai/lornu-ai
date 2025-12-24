@@ -5,6 +5,6 @@ metadata:
   labels:
     app: lornu-ai
 data:
-  # Base configuration - environment-agnostic
+  # Base configuration - environment-agnostic defaults
   LOG_LEVEL: "info"
-  ENVIRONMENT: "production"
+  ENVIRONMENT: "development"  # Safe default; production overlay will override

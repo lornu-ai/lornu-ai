@@ -8,7 +8,7 @@ terraform {
 
   cloud {
     workspaces {
-      name = "lornu-ai-prod-aws"
+      name = "lornu-ai-staging-aws"
     }
   }
 }
