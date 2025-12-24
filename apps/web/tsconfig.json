@@ -31,5 +31,13 @@
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "src/**/*.test.tsx",
+    "src/**/*.test.ts",
+    "src/**/*.integration.test.tsx",
+    "src/test/**/*",
+    "tests/**/*",
+    "node_modules"
   ]
 }
