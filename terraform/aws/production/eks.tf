@@ -7,8 +7,8 @@ module "eks" {
 
   cluster_endpoint_public_access = true
 
-  vpc_id     = aws_vpc.main.id
-  subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  vpc_id                   = aws_vpc.main.id
+  subnet_ids               = [aws_subnet.private_a.id, aws_subnet.private_b.id]
   control_plane_subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
 
   # Fargate Profile configuration
