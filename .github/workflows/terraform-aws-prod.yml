@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'terraform/aws/prod/**'
+      - 'terraform/aws/production/**'
       - 'Dockerfile'
       - '.github/workflows/terraform-aws-prod.yml'
   workflow_dispatch:
@@ -16,7 +16,7 @@ permissions:
 env:
   TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORGANIZATION }}
   TF_WORKSPACE: ${{ secrets.TF_WORKSPACE }}
-  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
 jobs:
@@ -56,10 +56,10 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/aws/prod init
+        run: terraform -chdir=terraform/aws/production init
 
       - name: Terraform Plan
         env:
@@ -69,13 +69,12 @@ jobs:
           TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
           TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
           TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
-        run: terraform -chdir=terraform/aws/prod plan
+        run: terraform -chdir=terraform/aws/production plan
 
       - name: Terraform Security Scan
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
-          working_directory: terraform/aws/prod
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          working_directory: terraform/aws/production
 
   apply:
     name: Terraform Apply
@@ -99,10 +98,10 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/aws/prod init
+        run: terraform -chdir=terraform/aws/production init
 
       - name: Terraform Apply
         env:
@@ -112,4 +111,4 @@ jobs:
           TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
           TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
           TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
-        run: terraform -chdir=terraform/aws/prod apply -auto-approve
+        run: terraform -chdir=terraform/aws/production apply -auto-approve
