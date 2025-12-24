@@ -15,6 +15,7 @@ env:
   # Common TF Vars (Option B)
   TF_VAR_resource_prefix: ${{ secrets.PROD_RESOURCE_PREFIX }}
   TF_VAR_github_repo: ${{ secrets.PROD_GITHUB_REPO }}
+  TF_VAR_aws_region: ${{ secrets.AWS_DEFAULT_REGION }}
 
 jobs:
   build:
@@ -93,7 +94,6 @@ jobs:
 
       - name: "Terraform Plan"
         env:
-          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
           TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
         run: terraform -chdir=terraform/aws/staging plan
@@ -131,7 +131,6 @@ jobs:
 
       - name: "Terraform Apply"
         env:
-          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
         run: terraform -chdir=terraform/aws/staging apply -auto-approve
 
@@ -180,7 +179,6 @@ jobs:
 
       - name: "Terraform Plan"
         env:
-          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
           TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
           TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
@@ -219,7 +217,6 @@ jobs:
 
       - name: "Terraform Apply"
         env:
-          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
           TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
           TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}

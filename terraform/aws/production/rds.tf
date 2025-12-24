@@ -21,10 +21,12 @@ resource "aws_rds_cluster" "main" {
   master_password         = var.db_password
   db_subnet_group_name    = aws_db_subnet_group.main.name
   vpc_security_group_ids  = [aws_security_group.rds.id]
-  skip_final_snapshot     = false
-  backup_retention_period = 7
-  storage_encrypted       = true
-  apply_immediately       = true
+  skip_final_snapshot       = false
+  final_snapshot_identifier = "${local.name}-final-snapshot"
+  backup_retention_period   = 7
+  storage_encrypted         = true
+  apply_immediately         = false
+  deletion_protection       = true
 
   serverlessv2_scaling_configuration {
     max_capacity = 1.0
@@ -66,7 +68,7 @@ resource "aws_security_group" "rds" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [aws_vpc.main.cidr_block]
   }
 
   tags = {

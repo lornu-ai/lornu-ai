@@ -28,3 +28,8 @@ output "waf_acl_arn" {
   description = "ARN of the WAFv2 Web ACL"
   value       = aws_wafv2_web_acl.main.arn
 }
+
+output "certificate_arn" {
+  description = "ARN of the ACM certificate"
+  value       = aws_acm_certificate.main.arn
+}
