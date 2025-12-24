@@ -1,0 +1,107 @@
+name: Terraform AWS Production
+
+on:
+  push:
+    branches: [ prod ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  TF_CLOUD_ORGANIZATION: "lornu-ai"
+  TF_WORKSPACE: "lornu-ai-prod-aws"
+  AWS_REGION: "us-east-1"
+  ECR_REPOSITORY: "lornu-ai-prod"
+
+jobs:
+  plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Push Docker Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.0
+          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform/aws/prod init
+
+      - name: Terraform Plan
+        env:
+          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN_PROD }}
+          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN_PROD }}
+          TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          TF_VAR_git_sha: ${{ github.sha }}
+        run: terraform -chdir=terraform/aws/prod plan
+
+      - name: Terraform Security Scan
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: terraform/aws/prod
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    needs: plan
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.0
+          terraform_api_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform/aws/prod init
+
+      - name: Terraform Apply
+        env:
+          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN_PROD }}
+          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN_PROD }}
+          TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          TF_VAR_git_sha: ${{ github.sha }}
+        run: terraform -chdir=terraform/aws/prod apply -auto-approve
