@@ -10,7 +10,6 @@ permissions:
 
 env:
   TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORG }}
-  TF_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   ECR_REPOSITORY: "lornu-ai-staging"
   # Common TF Vars (Option B)
@@ -40,6 +39,11 @@ jobs:
       - name: "Login to Amazon ECR"
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: "Ensure ECR Repository Exists"
+        run: |
+          aws ecr describe-repositories --repository-names ${{ env.ECR_REPOSITORY }} || \
+          aws ecr create-repository --repository-name ${{ env.ECR_REPOSITORY }}
 
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
