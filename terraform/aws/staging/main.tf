@@ -7,6 +7,7 @@ terraform {
   }
 
   cloud {
+    organization = "disposable-org"
     workspaces {
       name = "lornu-ai-staging-aws"
     }
