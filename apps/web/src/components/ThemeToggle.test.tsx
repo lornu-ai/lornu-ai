@@ -22,7 +22,11 @@ describe('ThemeToggle', () => {
 
     const toggleButton = screen.getByRole('button');
 
-    // Initial theme is light
+    // Initial theme is system
+    expect(screen.getByText('Current theme: system')).toBeInTheDocument();
+
+    // Click to change to light
+    fireEvent.click(toggleButton);
     expect(screen.getByText('Current theme: light')).toBeInTheDocument();
 
     // Click to change to dark
@@ -33,8 +37,8 @@ describe('ThemeToggle', () => {
     fireEvent.click(toggleButton);
     expect(screen.getByText('Current theme: open-source-pro')).toBeInTheDocument();
 
-    // Click to change back to light
+    // Click to change back to system
     fireEvent.click(toggleButton);
-    expect(screen.getByText('Current theme: light')).toBeInTheDocument();
+    expect(screen.getByText('Current theme: system')).toBeInTheDocument();
   });
 });

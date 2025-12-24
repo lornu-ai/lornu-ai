@@ -3,14 +3,17 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import Security from './Security'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 
 describe('Security Page', () => {
   const renderSecurity = () => {
     return render(
       <HelmetProvider>
-        <BrowserRouter>
-          <Security />
-        </BrowserRouter>
+        <ThemeProvider>
+          <BrowserRouter>
+            <Security />
+          </BrowserRouter>
+        </ThemeProvider>
       </HelmetProvider>
     )
   }
