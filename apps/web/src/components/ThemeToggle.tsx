@@ -19,7 +19,7 @@ const ThemeToggle: React.FC = () => {
 
   const renderIcon = () => {
     if (theme === 'system') {
-      return <Monitor className="h-5 w-5" />;
+      return <Monitor className="h-6 w-6" />;
     }
     if (theme === 'light') {
       return <Sun size={24} />;
