@@ -3,20 +3,20 @@ kind: Kustomization
 namespace: default
 resources:
 - ../../base
-namePrefix: staging-
+namePrefix: prod-
 commonLabels:
-  environment: staging
+  environment: production
 images:
 - name: lornu-ai
-  newName: 148080843892.dkr.ecr.us-east-1.amazonaws.com/lornu-ai-staging
+  newName: 148080843892.dkr.ecr.us-east-1.amazonaws.com/lornu-ai-production
   newTag: latest
 replicas:
-- name: staging-lornu-ai
-  count: 2
+- name: prod-lornu-ai
+  count: 3
 patches:
 - path: deployment-patch.yaml
 configMapGenerator:
 - name: lornu-ai-config
   behavior: merge
   literals:
-  - environment=staging
+  - environment=production

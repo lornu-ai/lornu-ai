@@ -103,7 +103,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   apply:
-    name: "Terraform Apply"
+    name: "Terraform Apply & Deploy"
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'workflow_dispatch'
@@ -131,5 +131,22 @@ jobs:
         env:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
-          TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
         run: terraform -chdir=terraform/aws/staging apply -auto-approve
+
+      - name: "Update kubeconfig"
+        run: |
+          aws eks update-kubeconfig \
+            --name lornu-ai-staging \
+            --region ${{ env.AWS_REGION }}
+
+      - name: "Deploy to EKS with Kustomize"
+        run: |
+          kustomize build k8s/overlays/staging | \
+          kubectl set image deployment/staging-lornu-ai \
+            lornu-ai=${{ needs.build.outputs.image-uri }} \
+            --filename - | \
+          kubectl apply -f -
+
+      - name: "Wait for Deployment"
+        run: |
+          kubectl rollout status deployment/staging-lornu-ai -n default --timeout=5m
