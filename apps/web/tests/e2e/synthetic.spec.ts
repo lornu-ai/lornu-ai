@@ -16,8 +16,12 @@ import { test, expect } from '@playwright/test';
  * - (Auth steps commented out until feature deployment)
  */
 test('Synthetic Monitor: Critical User Journey', async ({ page, request, baseURL }) => {
-    // Priority: Env Var (Better Stack) -> Fixture (CI/Local) -> Fallback (Production)
-    const BASE_URL = process.env.BASE_URL || baseURL || 'https://lornu.ai';
+    // Priority: Env Var (Better Stack) -> Fixture (CI/Local)
+    const BASE_URL = process.env.BASE_URL || baseURL;
+
+    if (!BASE_URL) {
+        throw new Error('BASE_URL environment variable or Playwright baseURL fixture is required.');
+    }
 
     // 1. Visit Home
     console.log(`Navigating to ${BASE_URL}`);
@@ -39,8 +43,16 @@ test('Synthetic Monitor: Critical User Journey', async ({ page, request, baseURL
     /*
     // Login
     await page.goto(`${BASE_URL}/login`);
-    await page.getByLabel('Email').fill(process.env.MONITOR_EMAIL || 'monitor@lornu.ai');
-    await page.getByLabel('Password').fill(process.env.MONITOR_PASSWORD || 'secure-password');
+
+    const email = process.env.MONITOR_EMAIL;
+    const password = process.env.MONITOR_PASSWORD;
+
+    if (!email || !password) {
+        throw new Error('MONITOR_EMAIL and MONITOR_PASSWORD environment variables are required for Auth Flow.');
+    }
+
+    await page.getByLabel('Email').fill(email);
+    await page.getByLabel('Password').fill(password);
     await page.getByRole('button', { name: /sign in/i }).click();
 
     // Verify Dashboard

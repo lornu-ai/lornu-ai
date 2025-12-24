@@ -34,7 +34,8 @@ Copy the content of `apps/web/tests/e2e/synthetic.spec.ts` into the Better Stack
 ```javascript
 // Better Stack wrapper structure
 module.exports = async function run(page, request) {
-  const BASE_URL = process.env.BASE_URL || 'https://lornu.ai';
+  const BASE_URL = process.env.BASE_URL;
+  if (!BASE_URL) throw new Error("BASE_URL env var required");
 
   // 1. Visit Home
   await page.goto(BASE_URL);
