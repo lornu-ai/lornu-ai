@@ -1,35 +1,35 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-bases:
+resources:
 - ../../base
 namePrefix: dev-
 images:
 - name: lornu-ai
   newName: localhost:5000/lornu-ai
   newTag: dev
-patchesStrategicMerge:
-- |-
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: lornu-ai
-  spec:
-    replicas: 1
-    template:
-      spec:
-        containers:
-        - name: lornu-ai
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "250m"
-            limits:
-              memory: "256Mi"
-              cpu: "250m"
-- |-
-  apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    name: lornu-ai-config
-  data:
-    LOG_LEVEL: "debug"
+patches:
+- patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: lornu-ai
+    spec:
+      replicas: 1
+      template:
+        spec:
+          containers:
+          - name: lornu-ai
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "250m"
+              limits:
+                memory: "256Mi"
+                cpu: "250m"
+- patch: |-
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: lornu-ai-config
+    data:
+      LOG_LEVEL: "debug"

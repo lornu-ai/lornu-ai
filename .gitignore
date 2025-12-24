@@ -69,6 +69,15 @@ logs
 *.swp
 *.swo
 
+# Archive files (downloads)
+*.tar.gz
+*.tgz
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+
 # Local env files
 .env
 .env.local
