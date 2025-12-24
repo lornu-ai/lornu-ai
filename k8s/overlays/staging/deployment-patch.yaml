@@ -3,15 +3,17 @@ kind: Deployment
 metadata:
   name: lornu-ai
 spec:
-  replicas: 3
   template:
     spec:
       containers:
       - name: lornu-ai
         resources:
           requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
             memory: "512Mi"
             cpu: "500m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
+        env:
+        - name: LOG_LEVEL
+          value: debug

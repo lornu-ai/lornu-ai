@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: default
+resources:
+- ../../base
+namePrefix: prod-
+commonLabels:
+  environment: production
+images:
+- name: lornu-ai
+  newName: 148080843892.dkr.ecr.us-east-1.amazonaws.com/lornu-ai-production
+  newTag: latest
+replicas:
+- name: prod-lornu-ai
+  count: 3
+patches:
+- path: deployment-patch.yaml
+configMapGenerator:
+- name: lornu-ai-config
+  behavior: merge
+  literals:
+  - environment=production
