@@ -1,7 +1,7 @@
 # Lornu AI
 
-**Environment:** Dev / Edge (Cloudflare)
-**Deployment Status:** Verified on `lornu-ai-dev`
+**Environment:** AWS/GCP (Staging & Production)
+**Deployment Status:** See `.ai/ARCHITECTURE.md` for deployment details
 
 ## For Developers & AI Agents
 This repository is structured to be "AI-Native".
