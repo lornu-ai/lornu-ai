@@ -15,14 +15,16 @@ variable "acm_certificate_arn" {
   type        = string
 }
 
-variable "cloudfront_acm_certificate_arn" {
-  description = "The ARN of the ACM certificate (us-east-1) for the CloudFront distribution."
+variable "route53_zone_name" {
+  description = "Route53 hosted zone name for lornu.ai."
   type        = string
+  default     = "lornu.ai"
 }
 
-variable "route53_zone_id" {
-  description = "Route53 hosted zone ID for lornu.ai."
-  type        = string
+variable "create_route53_zone" {
+  description = "Whether to create the Route53 hosted zone (false uses an existing zone lookup)."
+  type        = bool
+  default     = false
 }
 
 variable "api_domain" {
