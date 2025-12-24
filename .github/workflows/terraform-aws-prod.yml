@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 env:
-  TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORGANIZATION }}
-  TF_WORKSPACE: ${{ secrets.TF_WORKSPACE }}
+  TF_CLOUD_ORG: ${{ secrets.TF_CLOUD_ORG }}
+  TF_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
 
@@ -56,17 +56,19 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
 
       - name: Terraform Plan
         env:
-          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN_PROD }}
+          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}
-          TF_VAR_domain: ${{ secrets.PROD_DOMAIN }}
+          TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
+          TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
+          TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
         run: terraform -chdir=terraform/aws/production plan
 
       - name: Terraform Security Scan
@@ -96,15 +98,40 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
 
       - name: Terraform Apply
         env:
-          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN_PROD }}
+          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
           TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           TF_VAR_git_sha: ${{ github.sha }}
-          TF_VAR_domain: ${{ secrets.PROD_DOMAIN }}
+          TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
+          TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
+          TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
         run: terraform -chdir=terraform/aws/production apply -auto-approve
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name lornu-ai-production \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Install Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Deploy to EKS with Kustomize
+        run: |
+          kustomize build k8s/overlays/production | \
+          kubectl set image deployment/production-lornu-ai \
+            lornu-ai=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
+            --filename - | \
+          kubectl apply -f -
+
+      - name: Wait for Deployment
+        run: |
+          kubectl rollout status deployment/production-lornu-ai -n default --timeout=5m
