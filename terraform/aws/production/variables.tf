@@ -1,40 +1,45 @@
 variable "aws_region" {
   description = "The AWS region to deploy the infrastructure to."
   type        = string
-  default     = "us-east-1"
+  default     = "us-east-2"
 }
 
 variable "docker_image" {
-  description = "The Docker image to deploy to the ECS cluster."
+  description = "The Docker image to deploy to the EKS cluster."
   type        = string
-  default     = "lornuai/lornu-ai:commit-sha"
+}
+
+variable "domain_name" {
+  description = "The domain name for the application (e.g. lornu.ai)"
+  type        = string
+  default     = "lornu.ai"
+}
+
+variable "api_domain" {
+  description = "DNS name for the API CloudFront distribution (e.g. api.lornu.ai)"
+  type        = string
+  default     = "api.lornu.ai"
 }
 
 variable "acm_certificate_arn" {
-  description = "The ARN of the ACM certificate to use for the ALB."
+  description = "The ARN of the ACM certificate for the ALB"
   type        = string
 }
 
 variable "route53_zone_name" {
-  description = "Route53 hosted zone name for lornu.ai."
+  description = "The Route53 hosted zone name"
   type        = string
   default     = "lornu.ai"
 }
 
 variable "create_route53_zone" {
-  description = "Whether to create the Route53 hosted zone (false uses an existing zone lookup)."
+  description = "Whether to create the Route53 hosted zone"
   type        = bool
   default     = false
 }
 
-variable "api_domain" {
-  description = "DNS name for the API CloudFront distribution."
-  type        = string
-  default     = "api.lornu.ai"
-}
-
 variable "cloudfront_web_acl_id" {
-  description = "Optional WAFv2 Web ACL ID to associate with CloudFront."
+  description = "Optional WAFv2 Web ACL ID to associate with CloudFront"
   type        = string
   default     = ""
 }
@@ -60,4 +65,16 @@ variable "db_password" {
   description = "The master password for the database."
   type        = string
   sensitive   = true
+}
+
+variable "resource_prefix" {
+  description = "The resource prefix for naming (e.g., lornu-ai)"
+  type        = string
+  default     = "lornu-ai"
+}
+
+variable "github_repo" {
+  description = "The GitHub repository name for tagging resources"
+  type        = string
+  default     = "lornu-ai"
 }

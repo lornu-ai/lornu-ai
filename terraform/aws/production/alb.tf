@@ -76,7 +76,9 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Name = "lornu-ai-production-alb"
+    Name        = "lornu-ai-production-alb"
+    Environment = "production"
+    GithubRepo  = var.github_repo
   }
 }
 
@@ -96,4 +98,3 @@ resource "aws_security_group_rule" "alb_from_cloudfront" {
 data "aws_ec2_managed_prefix_list" "cloudfront" {
   name = "com.amazonaws.cloudfront.origin-facing"
 }
-

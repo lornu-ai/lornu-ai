@@ -14,6 +14,7 @@ resource "aws_s3_bucket" "cloudfront_logs" {
   tags = {
     Name        = "lornu-ai-cloudfront-logs"
     Environment = "production"
+    GithubRepo  = var.github_repo
   }
 }
 
@@ -109,6 +110,8 @@ resource "aws_cloudfront_distribution" "api" {
   price_class         = "PriceClass_100"
   default_root_object = ""
   http_version        = "http2and3"
+
+  depends_on = [aws_acm_certificate_validation.cloudfront]
 
   origin {
     domain_name              = aws_lb.main.dns_name
