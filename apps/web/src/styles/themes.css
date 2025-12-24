@@ -27,5 +27,5 @@
 
 [data-theme='dark'] .logo-image,
 [data-theme='open-source-pro'] .logo-image {
-  filter: brightness(0) invert(1);
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.45)) brightness(1.1);
 }
