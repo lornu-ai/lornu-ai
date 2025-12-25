@@ -85,3 +85,14 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
+variable "deploy_stage" {
+  description = "Deployment stage: 1 = ACM + Route53 zone + validation, 2 = CloudFront + alias records (requires stage 1 complete)"
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = var.deploy_stage >= 1 && var.deploy_stage <= 2
+    error_message = "deploy_stage must be 1 or 2"
+  }
+}

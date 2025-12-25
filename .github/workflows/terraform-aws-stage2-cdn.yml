@@ -1,0 +1,135 @@
+name: "Stage 2: CloudFront + Route53 Alias Records"
+
+# =============================================================================
+# STAGE 2: Create CloudFront distribution and DNS alias records
+# =============================================================================
+# This workflow creates:
+#   - S3 bucket for CloudFront logs
+#   - CloudFront distribution (using validated ACM certificate from Stage 1)
+#   - Route53 A/AAAA alias records pointing to CloudFront
+#
+# PREREQUISITES:
+#   - Stage 1 must be complete (ACM certificate in ISSUED state)
+#   - EKS cluster must be running with ALB Controller
+#   - Ingress resource must exist (or provide alb_domain_name)
+# =============================================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Apply changes (true) or just plan (false)'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  TF_CLOUD_ORG: ${{ secrets.TF_CLOUD_ORG }}
+  TF_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
+  AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+  ECR_REPOSITORY: lornu-ai-staging
+
+jobs:
+  stage2-cdn:
+    name: CloudFront Distribution Setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify ACM Certificate Status
+        run: |
+          echo "🔍 Checking ACM certificate status..."
+          CERT_STATUS=$(aws acm list-certificates --region us-east-1 \
+            --query "CertificateSummaryList[?DomainName=='${{ secrets.PROD_API_DOMAIN }}' || DomainName=='${{ secrets.PROD_DOMAIN }}'].Status" \
+            --output text | head -1)
+
+          if [ "$CERT_STATUS" != "ISSUED" ]; then
+            echo "❌ Error: ACM certificate is not in ISSUED state (current: $CERT_STATUS)"
+            echo "   Please run Stage 1 workflow first and wait for certificate validation."
+            exit 1
+          fi
+
+          echo "✅ ACM certificate is ISSUED - proceeding with Stage 2"
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.0
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform/aws/production init
+
+      - name: Terraform Plan (Stage 2)
+        env:
+          TF_VAR_deploy_stage: "2"
+          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
+          TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          TF_VAR_git_sha: ${{ github.sha }}
+          TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
+          TF_VAR_api_domain: ${{ secrets.PROD_API_DOMAIN }}
+          TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
+          TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
+          TF_VAR_route53_zone_name: ${{ secrets.ROUTE53_ZONE_NAME }}
+          TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
+          TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
+          TF_VAR_create_route53_zone: "true"
+        run: |
+          echo "☁️  Stage 2: Creating CloudFront distribution"
+          echo "   This will create:"
+          echo "   - S3 bucket for CloudFront logs"
+          echo "   - CloudFront distribution"
+          echo "   - Route53 alias records"
+          echo ""
+          terraform -chdir=terraform/aws/production plan -out=tfplan
+
+      - name: Terraform Apply (Stage 2)
+        if: inputs.apply == 'true'
+        env:
+          TF_VAR_deploy_stage: "2"
+          TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
+          TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          TF_VAR_git_sha: ${{ github.sha }}
+          TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
+          TF_VAR_api_domain: ${{ secrets.PROD_API_DOMAIN }}
+          TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
+          TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
+          TF_VAR_route53_zone_name: ${{ secrets.ROUTE53_ZONE_NAME }}
+          TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
+          TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
+          TF_VAR_create_route53_zone: "true"
+        run: |
+          echo "🚀 Applying Stage 2..."
+          echo "   CloudFront distribution typically takes 10-15 minutes to deploy."
+          terraform -chdir=terraform/aws/production apply -auto-approve tfplan
+
+      - name: Deployment Summary
+        if: inputs.apply == 'true'
+        run: |
+          echo "✅ Stage 2 complete!"
+          echo ""
+          echo "🎉 Full deployment finished:"
+          echo "   - ACM certificate: ISSUED"
+          echo "   - CloudFront distribution: DEPLOYED"
+          echo "   - DNS records: CONFIGURED"
+          echo ""
+          echo "🔗 Your site should be available at:"
+          echo "   https://${{ secrets.PROD_DOMAIN }}"
+          echo "   https://${{ secrets.PROD_API_DOMAIN }}"
