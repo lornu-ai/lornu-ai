@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lornu-ai
+  labels:
+    app: lornu-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lornu-ai
+  template:
+    metadata:
+      labels:
+        app: lornu-ai
+    spec:
+      serviceAccountName: lornu-ai
+      containers:
+      - name: lornu-ai
+        image: lornu-ai:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"

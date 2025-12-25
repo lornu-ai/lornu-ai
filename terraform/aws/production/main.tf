@@ -8,10 +8,6 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.0"
     }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~> 2.0"
-    }
     random = {
       source  = "hashicorp/random"
       version = "~> 3.0"
@@ -45,8 +41,4 @@ provider "kubernetes" {
     command     = "aws"
     args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name, "--region", var.aws_region]
   }
-}
-
-provider "helm" {
-  # This provider automatically uses the configuration from the "kubernetes" provider.
 }
