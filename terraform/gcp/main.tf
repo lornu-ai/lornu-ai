@@ -7,6 +7,10 @@ provider "google" {
 resource "google_compute_network" "vpc" {
   name                    = "lornu-ai-vpc"
   auto_create_subnetworks = false
+
+  depends_on = [
+    google_project_service.compute
+  ]
 }
 
 # Subnet for GKE cluster
@@ -102,8 +106,10 @@ resource "google_project_iam_member" "firestore_user" {
 }
 
 # Bind service account to Kubernetes service account via Workload Identity
-resource "google_service_account_iam_member" "workload_identity_binding" {
-  service_account_id = google_service_account.lornu_backend.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/lornu-ai]"
-}
+# NOTE: This requires the GKE cluster to be created first (which creates the identity pool)
+# Uncomment after initial cluster creation
+# resource "google_service_account_iam_member" "workload_identity_binding" {
+#   service_account_id = google_service_account.lornu_backend.name
+#   role               = "roles/iam.workloadIdentityUser"
+#   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/lornu-ai]"
+# }
