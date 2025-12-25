@@ -26,6 +26,8 @@ resource "aws_iam_role" "github_actions" {
             "token.actions.githubusercontent.com:sub" = [
               "repo:lornu-ai/lornu-ai:ref:refs/heads/main",
               "repo:lornu-ai/lornu-ai:ref:refs/heads/develop",
+              "repo:lornu-ai/lornu-ai:ref:refs/heads/kustomize",
+              "repo:lornu-ai/lornu-ai:ref:refs/heads/feat/hybrid-architecture",
               "repo:lornu-ai/lornu-ai:pull_request",
             ]
           }
