@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
 - ../../base
 - namespace.yaml
+- cert-manager
 
 namespace: lornu-prod
 
@@ -18,3 +19,20 @@ patches:
     - op: replace
       path: /spec/replicas
       value: 3
+- target:
+    kind: Ingress
+    name: lornu-ai
+  patch: |-
+    - op: add
+      path: /metadata/annotations/cert-manager.io~1cluster-issuer
+      value: letsencrypt-prod
+    - op: add
+      path: /metadata/annotations/cert-manager.io~1certificate-name
+      value: lornu-ai-tls
+    - op: add
+      path: /spec/tls
+      value:
+      - hosts:
+        - example.com
+        - api.example.com
+        secretName: lornu-ai-tls

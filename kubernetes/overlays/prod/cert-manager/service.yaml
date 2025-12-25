@@ -1,0 +1,19 @@
+---
+# Service for cert-manager webhook
+apiVersion: v1
+kind: Service
+metadata:
+  name: cert-manager-webhook
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: cert-manager-webhook
+    lornu.ai/managed-by: terraform-cloud
+spec:
+  ports:
+  - port: 443
+    targetPort: 10250
+    protocol: TCP
+    name: webhook
+  selector:
+    app.kubernetes.io/name: cert-manager-webhook
+  type: ClusterIP
