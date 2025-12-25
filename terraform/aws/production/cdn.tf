@@ -98,9 +98,8 @@ resource "aws_acm_certificate" "cloudfront" {
   domain_name       = var.domain_name
   validation_method = "DNS"
 
-  subject_alternative_names = [
-    var.api_domain
-  ]
+  # Only include subject_alternative_names if api_domain is not empty
+  subject_alternative_names = var.api_domain != "" ? [var.api_domain] : null
 
   lifecycle {
     create_before_destroy = true
