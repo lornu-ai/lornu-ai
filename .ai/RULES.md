@@ -1,33 +1,40 @@
-# Project Rules & Context (Lornu AI)
+# Plan A — Project Rules
 
-## Tech Stack
-- **Frontend:** React + Vite (located in `apps/web`)
-- **Package Manager (JS):** **Bun** (Always use `bun install`, `bun run`, `bunx`). NEVER use npm/yarn.
-- **Backend:** Python 3.11+ (located in `packages/api`)
-- **Package Manager (Python):** **uv** (Use `uv sync`, `uv pip install`).
-- **Infrastructure:** Terraform (AWS), Docker, Kubernetes (Kustomize).
-  - **Terraform Cloud Config:** Uses `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_DEFAULT_REGION` for authentication.
+## Core Standards
+1. **Single EKS cluster** with namespace isolation.
+2. **DRY manifests**: `kubernetes/base/` is the source of truth; overlays live in `kubernetes/overlays/`.
+3. **Protective Metadata** on all Kubernetes resources:
+   - `lornu.ai/environment`: `development` | `staging` | `production`
+   - `lornu.ai/managed-by`: `terraform-cloud`
+   - `lornu.ai/asset-id`: `lornu-ai-final-clear-bg`
+4. **Naming**: Use the `lornu-` prefix for namespaces and resource names.
 
-## Directory Structure
-- `apps/web`: Frontend application.
-- `packages/api`: Backend API/Logic.
-- `terraform/`: Infrastructure as Code.
-- `k8s/`: Kubernetes manifests (Base + Overlays).
-- `docs/`: Project documentation.
+## Tooling
+- **Frontend**: Bun only (`bun install`, `bun run`, `bunx`).
+- **Backend**: uv only (`uv sync`, `uv run`, `uv pip install`).
 
 ## Workflow Rules
-1. **Git:**
-   - Main branch: `main` (Production)
-   - Develop branch: `develop` (Staging/Integration)
-   - Feature branches: `feat/` or `feature/`
-   - **Never push directly to main/develop.** Always use PRs.
-2. **Testing:**
-   - Frontend: `bun run test` (Vitest), `bun run test:e2e` (Playwright).
-   - Backend: `uv run pytest`.
-3. **Linting:**
-   - Frontend: ESLint + Prettier.
-   - Backend: Ruff (`uv run ruff check .`).
+- `main`: Production
+- `develop`: Staging/Integration
+- Feature branches: `feat/` or `feature/`
+- Always use PRs; never push directly to `main` or `develop`.
+- Always open PRs against `develop`. For kustomize docs updates, use base `kustomize-develop`.
+## PR Labeling (Required)
+- Apply a label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) to every PR. If the label doesn't exist, create it first.
+- Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.
 
-## Specific Configurations
-- **Tailwind:** Configured in `apps/web/tailwind.config.js`. Uses `oklch` colors.
-- **Docker:** Multi-stage build located at root `Dockerfile`.
+## Testing & Linting
+- Frontend tests: `bun run test`, `bun run test:e2e`
+- Backend tests: `uv run pytest`
+- Backend lint: `uv run ruff check .`
+
+## Terraform Hygiene (Required)
+- Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
+
+## Infrastructure
+- Terraform Cloud is the source of truth for AWS infrastructure.
+- GitHub Actions drives plans/applies and Kustomize deployments.
+
+## Prohibited References
+- Do not introduce AWS ECS or Cloudflare Workers references.
+- Do not introduce Helm charts, templates, or values files.
