@@ -1,6 +1,6 @@
 # Enable required Google Cloud APIs
 # These must be enabled before other resources can be created
-# Service account must have roles/serviceusage.serviceUsageAdmin to enable these APIs
+# Service account must have roles/serviceusage.serviceUsageAdmin and roles/iam.serviceAccountUser
 # IMPORTANT: Billing must be enabled on the GCP project before APIs can be activated
 
 resource "google_project_service" "iam" {
