@@ -10,45 +10,50 @@ podman machine init
 podman machine start
 ```
 
-## Quick Start (5 minutes)
+## Quick Start (The Makefile Way)
+
+The easiest way to get started is using the `Makefile`:
 
 ```bash
-# 1. Setup local Kubernetes with minikube
-chmod +x scripts/local-k8s-*.sh
-./scripts/local-k8s-setup.sh
+# 1. Setup, Deploy, and Test everything in one command
+make dev
 
-# 2. Deploy to local cluster
-./scripts/local-k8s-deploy.sh
+# 2. Or run steps individually
+make setup   # Initialize Minikube & Build image
+make deploy  # Deploy to 'lornu-dev' namespace
+make test    # Run smoke tests
+```
 
-# 3. Test the deployment
-./scripts/local-k8s-test.sh
+## Accessing the App
 
-# 4. Access the app
-kubectl port-forward svc/lornu-ai 8080:8080 -n lornu-dev
+Once deployed, you can access the app locally:
+
+```bash
+kubectl port-forward svc/lornu-ai 8080:80 -n lornu-dev
 # Visit http://localhost:8080
 ```
 
-## What This Does
+## What This Does (Under the Hood)
 
-1. **local-k8s-setup.sh**:
+The `Makefile` targets call the following scripts:
+
+1. **`make setup`** (`local-k8s-setup.sh`):
    - Starts minikube using the `podman` driver (fallback to docker)
    - Auto-configures the environment (`minikube podman-env`)
    - Builds the container image locally within minikube's runtime
 
-2. **local-k8s-deploy.sh**:
+2. **`make deploy`** (`local-k8s-deploy.sh`):
    - Applies Kustomize manifests from `k8s/overlays/lornu-dev`
    - Resources are deployed in the `lornu-dev` namespace
    - Waits for the deployment to be healthy
 
-3. **local-k8s-test.sh**:
-   - Tests health endpoint (`/api/health`)
-   - Tests frontend serving
-   - Validates deployment is working
+3. **`make test`** (`local-k8s-test.sh`):
+   - Tests availability of the service in the `lornu-dev` namespace
+   - Checks pod logs for bootstrap errors
+   - Validates service response via temporary port-forward
 
-4. **local-k8s-cleanup.sh**:
-   - Removes all k8s resources
-   - Optionally removes Docker images
-   - Optionally stops minikube
+4. **`make clean`**:
+   - Removes the `lornu-dev` namespace and all its resources
 
 ## Development Workflow
 
