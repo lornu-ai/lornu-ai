@@ -80,40 +80,6 @@ resource "google_firestore_database" "lornu_db" {
   ]
 }
 
-# Service Account for Kubernetes workloads with Vertex AI and Firestore permissions
-resource "google_service_account" "lornu_backend" {
-  account_id   = "lornu-backend"
-  display_name = "Lornu AI Backend Service Account"
-  description  = "Service account for Kubernetes workloads with Vertex AI and Firestore access"
-
-  depends_on = [
-    google_project_service.iam
-  ]
-}
-
-# Grant Vertex AI User role (for Gemini API access)
-resource "google_project_iam_member" "vertex_ai_user" {
-  project = var.project_id
-  role    = "roles/aiplatform.user"
-  member  = "serviceAccount:${google_service_account.lornu_backend.email}"
-}
-
-# Grant Firestore User role (read/write access)
-resource "google_project_iam_member" "firestore_user" {
-  project = var.project_id
-  role    = "roles/datastore.user"
-  member  = "serviceAccount:${google_service_account.lornu_backend.email}"
-}
-
-# Bind service account to Kubernetes service accounts across all environments
-resource "google_service_account_iam_member" "workload_identity_binding" {
-  for_each = toset(["lornu-prod", "lornu-stage", "lornu-dev"])
-
-  service_account_id = google_service_account.lornu_backend.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value}/lornu-ai]"
-}
-
 # Artifact Registry for container images
 resource "google_artifact_registry_repository" "lornu_repo" {
   location      = var.region
