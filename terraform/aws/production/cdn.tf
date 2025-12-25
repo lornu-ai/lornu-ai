@@ -34,6 +34,28 @@ data "kubernetes_ingress_v1" "app" {
   depends_on = [module.eks]
 }
 
+# Local variable for ALB origin domain with explicit fallback
+# Primary: ALB provisioned by Kubernetes ALB Controller (auto-populated in Ingress status)
+# Secondary: Explicit alb_domain_name variable (useful for non-standard ALB setups)
+# Never uses a placeholder - fails at terraform plan if both unavailable
+locals {
+  alb_origin_domain = coalesce(
+    try(data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname, null),
+    var.alb_domain_name != "" ? var.alb_domain_name : null
+  )
+}
+
+# Precondition validation: Fail fast at terraform plan if ALB domain is not available
+# This prevents applying CloudFront with an invalid origin domain
+resource "null_resource" "validate_alb_origin" {
+  lifecycle {
+    precondition {
+      condition     = local.alb_origin_domain != null
+      error_message = "ALB origin domain is not available. Either wait for ALB Controller to provision the ALB and populate Ingress status, or explicitly set var.alb_domain_name to your ALB's DNS name."
+    }
+  }
+}
+
 # S3 bucket for CloudFront access logs
 resource "aws_s3_bucket" "cloudfront_logs" {
   bucket        = "lornu-ai-cloudfront-logs-${data.aws_caller_identity.current.account_id}"
@@ -139,19 +161,15 @@ resource "aws_cloudfront_distribution" "api" {
   default_root_object = ""
   http_version        = "http2and3"
 
-  depends_on = [aws_acm_certificate_validation.cloudfront]
+  depends_on = [aws_acm_certificate_validation.cloudfront, null_resource.validate_alb_origin]
 
   # Origin: ALB created by Kubernetes ALB Controller
   # The ALB Controller watches for Ingress resources and automatically provisions an ALB
   # The Ingress must be annotated with alb.ingress.kubernetes.io/certificate-arn to enable SSL
   # This uses the ALB's DNS name from the Ingress status, with fallback to alb_domain_name variable
-  # If neither is available, use a placeholder that will fail validation (forcing explicit configuration)
+  # ALB domain is validated with precondition (fails at terraform plan, not apply)
   origin {
-    domain_name = coalesce(
-      try(data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname, null),
-      var.alb_domain_name != "" ? var.alb_domain_name : null,  # Idiomatic Terraform: explicit ternary to gate on non-empty value
-      "unconfigured-alb.internal"  # Explicit fallback to catch configuration errors
-    )
+    domain_name = local.alb_origin_domain
     origin_id   = "alb-origin"
 
     custom_origin_config {
