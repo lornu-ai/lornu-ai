@@ -14,8 +14,11 @@ permissions:
   contents: read
 
 env:
+  TF_CLOUD_ORG: ${{ secrets.TF_CLOUD_ORG }}
+  TF_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   ECR_REPOSITORY: lornu-ai-staging
+  TFSEC_ENABLED: true
 
 jobs:
   plan:
@@ -74,6 +77,7 @@ jobs:
         run: terraform -chdir=terraform/aws/production plan
 
       - name: Terraform Security Scan
+        if: env.TFSEC_ENABLED == 'true'
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
           working_directory: terraform/aws/production
