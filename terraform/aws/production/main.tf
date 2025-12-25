@@ -39,6 +39,7 @@ provider "aws" {
 provider "kubernetes" {
   host                   = module.eks.cluster_endpoint
   cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  token                  = data.aws_eks_cluster_auth.cluster.token
 
   exec {
     api_version = "client.authentication.k8s.io/v1"
@@ -49,4 +50,9 @@ provider "kubernetes" {
 
 provider "helm" {
   # This provider automatically uses the configuration from the "kubernetes" provider.
+}
+
+# Get EKS cluster auth token for Kubernetes provider
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_name
 }
