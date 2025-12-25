@@ -39,7 +39,6 @@ resource "aws_lb_listener" "https" {
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
   certificate_arn   = aws_acm_certificate_validation.main.certificate_arn
-  depends_on        = [aws_acm_certificate_validation.main]
 
   default_action {
     type             = "forward"
