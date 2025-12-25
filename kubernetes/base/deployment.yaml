@@ -3,16 +3,16 @@ kind: Deployment
 metadata:
   name: lornu-ai
   labels:
-    app: lornu-ai
+    app.kubernetes.io/name: lornu-ai
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: lornu-ai
+      app.kubernetes.io/name: lornu-ai
   template:
     metadata:
       labels:
-        app: lornu-ai
+        app.kubernetes.io/name: lornu-ai
     spec:
       serviceAccountName: lornu-ai
       securityContext:

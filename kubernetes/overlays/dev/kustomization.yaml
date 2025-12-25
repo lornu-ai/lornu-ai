@@ -20,4 +20,4 @@ patches:
       value: 1
     - op: replace
       path: /spec/template/spec/containers/0/image
-      value: lornu-ai:latest
+      value: lornu-ai:local
