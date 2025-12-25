@@ -24,6 +24,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   chart      = "aws-load-balancer-controller"
   namespace  = "kube-system"
   version    = "1.7.1" # Pin version for stability
+  depends_on = [module.eks]
 
   values = [
     yamlencode({
