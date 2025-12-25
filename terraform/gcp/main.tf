@@ -55,6 +55,12 @@ resource "google_container_cluster" "primary" {
       start_time = "03:00"
     }
   }
+
+  # Wait for required APIs to be enabled
+  depends_on = [
+    google_project_service.container,
+    google_project_service.compute
+  ]
 }
 
 # Firestore Database for agent state persistence
@@ -64,6 +70,10 @@ resource "google_firestore_database" "lornu_db" {
   type        = "FIRESTORE_NATIVE"
 
   deletion_policy = "DELETE"
+
+  depends_on = [
+    google_project_service.firestore
+  ]
 }
 
 # Service Account for Kubernetes workloads with Vertex AI and Firestore permissions
@@ -71,6 +81,10 @@ resource "google_service_account" "lornu_backend" {
   account_id   = "lornu-backend"
   display_name = "Lornu AI Backend Service Account"
   description  = "Service account for Kubernetes workloads with Vertex AI and Firestore access"
+
+  depends_on = [
+    google_project_service.iam
+  ]
 }
 
 # Grant Vertex AI User role (for Gemini API access)
