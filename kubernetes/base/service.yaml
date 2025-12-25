@@ -3,7 +3,8 @@ kind: Service
 metadata:
   name: lornu-ai
   labels:
-    app: lornu-ai
+    app.kubernetes.io/name: lornu-ai
+    app.kubernetes.io/part-of: lornu-ai
 spec:
   type: ClusterIP
   ports:
@@ -12,4 +13,4 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: lornu-ai
+    app.kubernetes.io/name: lornu-ai
