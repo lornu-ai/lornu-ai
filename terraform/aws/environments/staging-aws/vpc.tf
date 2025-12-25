@@ -4,7 +4,7 @@ resource "aws_vpc" "main" {
   cidr_block = "10.1.0.0/16"
 
   tags = {
-    Name = "lornu-ai-prod-vpc"
+    Name = "lornu-ai-staging-vpc"
   }
 }
 
@@ -14,7 +14,7 @@ resource "aws_subnet" "public_a" {
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
-    Name = "lornu-ai-prod-public-a"
+    Name = "lornu-ai-staging-public-a"
   }
 }
 
@@ -24,7 +24,7 @@ resource "aws_subnet" "public_b" {
   availability_zone = data.aws_availability_zones.available.names[1]
 
   tags = {
-    Name = "lornu-ai-prod-public-b"
+    Name = "lornu-ai-staging-public-b"
   }
 }
 
@@ -34,7 +34,7 @@ resource "aws_subnet" "private_a" {
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
-    Name = "lornu-ai-prod-private-a"
+    Name = "lornu-ai-staging-private-a"
   }
 }
 
@@ -44,7 +44,7 @@ resource "aws_subnet" "private_b" {
   availability_zone = data.aws_availability_zones.available.names[1]
 
   tags = {
-    Name = "lornu-ai-prod-private-b"
+    Name = "lornu-ai-staging-private-b"
   }
 }
 
@@ -52,7 +52,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "lornu-ai-prod-igw"
+    Name = "lornu-ai-staging-igw"
   }
 }
 
@@ -65,7 +65,7 @@ resource "aws_nat_gateway" "main" {
   subnet_id     = aws_subnet.public_a.id
 
   tags = {
-    Name = "lornu-ai-prod-nat"
+    Name = "lornu-ai-staging-nat"
   }
 }
 
@@ -78,7 +78,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "lornu-ai-prod-public-rt"
+    Name = "lornu-ai-staging-public-rt"
   }
 }
 
@@ -101,7 +101,7 @@ resource "aws_route_table" "private" {
   }
 
   tags = {
-    Name = "lornu-ai-prod-private-rt"
+    Name = "lornu-ai-staging-private-rt"
   }
 }
 
