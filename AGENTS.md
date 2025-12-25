@@ -1,6 +1,6 @@
-# AGENTS.md
+# Plan A — AGENTS.md
 
-This repo is structured to be AI-native. Start here and follow the rules below.
+This repo is AI-native and optimized for **Plan A (MVI)**. Agents should generate code that respects the single-cluster, multi-namespace Kubernetes model.
 
 ## Quick Start (Required Reading)
 1. `.ai/MISSION.md` for product goals.
@@ -12,18 +12,33 @@ If there is any conflict between docs, follow `.ai/RULES.md`.
 ## Repo Layout
 - `apps/web`: Frontend (React + Vite).
 - `packages/api`: Backend (Python 3.11+).
+- `terraform/`: Infrastructure (Terraform Cloud).
+- `kubernetes/`: Kustomize manifests.
 - `docs/`: Project documentation.
-- `terraform/`, `k8s/`: Infrastructure.
+
+## Plan A Kubernetes Model
+- **Single EKS cluster**, namespaces:
+  - `lornu-dev`
+  - `lornu-staging`
+  - `lornu-prod`
+- **DRY manifests**: `kubernetes/base/` is source of truth; overlays live in `kubernetes/overlays/`.
+- **Protective Metadata** on all resources:
+  - `lornu.ai/environment`: `development` | `staging` | `production`
+  - `lornu.ai/managed-by`: `terraform-cloud`
+  - `lornu.ai/asset-id`: `lornu-ai-final-clear-bg`
 
 ## Tooling
 - JS/TS package manager: **Bun** only (`bun install`, `bun run`, `bunx`).
-- Python package manager: **uv** (`uv sync`, `uv run`, `uv pip install`).
+- Python package manager: **uv** only (`uv sync`, `uv run`).
 
 ## Git Workflow
 - `main`: Production
 - `develop`: Staging/Integration
 - Feature branches: `feat/` or `feature/`
 - Always use PRs; never push directly to `main` or `develop`.
+## PR Labeling (Required)
+- Create (if missing) a GitHub label that reflects the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) and apply it to every PR.
+- Use `gh label create` and `gh pr edit --add-label` to enforce labeling.
 
 ## Testing & Linting
 - Frontend tests: `bun run test`, `bun run test:e2e`

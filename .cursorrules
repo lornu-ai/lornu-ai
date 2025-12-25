@@ -1,198 +1,59 @@
-# Cursor IDE Rules for Lornu AI Project
+# Plan A — Cursor Rules (Lornu AI)
 
-## Project Overview
-This is a monorepo containing:
-- **Frontend**: React + Vite web application (`apps/web/`)
-- **Backend**: Python FastAPI API (`packages/api/`)
-- **Infrastructure**: Terraform for AWS staging (`terraform/aws/staging/`)
-- **Deployment**: Cloudflare Workers for frontend, AWS ECS Fargate for backend
+## Scope
+This repo follows **Plan A (Minimum Viable Infrastructure)**:
+- **Single EKS cluster** with **multi-namespace isolation**.
+- **Kustomize overlays** per environment: `lornu-dev`, `lornu-staging`, `lornu-prod`.
+- **Modern runtimes**: Bun (frontend) and uv (backend).
 
-## Package Managers
-
-### JavaScript/TypeScript: Bun
-- **Package Manager**: Bun 1.3.0+
-- **Lock File**: `bun.lock` and `bun.lockb` (binary lockfile)
-- **Installation**: `bun install` (NOT npm install)
-- **Scripts**: Use `bun run <script>` (NOT npm run)
-- **Location**: `apps/web/` directory
-- **Key Commands**:
-  - `bun install` - Install dependencies
-  - `bun run dev` - Start Vite dev server
-  - `bun run build` - Build for production
-  - `bun run test` - Run Vitest tests
-  - `bun run lint` - Run ESLint
-  - `bunx wrangler dev` - Run Cloudflare Worker locally
-
-### Python: uv
-- **Package Manager**: uv (fast Python package manager)
-- **Lock File**: `uv.lock`
-- **Installation**: `uv sync` or `uv sync --frozen`
-- **Location**: `packages/api/` directory
-- **Key Commands**:
-  - `uv sync` - Install dependencies
-  - `uv sync --frozen` - Install with lockfile (CI/production)
-  - `uv run <command>` - Run command in uv environment
-  - `uv run uvicorn main:app --reload` - Run FastAPI dev server with auto-reload
-
-## Project Structure
-
+## Directory Structure (DRY)
 ```
-lornu-ai/
-├── apps/
-│   └── web/              # React frontend (Bun)
-│       ├── src/          # React source code
-│       ├── worker.ts     # Cloudflare Worker entry point
-│       ├── package.json  # Bun dependencies
-│       ├── bun.lock      # Bun lockfile
-│       └── wrangler.toml # Cloudflare Worker config
-├── packages/
-│   └── api/              # Python backend (uv)
-│       ├── main.py       # FastAPI entry point
-│       ├── pyproject.toml # Python dependencies
-│       └── uv.lock       # uv lockfile
-├── terraform/
-│   └── aws/staging/      # AWS infrastructure as code
-└── docs/                 # Project documentation
+apps/web/              # React frontend (Bun)
+packages/api/          # Python backend (uv)
+terraform/             # Infrastructure (Terraform Cloud)
+kubernetes/base/       # Source of truth manifests
+kubernetes/overlays/   # Environment overlays: dev/, staging/, prod/
 ```
 
-## Build Tools & Frameworks
+## Kubernetes Standards
+- Always use **Kustomize**. Add shared resources to `kubernetes/base/` and patch per env in `kubernetes/overlays/`.
+- Namespaces:
+  - `lornu-dev`
+  - `lornu-staging`
+  - `lornu-prod`
+- **Protective Metadata** (required on every resource):
+  - `lornu.ai/environment`: `development` | `staging` | `production`
+  - `lornu.ai/managed-by`: `terraform-cloud`
+  - `lornu.ai/asset-id`: `lornu-ai-final-clear-bg`
+- Use `lornu-` prefix for resource names.
 
-### Frontend (apps/web/)
-- **Framework**: React 19+ with TypeScript
-- **Build Tool**: Vite 6+
-- **Styling**: Tailwind CSS 4+
-- **UI Components**: Radix UI, GitHub Spark
-- **Testing**:
-  - Vitest for unit/integration tests
-  - Playwright for E2E tests
-- **Deployment**: Cloudflare Workers (not Pages)
+## Runtime Standards
+- **Frontend**: Bun only (`bun install`, `bun run`, `bunx`).
+- **Backend**: uv only (`uv sync`, `uv run`).
+- Do **not** use npm/yarn/pip.
 
-### Backend (packages/api/)
-- **Framework**: Placeholder (FastAPI planned)
-- **Package Manager**: uv
-- **Runtime**: Python 3.12+ (slim base image)
-- **Deployment**: AWS ECS Fargate (via Docker)
-
-## Development Workflow
-
-### Frontend Development
-1. **Install**: `cd apps/web && bun install`
-2. **Dev Server**: `bun run dev` (runs on port 5174)
-3. **Build**: `bun run build` (outputs to `dist/`)
-4. **Test**:
-   - Unit: `bun run test:run`
-   - E2E: `bun run test:e2e`
-5. **Lint**: `bun run lint`
-
-### Backend Development
-1. **Install**: `cd packages/api && uv sync`
-2. **Run**: `uv run uvicorn main:app --reload`
-3. **Test**: (Add test commands when available)
-
-### Docker Development
-- **Multi-stage build**: Frontend (Bun) + Backend (Python/uv)
-- **Frontend stage**: Uses `oven/bun:alpine` to build React app
-- **Backend stage**: Uses `python:3.12-slim` with `uv` for dependencies
-- **Build**: `docker build -t lornu-ai .`
-- **Run**: `docker run -p 8080:8080 lornu-ai`
-
-## Code Conventions
-
-### TypeScript/JavaScript
-- **Linter**: ESLint 9+ with TypeScript support
-- **Formatter**: Pre-commit hooks handle formatting
-- **Type Safety**: Strict TypeScript, avoid `any` types
-- **Testing**: Use Vitest, React Testing Library for components
-- **File Naming**: PascalCase for components, camelCase for utilities
-
-### Python
-- **Style**: Follow PEP 8
-- **Type Hints**: Use type hints for all functions
-- **Package Management**: Always use `uv`, never `pip` directly
-- **Dependencies**: Managed in `pyproject.toml`
-
-## Important Notes
-
-### NEVER Use These Commands
-- ❌ `npm install` - Use `bun install` instead
-- ❌ `npm run <script>` - Use `bun run <script>` instead
-- ❌ `pip install` - Use `uv sync` instead
-- ❌ `python -m pip` - Use `uv` instead
-
-### Always Use These Commands
-- ✅ `bun install` - For JavaScript/TypeScript dependencies
-- ✅ `bun run <script>` - For running npm scripts
-- ✅ `uv sync` - For Python dependencies
-- ✅ `uv run <command>` - For running Python commands
-
-### CI/CD
-- **Frontend**: Cloudflare Git Integration (auto-deploys on push to main)
-- **Backend**: AWS ECS Fargate (via Terraform)
-- **Build Commands**:
-  - Frontend: `bun run build` (in `apps/web/`)
-  - Backend: Docker build (multi-stage)
-
-### Testing
-- **Unit Tests**: Vitest (`apps/web/src/**/*.test.tsx`)
-- **Integration Tests**: Vitest (`apps/web/src/**/*.integration.test.tsx`)
-- **E2E Tests**: Playwright (`apps/web/tests/e2e/**/*.spec.ts`)
-- **Test Setup**: `apps/web/src/test/setup.ts`
-
-### Deployment
-- **Frontend**: Cloudflare Workers (edge deployment)
-- **Backend**: AWS ECS Fargate (container deployment)
-- **Infrastructure**: Terraform Cloud backend
-
-## Environment Variables
-
-### Frontend (Cloudflare Workers)
-- Set via `wrangler secret put <NAME>` or Cloudflare Dashboard
-- Required: `RESEND_API_KEY`
-- Optional: `CONTACT_EMAIL`, `RATE_LIMIT_BYPASS_SECRET`
-
-### Backend (AWS ECS)
-- Set via AWS Secrets Manager or ECS task environment variables
-- Required: `GEMINI_API_KEY` (from Secrets Manager)
-
-## Documentation
-- **Architecture**: `.github/system-instruction.md`
-- **AWS Setup**: `docs/AWS_STAGING_DESIGN.md`
-- **Testing**: `apps/web/TESTING.md`
-- **Deployment**: `docs/DEPLOYMENT_VERIFICATION.md`
-
-## Quick Reference
-
-### Common Tasks
+## Commands
 ```bash
+# Build and apply an overlay
+kustomize build kubernetes/overlays/dev | kubectl apply -f -
+
 # Frontend
 cd apps/web
 bun install
 bun run dev
-bun run build
-bun run test:run
 
 # Backend
 cd packages/api
 uv sync
-uv run uvicorn main:app --reload
-
-# Docker
-docker build -t lornu-ai .
-docker run -p 8080:8080 lornu-ai
-
-# Infrastructure
-cd terraform/aws/staging
-terraform init
-terraform plan
-terraform apply
+uv run python -m packages.api.main
 ```
 
-## AI Assistant Guidelines
-When suggesting code changes:
-1. Always use `bun` for JavaScript/TypeScript operations
-2. Always use `uv` for Python operations
-3. Check if changes affect both frontend and backend
-4. Consider Cloudflare Workers limitations (no Node.js APIs)
-5. Consider AWS ECS Fargate requirements (container-based)
-6. Update tests when adding new features
-7. Follow existing code patterns and conventions
+## PR Labeling (Required)
+- Create (if missing) a GitHub label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) and apply it to every PR.
+- Use `gh label create` and `gh pr edit --add-label`.
+
+## Branding
+- Brand asset: `apps/web/src/assets/brand/lornu-ai-final-clear-bg.png`
+
+## Do Not Reference
+- AWS ECS or Cloudflare Workers (deprecated for Plan A).
