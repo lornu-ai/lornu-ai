@@ -4,7 +4,13 @@
 
 The service account used by Terraform (and GitHub Actions) needs the following roles:
 
-### 1. **Kubernetes Engine Admin**
+### 1. **Service Usage Admin** (CRITICAL)
+- **Role**: `roles/serviceusage.serviceUsageAdmin`
+- **Needed for**: Enabling Google Cloud APIs via Terraform
+- **Grants**: Ability to enable/disable APIs in the project
+- **Why**: Terraform auto-enables required APIs (IAM, GKE, Firestore, etc.)
+
+### 2. **Kubernetes Engine Admin**
 - **Role**: `roles/container.admin`
 - **Needed for**: Creating and managing GKE clusters
 - **Grants**: Full control over GKE clusters, node pools, and cluster resources
@@ -36,6 +42,11 @@ The service account used by Terraform (and GitHub Actions) needs the following r
 ```bash
 PROJECT_ID="your-project-id"
 SA_EMAIL="your-sa@your-project.iam.gserviceaccount.com"
+
+# Grant Service Usage Admin (MUST BE FIRST - enables APIs)
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:${SA_EMAIL}" \
+  --role="roles/serviceusage.serviceUsageAdmin"
 
 # Grant Kubernetes Engine Admin
 gcloud projects add-iam-policy-binding $PROJECT_ID \
@@ -71,7 +82,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 PROJECT_ID="your-project-id"
 SA_EMAIL="your-sa@your-project.iam.gserviceaccount.com"
 
-for role in roles/container.admin roles/compute.networkAdmin roles/datastore.owner roles/iam.serviceAccountAdmin roles/resourcemanager.projectIamAdmin; do
+for role in roles/serviceusage.serviceUsageAdmin roles/container.admin roles/compute.networkAdmin roles/datastore.owner roles/iam.serviceAccountAdmin roles/resourcemanager.projectIamAdmin; do
   gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:${SA_EMAIL}" \
     --role="$role"
@@ -84,6 +95,7 @@ done
 
 | Role | Purpose | Required |
 |------|---------|----------|
+| `roles/serviceusage.serviceUsageAdmin` | Enable/disable APIs | ✅ Yes (FIRST!) |
 | `roles/container.admin` | Manage GKE clusters | ✅ Yes |
 | `roles/compute.networkAdmin` | Manage VPC/subnets | ✅ Yes |
 | `roles/datastore.owner` | Manage Firestore | ✅ Yes |
