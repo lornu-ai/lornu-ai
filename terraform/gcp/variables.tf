@@ -1,5 +1,5 @@
 variable "project_id" {
-  description = "GCP Project ID (set via TF_VAR_project_id from GitHub Secrets)"
+  description = "GCP Project ID (set via TF_VAR_project_id from GitHub Secrets). Use project ID (string), NOT project number (numeric)."
   type        = string
 }
 
