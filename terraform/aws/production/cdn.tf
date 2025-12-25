@@ -140,7 +140,7 @@ locals {
 
 resource "aws_acm_certificate" "cloudfront" {
   provider          = aws.us_east_1
-  domain_name = var.api_domain != "" ? var.api_domain : var.domain_name
+  domain_name       = var.api_domain != "" ? var.api_domain : var.domain_name
   validation_method = "DNS"
 
   # Use conditional to exclude empty strings from subject_alternative_names
