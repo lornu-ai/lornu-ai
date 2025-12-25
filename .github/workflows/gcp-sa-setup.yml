@@ -55,9 +55,8 @@ jobs:
       - name: Import Service Account
         if: github.event.inputs.action == 'import_sa'
         run: |
-          # Unset env vars that cause Terraform to complain about undeclared variables
-          unset TF_VAR_project_id
-          unset GCP_PROJECT_ID
+          # Aggressively clear any environment variables that Terraform might pick up
+          unset $(env | grep -E '^TF_VAR_|^GCP_|^GOOGLE_' | cut -d= -f1)
           terraform -chdir=terraform/gcp import -var="project_id=${{ secrets.GCP_PROJECT_ID }}" google_service_account.terraform_provisioner projects/${{ secrets.GCP_PROJECT_ID }}/serviceAccounts/${{ github.event.inputs.sa_email }}
         env:
           GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS_JSON }}
