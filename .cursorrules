@@ -36,6 +36,7 @@ kubernetes/overlays/   # Environment overlays: dev/, staging/, prod/
 ```bash
 # Build and apply an overlay
 kustomize build kubernetes/overlays/dev | kubectl apply -f -
+kubectl apply -k kubernetes/overlays/dev
 
 # Frontend
 cd apps/web
@@ -57,3 +58,4 @@ uv run python -m packages.api.main
 
 ## Do Not Reference
 - AWS ECS or Cloudflare Workers (deprecated for Plan A).
+- Helm charts, templates, or values files (Helm is deprecated).

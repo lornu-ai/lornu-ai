@@ -8,7 +8,7 @@ Deliver a **50–70% reduction in engineering time** through a hardened, metadat
   - `lornu-dev`
   - `lornu-staging`
   - `lornu-prod`
-- **Kustomize overlays** per environment.
+- **Kustomize overlays** per environment (Helm is deprecated).
 - **Terraform Cloud** as infrastructure control plane.
 - **Modern runtimes**: Bun (frontend), uv (backend).
 
@@ -41,6 +41,7 @@ Every Kubernetes resource must include:
 
 ## Kubernetes Apply (Examples)
 ```bash
+kubectl apply -k kubernetes/overlays/dev
 kustomize build kubernetes/overlays/dev | kubectl apply -f -
 kustomize build kubernetes/overlays/staging | kubectl apply -f -
 kustomize build kubernetes/overlays/prod | kubectl apply -f -
