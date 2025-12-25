@@ -9,7 +9,7 @@ data "aws_cloudfront_origin_request_policy" "all_viewer" {
 # Query Kubernetes Ingress resource for ALB endpoint
 # The ALB Controller provisions an ALB based on the Ingress configuration
 # This data source retrieves the ALB's DNS name from the Ingress status
-# 
+#
 # CRITICAL DEPENDENCIES: This lookup has three key coupling points:
 # 1. k8s_namespace_prefix: Terraform variable (default: "prod-")
 # 2. namePrefix: From deployed Kustomize overlay (k8s/overlays/production/ uses "prod-")
@@ -36,7 +36,7 @@ data "kubernetes_ingress_v1" "app" {
 
 # Local variable for ALB origin domain with robust validation
 # Handles both empty strings and whitespace-only values from Ingress status
-# 
+#
 # Primary: ALB provisioned by Kubernetes ALB Controller (auto-populated in Ingress status)
 #   - Uses trimspace() to remove leading/trailing whitespace
 #   - Ternary operator checks that trimmed value is not empty
@@ -51,7 +51,7 @@ locals {
     trimspace(data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname) != "" ? trimspace(data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname) : null,
     null
   )
-  
+
   alb_origin_domain = coalesce(
     local.ingress_hostname,
     trimspace(var.alb_domain_name) != "" ? trimspace(var.alb_domain_name) : null
