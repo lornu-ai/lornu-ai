@@ -22,3 +22,10 @@ patches:
     - op: replace
       path: /spec/replicas
       value: 3
+- target:
+    kind: Ingress
+    name: lornu-ai
+  patch: |-
+    - op: add
+      path: /metadata/annotations/alb.ingress.kubernetes.io~1certificate-arn
+      value: "${PROD_ACM_CERTIFICATE_ARN}"
