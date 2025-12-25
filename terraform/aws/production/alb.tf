@@ -10,7 +10,7 @@ resource "aws_lb_target_group" "main" {
   name        = "lornu-ai-production-tg"
   port        = 8080
   protocol    = "HTTP"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.lornu_vpc.id
   target_type = "ip"
 
   health_check {
@@ -49,7 +49,7 @@ resource "aws_lb_listener" "https" {
 resource "aws_security_group" "alb" {
   name        = "lornu-ai-production-alb"
   description = "Allow HTTPS traffic only from CloudFront"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.lornu_vpc.id
 
   # Restrict ALB ingress to CloudFront-managed prefix list over HTTPS only
   ingress {
