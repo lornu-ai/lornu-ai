@@ -1,11 +1,16 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: default
+namespace: lornu-prod
 resources:
 - ../../base
+- namespace.yaml
 namePrefix: prod-
 commonLabels:
   environment: production
+  app.kubernetes.io/name: lornu-ai
+  lornu.ai/environment: production
+  lornu.ai/managed-by: terraform-cloud
+  lornu.ai/asset-id: lornu-ai-final-clear-bg
 images:
 - name: lornu-ai
   newName: 148080843892.dkr.ecr.us-east-1.amazonaws.com/lornu-ai-production

@@ -3,9 +3,15 @@ kind: Kustomization
 
 resources:
   - ../../base
+  - namespace.yaml
 
 namePrefix: prod-
-namespace: default
+namespace: lornu-prod
+commonLabels:
+  app.kubernetes.io/name: lornu-ai
+  lornu.ai/environment: production
+  lornu.ai/managed-by: terraform-cloud
+  lornu.ai/asset-id: lornu-ai-final-clear-bg
 
 # Image will be set dynamically via: kustomize edit set image lornu-ai=<ECR_IMAGE>
 images:
