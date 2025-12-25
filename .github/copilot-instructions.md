@@ -4,7 +4,7 @@ Concise guidance for AI agents to be immediately productive in this monorepo. Do
 
 ## Big Picture
 - **Plan A (MVI)**: One EKS cluster, three namespaces (`lornu-dev`, `lornu-staging`, `lornu-prod`).
-- **Kustomize** governs Kubernetes resources: `kubernetes/base/` + `kubernetes/overlays/{dev,staging,prod}`.
+- **Kustomize** governs Kubernetes resources: `kubernetes/base/` + `kubernetes/overlays/{dev,staging,prod}`. Helm is deprecated.
 - **Runtimes**: Bun for frontend, uv for backend.
 
 ## Required Kubernetes Standards
@@ -45,6 +45,9 @@ uv run pytest
 
 ### Kubernetes (Kustomize)
 ```bash
+# Preferred: built-in kubectl Kustomize
+kubectl apply -k kubernetes/overlays/dev
+
 # Dev
 kustomize build kubernetes/overlays/dev | kubectl apply -f -
 
@@ -61,6 +64,7 @@ kustomize build kubernetes/overlays/prod | kubectl apply -f -
 ## Avoid
 - AWS ECS and Cloudflare Workers references.
 - Non-DRY manifests (no copy-paste across overlays).
+- Helm charts, templates, or values files (Helm is deprecated).
 
 ## PR Labeling (Required)
 - Create (if missing) a GitHub label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) and apply it to every PR.

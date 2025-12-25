@@ -33,3 +33,4 @@
 
 ## Prohibited References
 - Do not introduce AWS ECS or Cloudflare Workers references.
+- Do not introduce Helm charts, templates, or values files.

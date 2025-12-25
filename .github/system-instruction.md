@@ -36,6 +36,7 @@ kubernetes/overlays/   # dev, staging, prod overlays
 ## Prohibited
 - Do not introduce AWS ECS or Cloudflare Workers references.
 - Do not add non-DRY manifest duplication across overlays.
+- Do not introduce Helm charts, templates, or values files.
 
 ## PR Labeling (Required)
 - Create (if missing) a GitHub label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) and apply it to every PR.

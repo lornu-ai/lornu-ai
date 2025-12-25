@@ -22,6 +22,7 @@ If there is any conflict between docs, follow `.ai/RULES.md`.
   - `lornu-staging`
   - `lornu-prod`
 - **DRY manifests**: `kubernetes/base/` is source of truth; overlays live in `kubernetes/overlays/`.
+- **Helm is deprecated**; use `kubectl apply -k` or `kustomize build`.
 - **Protective Metadata** on all resources:
   - `lornu.ai/environment`: `development` | `staging` | `production`
   - `lornu.ai/managed-by`: `terraform-cloud`

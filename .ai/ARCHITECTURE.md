@@ -1,7 +1,7 @@
 # Plan A — System Architecture
 
 ## Overview
-Plan A delivers a **single EKS cluster** with **multi-namespace isolation** managed by Kustomize. Infrastructure is controlled via Terraform Cloud and deployed through GitHub Actions.
+Plan A delivers a **single EKS cluster** with **multi-namespace isolation** managed by Kustomize (Helm is deprecated). Infrastructure is controlled via Terraform Cloud and deployed through GitHub Actions.
 
 ## Runtime Stack
 - **Frontend**: React + Vite (`apps/web`) with Bun.
