@@ -9,7 +9,13 @@ data "aws_cloudfront_origin_request_policy" "all_viewer" {
 # Query Kubernetes Ingress resource for ALB endpoint
 # The ALB Controller provisions an ALB based on the Ingress configuration
 # This data source retrieves the ALB's DNS name from the Ingress status
-# Note: Uses namePrefix from kustomization (e.g., "prod-lornu-ai" in production)
+# 
+# IMPORTANT: The Ingress name must match the namePrefix applied by the deployed overlay:
+# - k8s/overlays/production/ uses namePrefix: prod- → creates "prod-lornu-ai"
+# - Expected format: {k8s_namespace_prefix}{ingress_base_name}
+# - Default: "prod-" + "lornu-ai" = "prod-lornu-ai"
+#
+# If the overlay or namePrefix changes, this lookup must be updated to match.
 data "kubernetes_ingress_v1" "app" {
   metadata {
     name      = "${var.k8s_namespace_prefix}lornu-ai"
