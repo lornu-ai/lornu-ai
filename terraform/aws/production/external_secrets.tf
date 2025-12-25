@@ -51,11 +51,6 @@ resource "helm_release" "external_secrets" {
   version          = "0.9.13" # Pin version
   depends_on       = [module.eks]
 
-  timeouts {
-    create = "10m"
-    update = "10m"
-  }
-
   values = [
     yamlencode({
       installCRDs = true

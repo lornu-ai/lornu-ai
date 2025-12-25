@@ -26,11 +26,6 @@ resource "helm_release" "aws_load_balancer_controller" {
   version    = "1.7.1" # Pin version for stability
   depends_on = [module.eks]
 
-  timeouts {
-    create = "10m"
-    update = "10m"
-  }
-
   values = [
     yamlencode({
       clusterName = module.eks.cluster_name
