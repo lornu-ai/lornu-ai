@@ -30,7 +30,7 @@ If there is any conflict between docs, follow `.ai/RULES.md`.
 
 ## Tooling
 - JS/TS package manager: **Bun** only (`bun install`, `bun run`, `bunx`).
-- Python package manager: **uv** only (`uv sync`, `uv run`).
+- Python package manager: **uv** only (`uv sync`, `uv run`, `uv pip install`).
 
 ## Git Workflow
 - `main`: Production
@@ -38,8 +38,8 @@ If there is any conflict between docs, follow `.ai/RULES.md`.
 - Feature branches: `feat/` or `feature/`
 - Always use PRs; never push directly to `main` or `develop`.
 ## PR Labeling (Required)
-- Create (if missing) a GitHub label that reflects the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) and apply it to every PR.
-- Use `gh label create` and `gh pr edit --add-label` to enforce labeling.
+- Apply a label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) to every PR. If the label doesn't exist, create it first.
+- Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.
 
 ## Testing & Linting
 - Frontend tests: `bun run test`, `bun run test:e2e`
