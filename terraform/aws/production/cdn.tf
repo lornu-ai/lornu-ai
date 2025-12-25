@@ -74,19 +74,11 @@ resource "aws_acm_certificate" "cloudfront" {
 }
 
 resource "aws_route53_record" "cloudfront_cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
-
   zone_id = local.route53_zone_id
-  name    = each.value.name
-  type    = each.value.type
+  name    = one([for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.resource_record_name])
+  type    = one([for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.resource_record_type])
   ttl     = 60
-  records = [each.value.record]
+  records = [one([for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.resource_record_value])]
 
   depends_on = [aws_acm_certificate.cloudfront]
 }
@@ -94,7 +86,7 @@ resource "aws_route53_record" "cloudfront_cert_validation" {
 resource "aws_acm_certificate_validation" "cloudfront" {
   provider                = aws.us_east_1
   certificate_arn         = aws_acm_certificate.cloudfront.arn
-  validation_record_fqdns = [for record in aws_route53_record.cloudfront_cert_validation : record.fqdn]
+  validation_record_fqdns = [aws_route53_record.cloudfront_cert_validation.fqdn]
 }
 
 resource "aws_cloudfront_distribution" "api" {
