@@ -74,6 +74,7 @@ jobs:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_route53_zone_name: ${{ secrets.ROUTE53_ZONE_NAME }}
           TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
+          TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
         run: terraform -chdir=terraform/aws/production plan
 
       - name: Terraform Security Scan
