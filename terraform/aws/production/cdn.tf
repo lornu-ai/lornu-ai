@@ -160,22 +160,18 @@ resource "aws_cloudfront_distribution" "api" {
   web_acl_id = var.cloudfront_web_acl_id != "" ? var.cloudfront_web_acl_id : null
 }
 
+# DNS Records for CloudFront-only Architecture
+# All traffic for apex and API domains routes through CloudFront
+# CHANGED: Previously dns.tf managed apex domain with ALB certificate validation (1h15m timeout)
+# Now all DNS is managed here with CloudFront aliases (no validation delays)
+# Using for_each to consolidate A and AAAA records and reduce code duplication
+
 resource "aws_route53_record" "apex" {
+  for_each = toset(["A", "AAAA"])
+
   zone_id = local.route53_zone_id
   name    = var.domain_name
-  type    = "A"
-
-  alias {
-    name                   = aws_cloudfront_distribution.api.domain_name
-    zone_id                = aws_cloudfront_distribution.api.hosted_zone_id
-    evaluate_target_health = false
-  }
-}
-
-resource "aws_route53_record" "apex_ipv6" {
-  zone_id = local.route53_zone_id
-  name    = var.domain_name
-  type    = "AAAA"
+  type    = each.key
 
   alias {
     name                   = aws_cloudfront_distribution.api.domain_name
@@ -185,21 +181,11 @@ resource "aws_route53_record" "apex_ipv6" {
 }
 
 resource "aws_route53_record" "api_cloudfront" {
+  for_each = toset(["A", "AAAA"])
+
   zone_id = local.route53_zone_id
   name    = var.api_domain
-  type    = "A"
-
-  alias {
-    name                   = aws_cloudfront_distribution.api.domain_name
-    zone_id                = aws_cloudfront_distribution.api.hosted_zone_id
-    evaluate_target_health = false
-  }
-}
-
-resource "aws_route53_record" "api_cloudfront_ipv6" {
-  zone_id = local.route53_zone_id
-  name    = var.api_domain
-  type    = "AAAA"
+  type    = each.key
 
   alias {
     name                   = aws_cloudfront_distribution.api.domain_name
