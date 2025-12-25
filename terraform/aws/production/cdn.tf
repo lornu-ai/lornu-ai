@@ -1,48 +1,14 @@
+# CloudFront Cache Policies
+data "aws_cloudfront_cache_policy" "caching_optimized" {
+  name = "Managed-CachingOptimized"
+}
+
 data "aws_cloudfront_cache_policy" "caching_disabled" {
   name = "Managed-CachingDisabled"
 }
 
 data "aws_cloudfront_origin_request_policy" "all_viewer" {
   name = "Managed-AllViewer"
-}
-
-# S3 bucket for CloudFront access logs
-resource "aws_s3_bucket" "cloudfront_logs" {
-  bucket        = "lornu-ai-cloudfront-logs-${data.aws_caller_identity.current.account_id}"
-  force_destroy = false
-
-  tags = {
-    Name        = "lornu-ai-cloudfront-logs"
-    Environment = "production"
-    GithubRepo  = var.github_repo
-  }
-}
-
-resource "aws_s3_bucket_versioning" "cloudfront_logs" {
-  bucket = aws_s3_bucket.cloudfront_logs.id
-
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "cloudfront_logs" {
-  bucket = aws_s3_bucket.cloudfront_logs.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "cloudfront_logs" {
-  bucket = aws_s3_bucket.cloudfront_logs.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
 }
 
 data "aws_caller_identity" "current" {}
@@ -89,20 +55,29 @@ resource "aws_acm_certificate_validation" "cloudfront" {
   validation_record_fqdns = [aws_route53_record.cloudfront_cert_validation.fqdn]
 }
 
-resource "aws_cloudfront_distribution" "api" {
+# CloudFront Distribution
+resource "aws_cloudfront_distribution" "main" {
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "Lornu AI API distribution"
-  aliases             = [var.api_domain]
+  comment             = "Lornu AI Global Distribution (S3 + ALB)"
+  aliases             = [var.domain_name, var.api_domain]
+  default_root_object = "index.html"
   price_class         = "PriceClass_100"
-  default_root_object = ""
   http_version        = "http2and3"
 
   depends_on = [aws_acm_certificate_validation.cloudfront]
 
+  # S3 Origin (Frontend)
+  origin {
+    domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
+    origin_id                = "S3-Frontend"
+    origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
+  }
+
+  # ALB Origin (Backend API)
   origin {
     domain_name = aws_lb.main.dns_name
-    origin_id   = "alb-origin"
+    origin_id   = "ALB-Backend"
 
     custom_origin_config {
       http_port              = 80
@@ -112,14 +87,42 @@ resource "aws_cloudfront_distribution" "api" {
     }
   }
 
+  # Default Behavior: serve from S3 Optimized
   default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-Frontend"
+
+    viewer_protocol_policy = "redirect-to-https"
+    cache_policy_id        = data.aws_cloudfront_cache_policy.caching_optimized.id
+    compress               = true
+  }
+
+  # Ordered Behavior: /api/* -> route to ALB
+  ordered_cache_behavior {
+    path_pattern     = "/api/*"
     allowed_methods  = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
-    target_origin_id = "alb-origin"
+    target_origin_id = "ALB-Backend"
 
     viewer_protocol_policy   = "redirect-to-https"
     cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer.id
+  }
+
+  # Support React Router (SPA) by redirecting 404/403 to index.html
+  custom_error_response {
+    error_code            = 403
+    response_code         = 200
+    response_page_path    = "/index.html"
+    error_caching_min_ttl = 10
+  }
+
+  custom_error_response {
+    error_code            = 404
+    response_code         = 200
+    response_page_path    = "/index.html"
+    error_caching_min_ttl = 10
   }
 
   restrictions {
@@ -137,32 +140,52 @@ resource "aws_cloudfront_distribution" "api" {
   logging_config {
     include_cookies = false
     bucket          = aws_s3_bucket.cloudfront_logs.bucket_regional_domain_name
-    prefix          = "cloudfront-logs"
+    prefix          = "cloudfront-main/"
   }
 
-  web_acl_id = var.cloudfront_web_acl_id != "" ? var.cloudfront_web_acl_id : null
-}
+  web_acl_id = aws_wafv2_web_acl.cloudfront.arn
 
-resource "aws_route53_record" "api_cloudfront" {
-  zone_id = local.route53_zone_id
-  name    = var.api_domain
-  type    = "A"
-
-  alias {
-    name                   = aws_cloudfront_distribution.api.domain_name
-    zone_id                = aws_cloudfront_distribution.api.hosted_zone_id
-    evaluate_target_health = false
+  tags = {
+    Environment = "production"
+    GithubRepo  = var.github_repo
   }
 }
 
-resource "aws_route53_record" "api_cloudfront_ipv6" {
-  zone_id = local.route53_zone_id
-  name    = var.api_domain
-  type    = "AAAA"
+# S3 bucket for CloudFront access logs (re-used from old cdn.tf if needed, but let's keep it here for now)
+# Wait, I already have aws_s3_bucket.cloudfront_logs in the old cdn.tf.
+# I will keep the log bucket definition in this file.
 
-  alias {
-    name                   = aws_cloudfront_distribution.api.domain_name
-    zone_id                = aws_cloudfront_distribution.api.hosted_zone_id
-    evaluate_target_health = false
+resource "aws_s3_bucket" "cloudfront_logs" {
+  bucket              = "lornu-ai-cloudfront-logs-${data.aws_caller_identity.current.account_id}"
+  force_destroy       = false
+
+  tags = {
+    Name        = "lornu-ai-cloudfront-logs"
+    Environment = "production"
+    GithubRepo  = var.github_repo
   }
+}
+
+resource "aws_s3_bucket_versioning" "cloudfront_logs" {
+  bucket = aws_s3_bucket.cloudfront_logs.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "cloudfront_logs" {
+  bucket = aws_s3_bucket.cloudfront_logs.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "cloudfront_logs" {
+  bucket = aws_s3_bucket.cloudfront_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }

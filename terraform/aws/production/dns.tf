@@ -1,22 +1,41 @@
-resource "aws_route53_zone" "main" {
-  name = var.domain_name
+data "aws_route53_zone" "primary" {
+  count        = var.create_route53_zone ? 0 : 1
+  name         = var.route53_zone_name
+  private_zone = false
 }
 
-resource "aws_acm_certificate" "main" {
-  domain_name       = var.domain_name
-  validation_method = "DNS"
+resource "aws_route53_zone" "primary" {
+  count = var.create_route53_zone ? 1 : 0
+  name  = var.route53_zone_name
+}
 
-  subject_alternative_names = [
-    "*.${var.domain_name}"
-  ]
+locals {
+  route53_zone_id = var.create_route53_zone ? aws_route53_zone.primary[0].zone_id : data.aws_route53_zone.primary[0].zone_id
+}
 
-  lifecycle {
-    create_before_destroy = true
+# DNS Record for Apex (lornu.ai) pointing to CloudFront
+resource "aws_route53_record" "apex" {
+  zone_id = local.route53_zone_id
+  name    = var.domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.main.domain_name
+    zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
+    evaluate_target_health = false
   }
+}
 
-  tags = {
-    Environment = "production"
-    Name        = "lornu-ai-production-cert"
+# DNS Record for API (api.lornu.ai) pointing to CloudFront
+resource "aws_route53_record" "api" {
+  zone_id = local.route53_zone_id
+  name    = var.api_domain
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.main.domain_name
+    zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
+    evaluate_target_health = false
   }
 }
 
@@ -30,7 +49,7 @@ resource "aws_route53_record" "cert_validation" {
   records         = [each.value.resource_record_value]
   ttl             = 60
   type            = each.value.resource_record_type
-  zone_id         = aws_route53_zone.main.zone_id
+  zone_id         = local.route53_zone_id
 }
 
 resource "aws_acm_certificate_validation" "main" {
