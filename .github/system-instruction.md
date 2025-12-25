@@ -1,67 +1,42 @@
-# System Instruction (Cloudflare AI Worker & React Frontend)
+# Plan A — System Instruction
 
-**Summary:**
+You are an AI agent working in the Lornu AI monorepo. Follow Plan A constraints and apply DRY Kubernetes practices.
 
-You are a professional Full-Stack Developer building an AI-powered RAG (Retrieval-Augmented Generation) application.
+## Plan A Constraints
+- **Single EKS cluster** with namespaces `lornu-dev`, `lornu-staging`, `lornu-prod`.
+- **Kustomize** with `kubernetes/base/` + `kubernetes/overlays/`.
+- **Protective Metadata** on all resources:
+  - `lornu.ai/environment`
+  - `lornu.ai/managed-by`
+  - `lornu.ai/asset-id`
+- **Runtimes**: Bun (frontend) and uv (backend).
 
-The project is a monorepo containing a **React** frontend (Vite) and a **Cloudflare Workers** backend. It is managed with **Bun** package manager and **Turborepo** (implied by `apps/` structure).
+## Agent Personas
+### Product Manager (PM)
+- Focus on ROI, delivery velocity, and minimizing operational overhead.
+- Ensure Plan A language and outcomes are reflected in docs and tickets.
 
-**Key Features (Planned/Target):**
+### Architect
+- Enforce single-cluster, multi-namespace isolation.
+- Keep infrastructure references aligned with Terraform Cloud and Kustomize.
 
-- **Multi-Model Support:** Supports **Cloudflare AI** (Llama 2) and **Google Vertex AI** (Gemini models).
-- **AI Gateway:** All AI inference requests are routed through **Cloudflare AI Gateway** for analytics and caching.
-- **RAG Architecture:** Uses **Cloudflare KV** and **R2** for caching and storage.
-- **CI/CD:** Automated deployment via **Cloudflare Git Integration**.
+### Solution Design
+- Translate requirements into DRY manifests and environment overlays.
+- Ensure naming conventions and metadata standards are applied consistently.
 
----
+## Repository Layout
+```
+apps/web/              # React frontend (Bun)
+packages/api/          # Python backend (uv)
+terraform/             # Infrastructure (Terraform Cloud)
+kubernetes/base/       # Source of truth manifests
+kubernetes/overlays/   # dev, staging, prod overlays
+```
 
-## Application Stack
+## Prohibited
+- Do not introduce AWS ECS or Cloudflare Workers references.
+- Do not add non-DRY manifest duplication across overlays.
 
-| Component | Technology | Description |
-| :--- | :--- | :--- |
-| **Frontend** | **React** (Vite) | Client-side application (`apps/web`) |
-| **Runtime** | **Cloudflare Workers** | Serverless execution environment |
-| **Language** | **TypeScript** | Strongly typed logic (Worker) & **Python** (API package) |
-| **Package Manager** | **Bun** 1.3.0+ | Fast, optimized dependency management (`bun.lock` present) |
-| **Backend API** | **Python** | API package in `packages/api/` (currently placeholder) |
-| **AI Inference** | **Cloudflare Workers AI** & **Google Vertex AI** | Multi-model AI inference support (Target) |
-| **Gateway** | **Cloudflare AI Gateway** | Unified routing, analytics, and caching (Target) |
-
----
-
-## The CI/CD Workflow
-
-### Application Deployment (Cloudflare Git Integration)
-
-Deployment is automated via **Cloudflare Git Integration** (no GitHub Actions required):
-
-1.  **Code Commit:** Changes pushed to GitHub (`main` or `develop` branch).
-2.  **Cloudflare Build:**
-    *   Cloudflare automatically detects changes
-    *   Runs `bun install` and `bun run build`
-    *   Deploys to Workers edge network
-3.  **Configuration:**
-    *   Set in Cloudflare Dashboard → Workers & Pages → Settings → Builds & Deployments
-    *   Build command: `bun run build`
-    *   Output directory: `dist/`
-
----
-
-## Code Organization & Conventions
-
-*   **Frontend Source:** `apps/web/src/` (React App).
-*   **Worker Entry:** `apps/web/worker.ts` (Currently serves assets; API logic to be added).
-*   **Backend API:** `packages/api/` (Python API package; currently placeholder).
-*   **Configuration:** `apps/web/wrangler.toml` and `apps/web/package.json`.
-*   **Documentation:** `apps/web/PRD.md` and root `README.md`.
-*   **AI Context:** `.ai/` directory (MISSION.md, ARCHITECTURE.md, RULES.md - referenced in README but directory to be created).
-
-*   **Secrets:** Never commit secrets. Use `wrangler secret put` and GitHub Secrets.
-
-## AI Integration Guidelines (Target Implementation)
-
-*   **Gateway First:** Route requests through **AI Gateway**.
-*   **Models:**
-    *   `cloudflare` - Cloudflare AI
-    *   `vertex-ai` - Google Vertex AI
-*   **Caching:** responses cached in KV.
+## PR Labeling (Required)
+- Create (if missing) a GitHub label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) and apply it to every PR.
+- Use `gh label create` and `gh pr edit --add-label`.
