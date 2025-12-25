@@ -10,7 +10,7 @@ namespace: lornu-prod
 commonLabels:
   lornu.ai/environment: production
   lornu.ai/managed-by: plan-a-orchestration
-  lornu.ai/asset-id: lornu-ai-final-clear-bg
+  lornu.ai/asset-id: lornu-ai-production-app
 
 patches:
 - target:

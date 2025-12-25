@@ -12,10 +12,10 @@ data "aws_cloudfront_origin_request_policy" "all_viewer" {
 data "kubernetes_ingress_v1" "app" {
   metadata {
     name      = "lornu-ai"
-    namespace = "default"
+    namespace = "lornu-prod"
   }
 
-  depends_on = [module.eks]
+  depends_on = [module.lornu_cluster]
 }
 
 # S3 bucket for CloudFront access logs
