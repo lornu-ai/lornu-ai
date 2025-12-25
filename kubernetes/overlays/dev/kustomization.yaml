@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
 - ../../base
 - namespace.yaml
+- secrets.yaml
 
 namespace: lornu-dev
 

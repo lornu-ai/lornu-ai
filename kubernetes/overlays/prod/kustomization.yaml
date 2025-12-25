@@ -5,6 +5,7 @@ resources:
 - ../../base
 - namespace.yaml
 - cert-manager
+- secrets.yaml
 
 namespace: lornu-prod
 
