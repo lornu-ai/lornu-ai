@@ -15,14 +15,21 @@ replicas:
 - name: lornu-ai
   count: 3
 
+images:
+- name: lornu-ai
+  newName: 702555543026.dkr.ecr.us-east-2.amazonaws.com/lornu-ai-production
+  newTag: v1.0.0
+
 patches:
 - target:
     kind: Deployment
     name: lornu-ai
   patch: |-
-    - op: replace
-      path: /spec/template/spec/containers/0/image
-      value: 702555543026.dkr.ecr.us-east-2.amazonaws.com/lornu-ai-production:latest
+    - op: add
+      path: /spec/template/spec/containers/0/env
+      value:
+      - name: ENVIRONMENT
+        value: production
 
 helmCharts:
 - name: aws-load-balancer-controller
@@ -33,13 +40,20 @@ helmCharts:
   valuesInline:
     clusterName: lornu-ai-production-cluster
     serviceAccount:
-      create: false
+      create: true
       name: aws-load-balancer-controller
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::702555543026:role/lornu-ai-production-alb-controller
 
 - name: external-secrets
   repo: https://charts.external-secrets.io
   version: 0.9.9
   releaseName: external-secrets
-  namespace: kube-system
+  namespace: external-secrets
   valuesInline:
     installCRDs: true
+    serviceAccount:
+      create: true
+      name: external-secrets
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::702555543026:role/lornu-ai-production-external-secrets
