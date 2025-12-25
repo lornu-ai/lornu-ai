@@ -47,12 +47,18 @@ minikube addons enable metrics-server
 
 # Build image inside the minikube runtime (works for podman or docker)
 echo "🐳 Building container image in minikube..."
+
+# For podman with minikube, we need to use minikube image load or direct build
 if [ "$CONTAINER_RUNTIME" = "podman" ]; then
-    eval "$(minikube podman-env)"
+    # Build locally and load into minikube
+    podman build -t lornu-ai:local -f Dockerfile .
+    echo "📥 Loading image into minikube..."
+    minikube image load lornu-ai:local
 else
+    # For docker, use the standard docker-env approach
     eval "$(minikube docker-env)"
+    docker build -t lornu-ai:local -f Dockerfile .
 fi
-"$CONTAINER_RUNTIME" build -t lornu-ai:local -f Dockerfile .
 
 echo ""
 echo "✅ Local Kubernetes environment ready!"
