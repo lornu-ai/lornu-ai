@@ -2,7 +2,8 @@ name: Auto Claude PR Review
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened] # Triggers on PR open, update, and reopen
+    types: [opened, synchronize, reopened]
+  issue_comment:
 
 jobs:
   review:
@@ -11,13 +12,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Needed to analyze the full diff
+          fetch-depth: 0
 
       - name: Claude Code Review
-        uses: anthropic/claude-github-action@v1 # Use the official action
+        uses: anthropics/claude-code-action@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # If you used manual API key setup, specify it here:
-          # anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          # Optional: Add a custom prompt to guide the review
-          # prompt: "Review this PR for security issues and adherence to our coding standards."
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
