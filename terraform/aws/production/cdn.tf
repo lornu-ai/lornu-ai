@@ -149,7 +149,7 @@ resource "aws_cloudfront_distribution" "api" {
   origin {
     domain_name = coalesce(
       try(data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname, null),
-      var.alb_domain_name != "" ? var.alb_domain_name : null,
+      var.alb_domain_name != "" ? var.alb_domain_name : null,  # Idiomatic Terraform: explicit ternary to gate on non-empty value
       "unconfigured-alb.internal"  # Explicit fallback to catch configuration errors
     )
     origin_id   = "alb-origin"
