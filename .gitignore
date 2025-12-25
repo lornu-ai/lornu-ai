@@ -91,6 +91,9 @@ logs
 *.tfstate
 *.tfstate.*
 
+# Kustomize env files
+kubernetes/overlays/**/acm.env
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -10,6 +10,14 @@ namespace: lornu-prod
 commonLabels:
   lornu.ai/env: production
 
+configMapGenerator:
+- name: acm-config
+  envs:
+  - acm.env
+
+generatorOptions:
+  disableNameSuffixHash: true
+
 patches:
 - target:
     kind: Deployment
@@ -18,3 +26,17 @@ patches:
     - op: replace
       path: /spec/replicas
       value: 3
+
+replacements:
+- source:
+    kind: ConfigMap
+    name: acm-config
+    fieldPath: data.ACM_CERTIFICATE_ARN
+  targets:
+  - select:
+      kind: Ingress
+      name: lornu-ai
+    fieldPaths:
+    - metadata.annotations.alb.ingress.kubernetes.io/certificate-arn
+    options:
+      create: true
