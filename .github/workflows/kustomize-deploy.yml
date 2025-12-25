@@ -24,7 +24,7 @@ jobs:
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.TFC_AWS_RUN_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: "Update Kubeconfig"
