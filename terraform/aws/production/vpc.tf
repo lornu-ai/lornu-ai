@@ -1,11 +1,92 @@
 data "aws_availability_zones" "available" {}
 
+resource "aws_kms_key" "cloudwatch" {
+  description             = "KMS key for CloudWatch Logs encryption"
+  deletion_window_in_days = 10
+  enable_key_rotation     = true
+
+  tags = {
+    Name = "lornu-ai-production-cloudwatch-kms"
+  }
+}
+
+resource "aws_kms_alias" "cloudwatch" {
+  name          = "alias/lornu-ai-production-cloudwatch"
+  target_key_id = aws_kms_key.cloudwatch.key_id
+}
+
 resource "aws_vpc" "main" {
-  cidr_block = "10.1.0.0/16"
+  cidr_block           = "10.1.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
 
   tags = {
     Name = "lornu-ai-production-vpc"
   }
+}
+
+resource "aws_flow_log" "main" {
+  iam_role_arn    = aws_iam_role.vpc_flow_log.arn
+  log_destination = aws_cloudwatch_log_group.vpc_flow_log.arn
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.main.id
+
+  tags = {
+    Name = "lornu-ai-production-vpc-flow-log"
+  }
+}
+
+resource "aws_cloudwatch_log_group" "vpc_flow_log" {
+  name              = "/aws/vpc/lornu-ai-production"
+  retention_in_days = 30
+  kms_key_id        = aws_kms_key.cloudwatch.arn
+
+  tags = {
+    Name = "lornu-ai-production-vpc-flow-log"
+  }
+}
+
+resource "aws_iam_role" "vpc_flow_log" {
+  name = "lornu-ai-production-vpc-flow-log-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "vpc-flow-logs.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "lornu-ai-production-vpc-flow-log-role"
+  }
+}
+
+resource "aws_iam_role_policy" "vpc_flow_log" {
+  name = "lornu-ai-production-vpc-flow-log-policy"
+  role = aws_iam_role.vpc_flow_log.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      }
+    ]
+  })
 }
 
 resource "aws_subnet" "public_a" {
