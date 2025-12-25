@@ -67,6 +67,7 @@ jobs:
         with:
           workspace: "lornu-ai-${{ matrix.workspace_suffix }}"
           directory: "terraform/aws/environments/${{ matrix.workspace_suffix }}"
+          organization: ${{ secrets.TF_CLOUD_ORG }}
           token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Trigger TFC Run"

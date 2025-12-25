@@ -28,6 +28,7 @@ jobs:
         with:
           workspace: "lornu-ai-management"
           directory: "terraform/tfc-management"
+          organization: ${{ secrets.TF_CLOUD_ORG }}
           token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Create Run"
@@ -35,6 +36,7 @@ jobs:
         with:
           workspace: "lornu-ai-management"
           configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
+          organization: ${{ secrets.TF_CLOUD_ORG }}
           plan_only: ${{ github.event_name == 'pull_request' }}
           token: ${{ secrets.TF_API_TOKEN }}
           message: "Meta-Infrastructure Update: ${{ github.sha }}"
