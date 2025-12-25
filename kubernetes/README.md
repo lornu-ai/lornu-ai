@@ -35,7 +35,7 @@ To deploy the application to a local Kubernetes cluster (e.g., Kind, K3s), run t
 bun run dev:k8s
 ```
 
-This executes `kustomize build ../../k8s/overlays/dev | kubectl apply -f -`.
+This executes `kustomize build ../../kubernetes/overlays/dev | kubectl apply -f -`.
 
 ### Staging
 
