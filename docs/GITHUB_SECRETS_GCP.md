@@ -72,7 +72,7 @@ This setup uses the default Compute Engine service account with a JSON key file.
 
 ---
 
-### 3. **TF_API_TOKEN**
+### 3. **GCP_TF_API_TOKEN**
 - **Description**: Terraform Cloud API token for remote state management
 - **Used in**: `hashicorp/setup-terraform@v3` action
 - **How to get**:
@@ -102,7 +102,7 @@ gh secret set GCP_PROJECT_ID --body "your-project-id"
 gh secret set GCP_CREDENTIALS_JSON < ~/path/to/gcp-key.json
 
 # Set Terraform Cloud token
-gh secret set TF_API_TOKEN --body "your-tfc-api-token"
+gh secret set GCP_TF_API_TOKEN --body "your-tfc-api-token"
 ```
 
 ---
@@ -118,7 +118,7 @@ Expected output:
 ```
 GCP_CREDENTIALS_JSON    Updated 2025-12-25
 GCP_PROJECT_ID          Updated 2025-12-25
-TF_API_TOKEN            Updated 2025-12-25
+GCP_TF_API_TOKEN            Updated 2025-12-25
 ```
 
 ---
