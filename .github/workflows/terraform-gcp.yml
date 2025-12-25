@@ -14,7 +14,6 @@ on:
       - 'terraform/gcp/**'
 
 permissions:
-  id-token: write # Required for OIDC
   contents: read
   pull-requests: write
 
@@ -32,12 +31,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud via OIDC
-        id: auth
+      - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
       - name: Setup Terraform
