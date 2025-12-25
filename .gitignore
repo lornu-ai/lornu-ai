@@ -101,3 +101,11 @@ wrangler.toml
 apps/web/worker.ts
 .wrangler/
 .dev.vars
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+*.tfvars
+*.tfvars.json

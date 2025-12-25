@@ -35,6 +35,11 @@ The service account used by Terraform (and GitHub Actions) needs the following r
 - **Needed for**: Granting roles to service accounts (Vertex AI, Firestore, Workload Identity)
 - **Grants**: Modify IAM policies on the project
 
+### 6. **Service Account User**
+- **Role**: `roles/iam.serviceAccountUser`
+- **Needed for**: Allowing GKE to use the default Compute Engine service account
+- **Grants**: Permission to use service accounts in the project
+
 ---
 
 ## Grant Commands (All Required Roles)
@@ -72,6 +77,11 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member="serviceAccount:${SA_EMAIL}" \
   --role="roles/resourcemanager.projectIamAdmin"
+
+# Grant Service Account User
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:${SA_EMAIL}" \
+  --role="roles/iam.serviceAccountUser"
 ```
 
 ---
@@ -82,7 +92,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 PROJECT_ID="your-project-id"
 SA_EMAIL="your-sa@your-project.iam.gserviceaccount.com"
 
-for role in roles/serviceusage.serviceUsageAdmin roles/container.admin roles/compute.networkAdmin roles/datastore.owner roles/iam.serviceAccountAdmin roles/resourcemanager.projectIamAdmin; do
+for role in roles/serviceusage.serviceUsageAdmin roles/container.admin roles/compute.networkAdmin roles/datastore.owner roles/iam.serviceAccountAdmin roles/resourcemanager.projectIamAdmin roles/iam.serviceAccountUser; do
   gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:${SA_EMAIL}" \
     --role="$role"
@@ -101,6 +111,7 @@ done
 | `roles/datastore.owner` | Manage Firestore | ✅ Yes |
 | `roles/iam.serviceAccountAdmin` | Create service accounts | ✅ Yes |
 | `roles/resourcemanager.projectIamAdmin` | Grant IAM roles | ✅ Yes |
+| `roles/iam.serviceAccountUser` | Use service accounts (for GKE) | ✅ Yes |
 
 ---
 
