@@ -4,7 +4,6 @@ metadata:
   name: lornu-ai
   labels:
     app.kubernetes.io/name: lornu-ai
-    app.kubernetes.io/part-of: lornu-ai
 spec:
   replicas: 2
   selector:
@@ -14,7 +13,6 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: lornu-ai
-        app.kubernetes.io/part-of: lornu-ai
     spec:
       serviceAccountName: lornu-ai
       securityContext:
