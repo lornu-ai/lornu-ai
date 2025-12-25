@@ -19,10 +19,12 @@ cat ~/path/to/service-account-key.json
 ```
 
 ### 2. **TF_VAR_project_id**
-- **Category**: Terraform variable
+- **Category**: Environment variable (NOT Terraform variable)
 - **Value**: Your GCP project ID (e.g., `lornu-ai-prod-12345`)
 - **Sensitive**: ❌ No
-- **Description**: GCP Project ID
+- **Description**: GCP Project ID (auto-maps to var.project_id in Terraform)
+
+**Note**: The `TF_VAR_` prefix is required for Terraform to automatically map this environment variable to the `var.project_id` variable in the code.
 
 ### 3. **GOOGLE_PROJECT** (Optional but recommended)
 - **Category**: Environment variable
@@ -41,7 +43,10 @@ cat ~/path/to/service-account-key.json
 4. Paste the JSON key content
 5. Check **"Sensitive"**
 6. Click **"Save variable"**
-7. Repeat for `TF_VAR_project_id` (select "Terraform variable")
+7. Click **"+ Add variable"** again
+8. Select **"Environment variable"** for `TF_VAR_project_id`
+9. Enter your GCP project ID
+10. Click **"Save variable"**
 
 ### Via Terraform Cloud API (using `tfe` CLI):
 ```bash
@@ -59,11 +64,11 @@ tfe variable create \
   --category env \
   --sensitive
 
-# Add TF_VAR_project_id
+# Add TF_VAR_project_id as environment variable
 tfe variable create \
   --name "TF_VAR_project_id" \
   --value "your-project-id" \
-  --category terraform
+  --category env
 ```
 
 ---
