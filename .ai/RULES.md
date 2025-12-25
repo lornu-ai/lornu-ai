@@ -28,6 +28,9 @@
 - Backend tests: `uv run pytest`
 - Backend lint: `uv run ruff check .`
 
+## Terraform Hygiene (Required)
+- Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
+
 ## Infrastructure
 - Terraform Cloud is the source of truth for AWS infrastructure.
 - GitHub Actions drives plans/applies and Kustomize deployments.

@@ -72,3 +72,6 @@ kustomize build kubernetes/overlays/prod | kubectl apply -f -
 
 ## PR Base Branch (Required)
 - Always open PRs against `develop`. For kustomize docs updates, use base `kustomize-develop`.
+
+## Terraform Hygiene (Required)
+- Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
