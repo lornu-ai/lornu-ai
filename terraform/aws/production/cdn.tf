@@ -171,6 +171,9 @@ resource "aws_acm_certificate_validation" "cloudfront" {
   provider                = aws.us_east_1
   certificate_arn         = aws_acm_certificate.cloudfront.arn
   validation_record_fqdns = [for record in aws_route53_record.cloudfront_cert_validation : record.fqdn]
+  timeouts {
+    create = "10m"
+  }
 }
 
 resource "aws_cloudfront_distribution" "api" {

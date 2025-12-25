@@ -69,7 +69,12 @@ resource "aws_flow_log" "main" {
 resource "aws_cloudwatch_log_group" "vpc_flow_log" {
   name              = "/aws/vpc/lornu-ai-production"
   retention_in_days = 30
-  kms_key_id        = aws_kms_key.cloudwatch.id
+  kms_key_id        = aws_kms_key.cloudwatch.arn
+
+  depends_on = [
+    aws_kms_key.cloudwatch,
+    aws_kms_alias.cloudwatch
+  ]
 
   tags = {
     Name = "lornu-ai-production-vpc-flow-log"

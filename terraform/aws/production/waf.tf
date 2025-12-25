@@ -1,7 +1,12 @@
 resource "aws_cloudwatch_log_group" "waf" {
   name              = "/aws/wafv2/lornu-ai-production"
   retention_in_days = 30
-  kms_key_id        = aws_kms_key.cloudwatch.id
+  kms_key_id        = aws_kms_key.cloudwatch.arn
+
+  depends_on = [
+    aws_kms_key.cloudwatch,
+    aws_kms_alias.cloudwatch
+  ]
 
   tags = {
     Name        = "lornu-ai-production-waf-logs"
