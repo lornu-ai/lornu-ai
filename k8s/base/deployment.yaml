@@ -5,7 +5,7 @@ metadata:
   labels:
     app: lornu-ai
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: lornu-ai
@@ -15,63 +15,27 @@ spec:
         app: lornu-ai
     spec:
       serviceAccountName: lornu-ai
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
       containers:
       - name: lornu-ai
-        image: lornu-ai:latest
-        imagePullPolicy: IfNotPresent
+        image: lornu-ai:dev
         ports:
-        - name: http
-          containerPort: 8080
-          protocol: TCP
-        env:
-        - name: PORT
-          value: "8080"
-        - name: HOST
-          value: "0.0.0.0"
-        - name: PYTHONPATH
-          value: "/app"
-        envFrom:
-        - configMapRef:
-            name: lornu-ai-config
-        - secretRef:
-            name: lornu-ai-secrets
-            optional: true
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities:
-            drop:
-            - ALL
+        - containerPort: 8080
         readinessProbe:
           httpGet:
-            path: /
-            port: http
+            path: /health
+            port: 8080
           initialDelaySeconds: 5
           periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
         livenessProbe:
           httpGet:
-            path: /
-            port: http
+            path: /health
+            port: 8080
           initialDelaySeconds: 15
           periodSeconds: 20
-          timeoutSeconds: 5
-          failureThreshold: 3
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-      volumes:
-      - name: tmp
-        emptyDir: {}
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"

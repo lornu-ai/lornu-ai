@@ -2,43 +2,58 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base
+- ../../base
 
-namePrefix: prod-
-namespace: default
+namespace: lornu-prod
 
-# Image will be set dynamically via: kustomize edit set image lornu-ai=<ECR_IMAGE>
+commonLabels:
+  lornu.ai/environment: production
+  lornu.ai/managed-by: kustomize
+  lornu.ai/asset-id: lornu-ai-final-clear-bg
+
+replicas:
+- name: lornu-ai
+  count: 3
+
 images:
-  - name: lornu-ai
-    newName: lornu-ai
-    newTag: latest
+- name: lornu-ai
+  newName: 702555543026.dkr.ecr.us-east-2.amazonaws.com/lornu-ai-production
+  newTag: v1.0.0
 
-# ConfigMap generator for production-specific configuration
-configMapGenerator:
-  - name: lornu-ai-config
-    behavior: merge
-    literals:
-      - LOG_LEVEL=warn
-      - ENVIRONMENT=production
-      - DEBUG=false
-
-# Patch for production-specific settings
 patches:
-  - patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: lornu-ai
-      spec:
-        replicas: 3
-        template:
-          spec:
-            containers:
-            - name: lornu-ai
-              resources:
-                requests:
-                  memory: "512Mi"
-                  cpu: "500m"
-                limits:
-                  memory: "1Gi"
-                  cpu: "1000m"
+- target:
+    kind: Deployment
+    name: lornu-ai
+  patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/env
+      value:
+      - name: ENVIRONMENT
+        value: production
+
+helmCharts:
+- name: aws-load-balancer-controller
+  repo: https://aws.github.io/eks-charts
+  version: 1.6.2
+  releaseName: aws-load-balancer-controller
+  namespace: kube-system
+  valuesInline:
+    clusterName: lornu-ai-production-cluster
+    serviceAccount:
+      create: true
+      name: aws-load-balancer-controller
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::702555543026:role/lornu-ai-production-alb-controller
+
+- name: external-secrets
+  repo: https://charts.external-secrets.io
+  version: 0.9.9
+  releaseName: external-secrets
+  namespace: external-secrets
+  valuesInline:
+    installCRDs: true
+    serviceAccount:
+      create: true
+      name: external-secrets
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::702555543026:role/lornu-ai-production-external-secrets
