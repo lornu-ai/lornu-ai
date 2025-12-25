@@ -1,0 +1,63 @@
+name: "Kustomize Deployments"
+
+on:
+  push:
+    branches: [ kustomize ]
+  pull_request:
+    branches: [ kustomize ]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: "Deploy Environments"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [dev, staging, prod]
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Check if Deployment is Allowed"
+        id: check-deploy
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ matrix.env }}" == "prod" ]]; then
+            echo "Skipping production deployment on Pull Request"
+            echo "allowed=false" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "push" && "${{ matrix.env }}" == "prod" ]]; then
+            echo "Skipping automatic production deployment on Push. Use workflow_dispatch or release tag."
+            echo "allowed=false" >> $GITHUB_OUTPUT
+          else
+            echo "allowed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: "Configure AWS Credentials"
+        if: steps.check-deploy.outputs.allowed == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: "Update Kubeconfig"
+        if: steps.check-deploy.outputs.allowed == 'true'
+        run: |
+          aws eks update-kubeconfig --name lornu-ai-production-cluster --region ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: "Inject Target Group ARN (Prod only)"
+        if: steps.check-deploy.outputs.allowed == 'true' && matrix.env == 'prod'
+        run: |
+          TG_ARN=$(aws ssm get-parameter --name "/lornu-ai/production/target_group_arn" --query "Parameter.Value" --output text)
+          if [ -n "$TG_ARN" ]; then
+            sed -i "s|TG_ARN_PLACEHOLDER|$TG_ARN|g" kubernetes/overlays/prod/targetgroupbinding.yaml
+          else
+            echo "Error: Could not fetch Target Group ARN from SSM"
+            exit 1
+          fi
+
+      - name: "Deploy to Namespace"
+        if: steps.check-deploy.outputs.allowed == 'true'
+        run: |
+          kubectl kustomize kubernetes/overlays/${{ matrix.env }} | kubectl apply -f -

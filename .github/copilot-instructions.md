@@ -8,7 +8,7 @@ Concise guidance for AI agents to be immediately productive in this monorepo. Do
   - `packages/api`: Python FastAPI backend serving React assets and handling API endpoints.
   - `terraform/aws/staging`: AWS infra (EKS cluster, ALB, ECR, IAM, VPC) with Terraform Cloud remote backend.
 - Primary runtime is AWS EKS (Kubernetes) running containerized FastAPI backend serving React frontend from `apps/web/dist/` and implementing `/api` endpoints.
-- Kubernetes manifests managed with Kustomize in `k8s/` directory.
+- Kubernetes manifests managed with Kustomize in `kubernetes/` directory.
 
 ## Developer Workflows
 - Package manager: Bun.
@@ -73,7 +73,7 @@ Concise guidance for AI agents to be immediately productive in this monorepo. Do
   - Docker images pushed to ECR (`lornu-ai-staging` repository).
   - EKS cluster pulls from ECR and runs pods.
   - Kubernetes service exposes pods via ALB ingress.
-  - Manifests deployed via Kustomize (`k8s/overlays/staging`).
+  - Manifests deployed via Kustomize (`kubernetes/overlays/staging`).
 - CI/CD: `.github/workflows/terraform-aws.yml` builds Docker image, pushes to ECR, runs Terraform, applies k8s manifests.
 - Environment vars managed via Kubernetes ConfigMaps and AWS Secrets Manager.
 

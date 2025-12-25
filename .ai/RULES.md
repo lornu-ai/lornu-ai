@@ -12,7 +12,7 @@
 - `apps/web`: Frontend application.
 - `packages/api`: Backend API/Logic.
 - `terraform/`: Infrastructure as Code.
-- `k8s/`: Kubernetes manifests (Base + Overlays).
+- `kubernetes/`: Kubernetes manifests (Base + Overlays).
 - `docs/`: Project documentation.
 
 ## Workflow Rules

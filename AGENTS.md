@@ -13,7 +13,7 @@ If there is any conflict between docs, follow `.ai/RULES.md`.
 - `apps/web`: Frontend (React + Vite).
 - `packages/api`: Backend (Python 3.11+).
 - `docs/`: Project documentation.
-- `terraform/`, `k8s/`: Infrastructure.
+- `terraform/`, `kubernetes/`: Infrastructure.
 
 ## Tooling
 - JS/TS package manager: **Bun** only (`bun install`, `bun run`, `bunx`).

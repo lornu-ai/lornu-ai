@@ -48,3 +48,8 @@ output "waf_acl_arn" {
   description = "ARN of the WAFv2 Web ACL"
   value       = aws_wafv2_web_acl.main.arn
 }
+
+output "target_group_arn" {
+  description = "The ARN of the production ALB Target Group"
+  value       = aws_lb_target_group.main.arn
+}

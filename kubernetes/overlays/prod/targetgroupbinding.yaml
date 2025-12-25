@@ -1,0 +1,9 @@
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: lornu-ai-production-tgb
+spec:
+  serviceRef:
+    name: lornu-ai
+    port: 8080
+  targetGroupARN: TG_ARN_PLACEHOLDER

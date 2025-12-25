@@ -18,7 +18,7 @@ We have pivoted the entire infrastructure strategy from **AWS ECS Fargate** to *
 
 ### Kubernetes Manifests (#80, #102, #103, #104)
 - **Status**: ✅ COMPLETE
-- **Location**: `k8s/base/` (core) + `k8s/overlays/{dev,staging,production}` (patches)
+- **Location**: `kubernetes/base/` (core) + `kubernetes/overlays/{dev,staging,production}` (patches)
 - **Features**: 
   - Security context (non-root, read-only FS)
   - IRSA (IAM Roles for Service Accounts)
@@ -32,7 +32,7 @@ We have pivoted the entire infrastructure strategy from **AWS ECS Fargate** to *
 
 ### Local Development Setup
 - **Scripts**: `./scripts/local-k8s-setup.sh`, `deploy.sh`, `test.sh`, `cleanup.sh`
-- **Documentation**: `docs/LOCAL_TESTING.md`, `k8s/K8S_GUIDE.md`
+- **Documentation**: `docs/LOCAL_TESTING.md`, `kubernetes/K8S_GUIDE.md`
 - **Status**: ✅ COMPLETE
 
 ## Affected Issues
@@ -41,7 +41,7 @@ We have pivoted the entire infrastructure strategy from **AWS ECS Fargate** to *
 |-------|-------|------------|------------|--------|
 | #79 | AWS Staging (Kubernetes Pivot) | ECS | EKS | ✅ Complete |
 | #80 | Cloud-Native Kustomize Strategy | N/A | Kustomize | ✅ Complete |
-| #102 | Kustomize Base Manifests | N/A | k8s/base/ | ✅ Complete |
+| #102 | Kustomize Base Manifests | N/A | kubernetes/base/ | ✅ Complete |
 | #103 | Staging Overlay & CI | ECS workflow | kubectl deploy | ✅ Complete |
 | #104 | Local Dev Overlay | N/A | Minikube + Kustomize | ✅ Complete |
 | #150 | Production Infrastructure | ECS + RDS + CF + WAF | EKS + RDS + CF + WAF | 🔄 In Progress |
@@ -50,12 +50,12 @@ We have pivoted the entire infrastructure strategy from **AWS ECS Fargate** to *
 ## Files Changed
 
 ### Kubernetes Manifests
-- `k8s/base/deployment.yaml` – Added security, IRSA, probes
-- `k8s/base/serviceaccount.yaml` – New for IRSA
-- `k8s/base/configmap.yaml` – Updated keys
-- `k8s/base/kustomization.yaml` – Added ServiceAccount
-- `k8s/overlays/staging/kustomization.yaml` – ECR image, 2 replicas
-- `k8s/overlays/production/*` – New (3 replicas, pod anti-affinity)
+- `kubernetes/base/deployment.yaml` – Added security, IRSA, probes
+- `kubernetes/base/serviceaccount.yaml` – New for IRSA
+- `kubernetes/base/configmap.yaml` – Updated keys
+- `kubernetes/base/kustomization.yaml` – Added ServiceAccount
+- `kubernetes/overlays/staging/kustomization.yaml` – ECR image, 2 replicas
+- `kubernetes/overlays/production/*` – New (3 replicas, pod anti-affinity)
 
 ### Terraform
 - `terraform/aws/staging/eks.tf` – EKS cluster, node groups, add-ons
@@ -68,7 +68,7 @@ We have pivoted the entire infrastructure strategy from **AWS ECS Fargate** to *
 
 ### Documentation
 - `docs/LOCAL_TESTING.md` – Minikube quick-start (new)
-- `k8s/K8S_GUIDE.md` – Comprehensive Kustomize guide (new)
+- `kubernetes/K8S_GUIDE.md` – Comprehensive Kustomize guide (new)
 - `.github/copilot-instructions.md` – Updated to EKS/Kustomize
 
 ### Scripts
