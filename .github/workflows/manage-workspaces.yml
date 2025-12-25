@@ -2,11 +2,11 @@ name: "Meta-Infrastructure: Manage TFC Workspaces"
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
     paths:
       - 'terraform/tfc-management/**'
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
     paths:
       - 'terraform/tfc-management/**'
   workflow_dispatch:
