@@ -22,7 +22,8 @@ terraform {
     organization = "lornu-ai"
 
     workspaces {
-      name = "lornu-ai-production"
+      # Target name per Design Doc: lornu-ai-prod-aws
+      name = "lornu-ai-prod-aws"
     }
   }
 }

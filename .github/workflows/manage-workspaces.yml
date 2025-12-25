@@ -1,0 +1,40 @@
+name: "Meta-Infrastructure: Manage TFC Workspaces"
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'terraform/tfc-management/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'terraform/tfc-management/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tfc-management:
+    name: "TFC Management"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Upload Configuration"
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.2
+        id: upload
+        with:
+          workspace: "lornu-ai-management"
+          directory: "terraform/tfc-management"
+          token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: "Create Run"
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.2
+        with:
+          workspace: "lornu-ai-management"
+          configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
+          plan_only: ${{ github.event_name == 'pull_request' }}
+          token: ${{ secrets.TF_API_TOKEN }}
+          message: "Meta-Infrastructure Update: ${{ github.sha }}"

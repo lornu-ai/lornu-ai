@@ -1,14 +1,12 @@
-# Terraform Cloud OIDC federation
+# Terraform Cloud OIDC federation for staging
 # Enables TFC to authenticate to AWS via OIDC for passwordless provisioning
 
-resource "aws_iam_openid_connect_provider" "tfc" {
-  url             = "https://app.terraform.io"
-  client_id_list  = ["aws.workload.identity"]
-  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
+data "aws_iam_openid_connect_provider" "tfc" {
+  url = "https://app.terraform.io"
 }
 
 resource "aws_iam_role" "tfc_role" {
-  name = "lornu-ai-production-tfc-role"
+  name = "lornu-ai-staging-tfc-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -16,7 +14,7 @@ resource "aws_iam_role" "tfc_role" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = aws_iam_openid_connect_provider.tfc.arn
+          Federated = data.aws_iam_openid_connect_provider.tfc.arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
@@ -24,7 +22,7 @@ resource "aws_iam_role" "tfc_role" {
             "app.terraform.io:aud" = "aws.workload.identity"
           }
           StringLike = {
-            "app.terraform.io:sub" = "organization:lornu-ai:project:*:workspace:lornu-ai-production:run_phase:*"
+            "app.terraform.io:sub" = "organization:lornu-ai:project:*:workspace:lornu-ai-staging-aws:run_phase:*"
           }
         }
       }
@@ -32,8 +30,8 @@ resource "aws_iam_role" "tfc_role" {
   })
 
   tags = {
-    Name        = "tfc-production-role"
-    Environment = "production"
+    Name        = "tfc-staging-role"
+    Environment = "staging"
     ManagedBy   = "terraform"
   }
 }
