@@ -1,0 +1,64 @@
+name: GCP Terraform Service Account Setup
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'output_key'
+        type: choice
+        options:
+          - import_sa
+          - output_key
+      sa_email:
+        description: 'Service Account Email (only for import_sa)'
+        required: false
+        default: 'terraform-provisioner@gcp-lornu-ai.iam.gserviceaccount.com'
+
+permissions:
+  contents: read
+
+env:
+  TF_CLOUD_ORGANIZATION: "lornu-ai"
+  TF_WORKSPACE: "gcp-lornu-ai"
+  TF_VERSION: "1.6"
+
+jobs:
+  maintenance:
+    name: SA Maintenance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          cli_config_credentials_token: ${{ secrets.GCP_TF_API_TOKEN }}
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform/gcp init
+
+      - name: Import Service Account
+        if: github.event.inputs.action == 'import_sa'
+        run: |
+          terraform -chdir=terraform/gcp import google_service_account.terraform_provisioner projects/${{ secrets.GCP_PROJECT_ID }}/serviceAccounts/${{ github.event.inputs.sa_email }}
+
+      - name: Output Service Account Key
+        if: github.event.inputs.action == 'output_key'
+        run: |
+          echo "🔑 New JSON Key (Base64 Encoded):"
+          terraform -chdir=terraform/gcp output -raw terraform_provisioner_key
+          echo ""
+          echo "To use this key:"
+          echo "1. Copy the string above."
+          echo "2. Run: echo '<string>' | base64 --decode > key.json"
+          echo "3. Update GCP_CREDENTIALS_JSON in GitHub Secrets with the contents of key.json"
