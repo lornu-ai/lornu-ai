@@ -11,14 +11,35 @@ commonLabels:
   lornu.ai/managed-by: kustomize
   lornu.ai/asset-id: lornu-ai-final-clear-bg
 
+replicas:
+- name: lornu-ai
+  count: 3
+
 patches:
 - target:
     kind: Deployment
     name: lornu-ai
   patch: |-
     - op: replace
-      path: /spec/replicas
-      value: 3
-    - op: replace
       path: /spec/template/spec/containers/0/image
       value: 702555543026.dkr.ecr.us-east-2.amazonaws.com/lornu-ai-production:latest
+
+helmCharts:
+- name: aws-load-balancer-controller
+  repo: https://aws.github.io/eks-charts
+  version: 1.6.2
+  releaseName: aws-load-balancer-controller
+  namespace: kube-system
+  valuesInline:
+    clusterName: lornu-ai-production-cluster
+    serviceAccount:
+      create: false
+      name: aws-load-balancer-controller
+
+- name: external-secrets
+  repo: https://charts.external-secrets.io
+  version: 0.9.9
+  releaseName: external-secrets
+  namespace: kube-system
+  valuesInline:
+    installCRDs: true

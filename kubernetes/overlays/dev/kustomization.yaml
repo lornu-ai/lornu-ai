@@ -10,11 +10,6 @@ commonLabels:
   lornu.ai/environment: development
   lornu.ai/managed-by: kustomize
 
-patches:
-- target:
-    kind: Deployment
-    name: lornu-ai
-  patch: |-
-    - op: replace
-      path: /spec/replicas
-      value: 1
+replicas:
+- name: lornu-ai
+  count: 1
