@@ -39,7 +39,6 @@ All other components remain aligned with your vision:
 1. **Complete Production Terraform**:
    - Add RDS Aurora Serverless v2 (`terraform/aws/production/rds.tf`)
    - Add CloudFront + WAF + Route53 (`terraform/aws/production/cdn.tf`)
-   - Configure ALB Ingress Controller via Helm
    - Set up cluster autoscaler
 
 2. **Production Kustomize Overlay**:
@@ -109,7 +108,7 @@ Following the Kubernetes pivot, here's the revised gaps list:
    - Configure IRSA for pod access to Secrets Manager
 
 2. **Deploy ALB Ingress Controller** (1 day):
-   - Helm chart or Kustomize patch to deploy controller in kube-system
+   - Kustomize patch to deploy controller in kube-system
    - Update k8s/overlays/production/ingress.yaml to route traffic via ALB
 
 3. **Update GitHub Actions** (1 day):

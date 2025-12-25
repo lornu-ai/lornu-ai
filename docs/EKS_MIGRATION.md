@@ -6,7 +6,7 @@
 
 1. **Native Kubernetes**: We already have k8s manifests and local minikube testing
 2. **Portability**: Can run same manifests locally, AWS, GCP, or on-prem
-3. **Ecosystem**: Better tooling (kubectl, helm, kustomize, istio, etc.)
+3. **Ecosystem**: Better tooling (kubectl, kustomize, istio, etc.)
 4. **Consistency**: Local dev environment matches production
 5. **Future-proof**: Industry standard for container orchestration
 
@@ -25,28 +25,8 @@ Files to remove/update:
 - `terraform/aws/staging/alb.tf` - Update for EKS ingress
 - `terraform/aws/staging/iam.tf` - Remove ECS-specific roles
 
-### Phase 3: Add ALB Ingress Controller
-
-```bash
-# After EKS is created, install ALB Ingress Controller
-helm repo add eks https://aws.github.io/eks-charts
-helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-  -n kube-system \
-  --set clusterName=lornu-ai-staging \
-  --set serviceAccount.create=false \
-  --set serviceAccount.name=aws-load-balancer-controller \
-  --set region=us-east-1
-```
-
-### Phase 4: Update CI/CD Workflow
-
-Update `.github/workflows/terraform-aws.yml` to:
-1. Run Terraform (creates EKS cluster)
-2. Configure kubectl with EKS
-3. Apply Kustomize manifests
-4. Create Ingress resource for ALB
-
-### Phase 5: Create Ingress Resource
+### Phase 3: Update CI/CD Workflow
+### Phase 4: Create Ingress Resource
 
 Create `k8s/overlays/staging/ingress.yaml`:
 ```yaml
