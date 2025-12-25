@@ -55,6 +55,9 @@ uv run python -m packages.api.main
 ## PR Base Branch (Required)
 - Always open PRs against `develop`. For kustomize docs updates, use base `kustomize-develop`.
 
+## Terraform Hygiene (Required)
+- Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
+
 ## Branding
 - Brand asset: `apps/web/src/assets/brand/lornu-ai-final-clear-bg.png`
 

@@ -46,3 +46,6 @@ If there is any conflict between docs, follow `.ai/RULES.md`.
 - Frontend tests: `bun run test`, `bun run test:e2e`
 - Backend tests: `uv run pytest`
 - Backend lint: `uv run ruff check .`
+
+## Terraform Hygiene (Required)
+- Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
