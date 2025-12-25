@@ -29,3 +29,4 @@ kubernetes/overlays/   # dev, staging, prod overlays
 
 ## Avoid
 - AWS ECS or Cloudflare Workers references.
+- Helm charts, templates, or values files.
