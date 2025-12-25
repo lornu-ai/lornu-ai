@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lornu-ai
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: lornu-ai
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi

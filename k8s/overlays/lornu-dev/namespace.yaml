@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lornu-dev
+  labels:
+    app.kubernetes.io/name: lornu-ai
+    lornu.ai/environment: development
+    lornu.ai/managed-by: terraform-cloud
