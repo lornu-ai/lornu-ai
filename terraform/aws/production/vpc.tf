@@ -1,9 +1,39 @@
 data "aws_availability_zones" "available" {}
 
+data "aws_iam_policy_document" "cloudwatch_kms" {
+  statement {
+    sid = "Enable IAM User Permissions"
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+    }
+    actions   = ["kms:*"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "Allow CloudWatch Logs to use the key"
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["logs.${var.aws_region}.amazonaws.com"]
+    }
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:DescribeKey"
+    ]
+    resources = ["*"]
+  }
+}
+
 resource "aws_kms_key" "cloudwatch" {
   description             = "KMS key for CloudWatch Logs encryption"
   deletion_window_in_days = 10
   enable_key_rotation     = true
+  policy                  = data.aws_iam_policy_document.cloudwatch_kms.json
 
   tags = {
     Name = "lornu-ai-production-cloudwatch-kms"
