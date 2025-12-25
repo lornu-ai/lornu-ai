@@ -7,6 +7,7 @@ variable "aws_region" {
 variable "docker_image" {
   description = "The Docker image to deploy to the EKS cluster."
   type        = string
+  default     = "lornu-ai/api:latest"
 }
 
 variable "domain_name" {
@@ -24,6 +25,7 @@ variable "api_domain" {
 variable "acm_certificate_arn" {
   description = "The ARN of the ACM certificate for the ALB"
   type        = string
+  default     = "arn:aws:acm:us-east-2:123456789012:certificate/placeholder"
 }
 
 variable "route53_zone_name" {
@@ -47,6 +49,7 @@ variable "cloudfront_web_acl_id" {
 variable "secrets_manager_arn_pattern" {
   description = "The ARN pattern for the secrets the application needs to access."
   type        = string
+  default     = "arn:aws:secretsmanager:us-east-2:123456789012:secret:placeholder-*"
 }
 
 variable "db_name" {
@@ -76,4 +79,5 @@ variable "db_password" {
   description = "The master password for the database."
   type        = string
   sensitive   = true
+  default     = "placeholder-password-do-not-use"
 }
