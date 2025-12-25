@@ -11,4 +11,4 @@ Retire legacy ECS/Cloudflare/Helm references and align all infrastructure and do
 ## Checklist
 1. Remove ECS, Cloudflare, and Helm references from core docs.
 2. Ensure overlays contain `namespace.yaml` with required labels.
-3. Validate all doc paths and commands against the `kustomize` branch.
+3. Validate all doc paths and commands against the current repository structure.

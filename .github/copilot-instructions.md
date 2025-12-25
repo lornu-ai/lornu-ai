@@ -67,5 +67,5 @@ kustomize build kubernetes/overlays/prod | kubectl apply -f -
 - Helm charts, templates, or values files (Helm is deprecated).
 
 ## PR Labeling (Required)
-- Create (if missing) a GitHub label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) and apply it to every PR.
-- Use `gh label create` and `gh pr edit --add-label`.
+- Apply a label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) to every PR. If the label doesn't exist, create it first.
+- Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.
