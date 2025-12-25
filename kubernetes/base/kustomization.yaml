@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
 - serviceaccount.yaml
 - configmap.yaml
+- configmap-assets.yaml
 - deployment.yaml
 - service.yaml
 - ingress.yaml
@@ -11,4 +12,3 @@ labels:
     app.kubernetes.io/name: lornu-ai
     app.kubernetes.io/part-of: lornu-ai
   includeSelectors: true
-

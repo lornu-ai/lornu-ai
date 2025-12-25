@@ -1,0 +1,36 @@
+name: "Kustomize Deployments"
+
+on:
+  push:
+    branches: [ kustomize ]
+  pull_request:
+    branches: [ kustomize ]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: "Deploy Environments"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [dev, staging, prod]
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: "Update Kubeconfig"
+        run: |
+          aws eks update-kubeconfig --name lornu-ai-production-cluster --region ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: "Deploy to Namespace"
+        run: |
+          kubectl kustomize kubernetes/overlays/${{ matrix.env }} | kubectl apply -f -
