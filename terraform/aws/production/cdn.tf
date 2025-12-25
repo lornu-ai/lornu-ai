@@ -172,7 +172,8 @@ resource "aws_acm_certificate_validation" "cloudfront" {
   certificate_arn         = aws_acm_certificate.cloudfront.arn
   validation_record_fqdns = [for record in aws_route53_record.cloudfront_cert_validation : record.fqdn]
   timeouts {
-    create = "10m"
+    # Increase timeout beyond ACM default (45m) and prior 1h15m failure window
+    create = "2h"
   }
 }
 
