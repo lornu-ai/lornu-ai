@@ -1,4 +1,4 @@
-.PHONY: help install dev build test lint clean format podman-build podman-run minikube-start minikube-build minikube-deploy minikube-logs minikube-stop
+.PHONY: help install dev build test lint clean format podman-build podman-run minikube-start minikube-build minikube-deploy minikube-logs minikube-stop k3s-start k3s-build k3s-deploy k3s-logs k3s-stop k3s-check
 
 # Color output
 BLUE := \033[0;34m
@@ -36,6 +36,14 @@ help:
 	@echo "  make minikube-deploy   - Deploy to minikube with Kustomize"
 	@echo "  make minikube-logs     - Tail logs from minikube pods"
 	@echo "  make minikube-stop     - Stop minikube cluster"
+	@echo ""
+	@echo "$(GREEN)Kubernetes (K3s) Commands:$(NC)"
+	@echo "  make k3s-start         - Start k3s cluster in minikube"
+	@echo "  make k3s-build         - Build image for k3s"
+	@echo "  make k3s-deploy        - Deploy to k3s with Kustomize"
+	@echo "  make k3s-logs          - Tail logs from k3s pods"
+	@echo "  make k3s-check         - Check k3s cluster status"
+	@echo "  make k3s-stop          - Stop k3s cluster"
 	@echo ""
 	@echo "$(GREEN)Utility Commands:$(NC)"
 	@echo "  make clean            - Clean build artifacts and caches"
@@ -142,6 +150,59 @@ minikube-status:
 	@echo "$(BLUE)Pods:$(NC)"
 	kubectl get pods -n default
 
+# K3s targets (lightweight K8s with full Kustomize support)
+k3s-start:
+	@echo "$(BLUE)Starting k3s cluster in minikube...$(NC)"
+	minikube start --cpus=4 --memory=4096 --container-runtime=podman
+	@echo "$(GREEN)✓ Minikube started$(NC)"
+	@echo "$(BLUE)Installing k3s in minikube...$(NC)"
+	minikube ssh "curl -sfL https://get.k3s.io | sh -"
+	@echo "$(GREEN)✓ K3s cluster running$(NC)"
+	@eval $$(minikube docker-env) && echo "$(YELLOW)Docker env configured$(NC)"
+
+k3s-build: build
+	@echo "$(BLUE)Building image for k3s...$(NC)"
+	eval $$(minikube docker-env) && podman build -t lornu-ai:latest .
+	@echo "$(GREEN)✓ Built lornu-ai:latest for k3s$(NC)"
+
+k3s-deploy: k3s-build
+	@echo "$(BLUE)Deploying to k3s with Kustomize...$(NC)"
+	kubectl apply -k k8s/overlays/dev
+	@echo "$(GREEN)✓ Deployed to k3s$(NC)"
+	@echo "$(YELLOW)Check status with: make k3s-check$(NC)"
+
+k3s-logs:
+	@echo "$(BLUE)Tailing logs from lornu-ai pods...$(NC)"
+	kubectl logs -f deployment/lornu-ai -n default --all-containers=true 2>/dev/null || echo "No pods found. Deploy with: make k3s-deploy"
+
+k3s-check:
+	@echo "$(BLUE)K3s Cluster Status:$(NC)"
+	kubectl cluster-info
+	@echo ""
+	@echo "$(BLUE)Nodes:$(NC)"
+	kubectl get nodes
+	@echo ""
+	@echo "$(BLUE)Pods:$(NC)"
+	kubectl get pods -n default
+	@echo ""
+	@echo "$(BLUE)Services:$(NC)"
+	kubectl get svc -n default
+
+k3s-stop:
+	@echo "$(BLUE)Stopping k3s cluster...$(NC)"
+	minikube stop
+	@echo "$(GREEN)✓ K3s cluster stopped$(NC)"
+
+k3s-dev: k3s-start k3s-deploy
+	@echo ""
+	@echo "$(GREEN)✓ K3s + Kustomize environment ready$(NC)"
+	@echo "$(YELLOW)View logs:$(NC)"
+	@echo "  $(BLUE)make k3s-logs$(NC)"
+	@echo "$(YELLOW)Check status:$(NC)"
+	@echo "  $(BLUE)make k3s-check$(NC)"
+	@echo "$(YELLOW)Stop cluster:$(NC)"
+	@echo "  $(BLUE)make k3s-stop$(NC)"
+
 # Utility targets
 clean:
 	@echo "$(BLUE)Cleaning build artifacts...$(NC)"
@@ -158,7 +219,7 @@ setup: install api-install
 	@echo "$(GREEN)✓ Setup complete. Run 'make dev' and 'make api-run' to start development$(NC)"
 
 # Development workflow
-.PHONY: dev-setup dev-start
+.PHONY: dev-setup dev-start minikube-dev
 dev-setup: clean setup
 	@echo "$(GREEN)✓ Full development environment ready$(NC)"
 
@@ -171,7 +232,7 @@ dev-start:
 	@echo "  Terminal 2: $(BLUE)make api-run$(NC)"
 
 # Minikube development workflow
-.PHONY: minikube-dev
+
 minikube-dev: minikube-start minikube-deploy
 	@echo ""
 	@echo "$(GREEN)✓ Minikube environment ready$(NC)"
