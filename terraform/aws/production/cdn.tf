@@ -10,12 +10,21 @@ data "aws_cloudfront_origin_request_policy" "all_viewer" {
 # The ALB Controller provisions an ALB based on the Ingress configuration
 # This data source retrieves the ALB's DNS name from the Ingress status
 # 
-# IMPORTANT: The Ingress name must match the namePrefix applied by the deployed overlay:
-# - k8s/overlays/production/ uses namePrefix: prod- → creates "prod-lornu-ai"
-# - Expected format: {k8s_namespace_prefix}{ingress_base_name}
-# - Default: "prod-" + "lornu-ai" = "prod-lornu-ai"
+# CRITICAL DEPENDENCIES: This lookup has three key coupling points:
+# 1. k8s_namespace_prefix: Terraform variable (default: "prod-")
+# 2. namePrefix: From deployed Kustomize overlay (k8s/overlays/production/ uses "prod-")
+# 3. Ingress base name: From k8s base manifests (currently "lornu-ai")
 #
-# If the overlay or namePrefix changes, this lookup must be updated to match.
+# Current composition: {k8s_namespace_prefix}{ingress_base_name}
+#   = "prod-" + "lornu-ai" = "prod-lornu-ai"
+#
+# ⚠️  If ANY of these change, this lookup will FAIL:
+#   • If k8s_namespace_prefix variable value changes
+#   • If Kustomize overlay namePrefix changes
+#   • If the base Ingress name in k8s/base/ingress.yaml changes
+#   • If the overlay is changed to a different one (e.g., staging instead of production)
+#
+# To prevent lookup failures, keep all three components synchronized.
 data "kubernetes_ingress_v1" "app" {
   metadata {
     name      = "${var.k8s_namespace_prefix}lornu-ai"
