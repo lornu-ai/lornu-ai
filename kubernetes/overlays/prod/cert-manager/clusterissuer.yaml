@@ -35,7 +35,7 @@ metadata:
   namespace: cert-manager
   labels:
     app.kubernetes.io/name: cert-manager
-    lornu.ai/environment: production
+    lornu.ai/environment: staging
     lornu.ai/managed-by: terraform-cloud
 spec:
   acme:

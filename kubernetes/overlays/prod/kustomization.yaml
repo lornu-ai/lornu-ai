@@ -5,7 +5,6 @@ resources:
 - ../../base
 - namespace.yaml
 - cert-manager
-- secrets.yaml
 - assets-kv-config.yaml
 
 namespace: lornu-prod

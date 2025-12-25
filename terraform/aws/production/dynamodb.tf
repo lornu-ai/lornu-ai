@@ -5,7 +5,7 @@ resource "aws_dynamodb_table" "rate_limit_kv" {
   billing_mode     = "PAY_PER_REQUEST"
   hash_key         = "key"
   stream_enabled   = false
-  deletion_protection = false
+  deletion_protection = true
 
   attribute {
     name = "key"
@@ -31,7 +31,7 @@ resource "aws_dynamodb_table" "general_kv" {
   billing_mode     = "PAY_PER_REQUEST"
   hash_key         = "key"
   stream_enabled   = false
-  deletion_protection = false
+  deletion_protection = true
 
   attribute {
     name = "key"

@@ -39,7 +39,9 @@ spec:
         env:
         # AWS credentials via IRSA
         - name: AWS_ROLE_ARN
-          value: "arn:aws:iam::ACCOUNT_ID:role/cert-manager-role"
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.annotations['iam.amazonaws.com/role']
         - name: AWS_WEB_IDENTITY_TOKEN_FILE
           value: "/var/run/secrets/eks.amazonaws.com/serviceaccount/token"
         volumeMounts:
@@ -128,7 +130,7 @@ spec:
             memory: 128Mi
         livenessProbe:
           httpGet:
-            path: /livez
+            path: /healthz
             port: 6080
             scheme: HTTP
           initialDelaySeconds: 10
