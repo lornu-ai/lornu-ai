@@ -101,3 +101,15 @@ jobs:
           kustomize edit set image lornu-ai=us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:$IMAGE_TAG
           kustomize build . | kubectl apply -f -
           kubectl rollout status deployment/lornu-ai -n $ENV --timeout=300s
+
+      - name: Debug Failure
+        if: failure()
+        env:
+           ENV: ${{ github.event.inputs.environment || 'lornu-dev' }}
+        run: |
+          echo "=== POD STATUS ==="
+          kubectl get pods -n $ENV
+          echo "=== POD EVENTS ==="
+          kubectl get events -n $ENV --sort-by='.lastTimestamp' | tail -n 20
+          echo "=== POD LOGS ==="
+          kubectl logs -n $ENV -l app=lornu-ai --all-containers=true --tail=100
