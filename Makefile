@@ -1,4 +1,4 @@
-.PHONY: help install dev build test lint clean format docker-build docker-run
+.PHONY: help install dev build test lint clean format podman-build podman-run minikube-start minikube-build minikube-deploy minikube-logs minikube-stop
 
 # Color output
 BLUE := \033[0;34m
@@ -26,9 +26,16 @@ help:
 	@echo "  make api-lint         - Lint Python code (ruff)"
 	@echo "  make api-test         - Run API tests (pytest)"
 	@echo ""
-	@echo "$(GREEN)Docker Commands:$(NC)"
-	@echo "  make docker-build     - Build Docker image locally"
-	@echo "  make docker-run       - Run Docker container locally"
+	@echo "$(GREEN)Podman Commands:$(NC)"
+	@echo "  make podman-build      - Build image with Podman"
+	@echo "  make podman-run        - Run container with Podman"
+	@echo ""
+	@echo "$(GREEN)Kubernetes (Minikube) Commands:$(NC)"
+	@echo "  make minikube-start    - Start minikube cluster"
+	@echo "  make minikube-build    - Build image in minikube"
+	@echo "  make minikube-deploy   - Deploy to minikube with Kustomize"
+	@echo "  make minikube-logs     - Tail logs from minikube pods"
+	@echo "  make minikube-stop     - Stop minikube cluster"
 	@echo ""
 	@echo "$(GREEN)Utility Commands:$(NC)"
 	@echo "  make clean            - Clean build artifacts and caches"
@@ -90,16 +97,50 @@ api-test:
 	@echo "$(BLUE)Running API tests...$(NC)"
 	cd packages/api && uv run pytest
 
-# Docker targets
-docker-build:
-	@echo "$(BLUE)Building Docker image...$(NC)"
-	docker build -t lornu-ai:latest .
+# Podman targets (replaces Docker)
+podman-build:
+	@echo "$(BLUE)Building image with Podman...$(NC)"
+	podman build -t lornu-ai:latest .
 	@echo "$(GREEN)✓ Built lornu-ai:latest$(NC)"
 
-docker-run:
-	@echo "$(BLUE)Running Docker container...$(NC)"
-	docker run -p 8080:8080 -e RESEND_API_KEY="${RESEND_API_KEY}" lornu-ai:latest
+podman-run:
+	@echo "$(BLUE)Running container with Podman...$(NC)"
+	podman run -p 8080:8080 -e RESEND_API_KEY="${RESEND_API_KEY}" lornu-ai:latest
 	@echo "$(GREEN)✓ Container running on http://localhost:8080$(NC)"
+
+# Minikube targets (K8s local development)
+minikube-start:
+	@echo "$(BLUE)Starting minikube cluster...$(NC)"
+	minikube start --cpus=4 --memory=4096
+	@echo "$(GREEN)✓ Minikube cluster started$(NC)"
+	@eval $$(minikube docker-env) && echo "$(YELLOW)Docker env configured for minikube$(NC)"
+
+minikube-build:
+	@echo "$(BLUE)Building image in minikube docker env...$(NC)"
+	eval $$(minikube docker-env) && podman build -t lornu-ai:latest .
+	@echo "$(GREEN)✓ Built lornu-ai:latest in minikube$(NC)"
+
+minikube-deploy: build minikube-build
+	@echo "$(BLUE)Deploying to minikube with Kustomize...$(NC)"
+	kubectl apply -k k8s/overlays/dev
+	@echo "$(GREEN)✓ Deployed to minikube$(NC)"
+	@echo "$(YELLOW)Check status with: kubectl get pods -n default$(NC)"
+
+minikube-logs:
+	@echo "$(BLUE)Tailing logs from lornu-ai pods...$(NC)"
+	kubectl logs -f deployment/lornu-ai -n default --all-containers=true 2>/dev/null || echo "No pods found. Deploy with: make minikube-deploy"
+
+minikube-stop:
+	@echo "$(BLUE)Stopping minikube cluster...$(NC)"
+	minikube stop
+	@echo "$(GREEN)✓ Minikube cluster stopped$(NC)"
+
+minikube-status:
+	@echo "$(BLUE)Minikube Status:$(NC)"
+	minikube status
+	@echo ""
+	@echo "$(BLUE)Pods:$(NC)"
+	kubectl get pods -n default
 
 # Utility targets
 clean:
@@ -128,3 +169,15 @@ dev-start:
 	@echo "$(YELLOW)Open two terminals and run:$(NC)"
 	@echo "  Terminal 1: $(BLUE)make dev$(NC)"
 	@echo "  Terminal 2: $(BLUE)make api-run$(NC)"
+
+# Minikube development workflow
+.PHONY: minikube-dev
+minikube-dev: minikube-start minikube-deploy
+	@echo ""
+	@echo "$(GREEN)✓ Minikube environment ready$(NC)"
+	@echo "$(YELLOW)Access your app:$(NC)"
+	@echo "  API: $(BLUE)minikube service lornu-ai -n default$(NC)"
+	@echo "$(YELLOW)View logs:$(NC)"
+	@echo "  $(BLUE)make minikube-logs$(NC)"
+	@echo "$(YELLOW)Stop cluster:$(NC)"
+	@echo "  $(BLUE)make minikube-stop$(NC)"
