@@ -6,7 +6,6 @@ resources:
 - namespace.yaml
 namePrefix: staging-
 commonLabels:
-  environment: staging
   app.kubernetes.io/name: lornu-ai
   lornu.ai/environment: staging
   lornu.ai/managed-by: terraform-cloud

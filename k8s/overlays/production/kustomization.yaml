@@ -6,7 +6,6 @@ resources:
 - namespace.yaml
 namePrefix: prod-
 commonLabels:
-  environment: production
   app.kubernetes.io/name: lornu-ai
   lornu.ai/environment: production
   lornu.ai/managed-by: terraform-cloud
