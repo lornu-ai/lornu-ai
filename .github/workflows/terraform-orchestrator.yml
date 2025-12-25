@@ -2,11 +2,11 @@ name: "Intelligent IaC Orchestrator"
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, main ]
     paths:
       - 'terraform/aws/environments/**'
   pull_request:
-    branches: [ develop ]
+    branches: [ develop, main ]
     paths:
       - 'terraform/aws/environments/**'
 
