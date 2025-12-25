@@ -25,7 +25,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   namespace  = "kube-system"
   version    = "1.7.1" # Pin version for stability
   depends_on = [module.eks, aws_acm_certificate_validation.main]
-  
+
   timeouts {
     create = "10m"
     update = "10m"
