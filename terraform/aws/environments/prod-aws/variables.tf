@@ -22,12 +22,6 @@ variable "api_domain" {
   default     = "api.lornu.ai"
 }
 
-variable "acm_certificate_arn" {
-  description = "The ARN of the ACM certificate for the ALB"
-  type        = string
-  default     = "arn:aws:acm:us-east-2:123456789012:certificate/placeholder"
-}
-
 variable "route53_zone_name" {
   description = "The Route53 hosted zone name"
   type        = string
