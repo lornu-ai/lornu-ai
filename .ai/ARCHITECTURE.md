@@ -24,9 +24,9 @@ kubernetes/overlays/   # dev, staging, prod overlays
 - `lornu-prod`
 
 Each namespace includes the **Protective Metadata** standard:
-- `lornu.ai/environment`
-- `lornu.ai/managed-by`
-- `lornu.ai/asset-id`
+- `lornu.ai/environment`: `development` | `staging` | `production`
+- `lornu.ai/managed-by`: `terraform-cloud`
+- `lornu.ai/asset-id`: `lornu-ai-final-clear-bg`
 
 ## Branding Asset
 - `apps/web/src/assets/brand/lornu-ai-final-clear-bg.png`

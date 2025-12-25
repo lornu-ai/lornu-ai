@@ -34,7 +34,7 @@ Every Kubernetes resource must include:
 
 ## Runtime Standards
 - **Frontend**: Bun (`bun install`, `bun run`, `bunx`)
-- **Backend**: uv (`uv sync`, `uv run`)
+- **Backend**: uv (`uv sync`, `uv run`, `uv pip install`)
 
 ## Branding
 - Brand asset: `apps/web/src/assets/brand/lornu-ai-final-clear-bg.png`
