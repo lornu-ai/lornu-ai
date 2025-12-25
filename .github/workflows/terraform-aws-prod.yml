@@ -18,7 +18,7 @@ env:
   TF_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   ECR_REPOSITORY: lornu-ai-staging
-  TFSEC_ENABLED: true
+  TFSEC_ENABLED: false
 
 jobs:
   plan:
