@@ -111,9 +111,14 @@ output "cluster_endpoint" {
   value       = aws_eks_cluster.main.endpoint
 }
 
-output "cluster_name" {
+output "eks_cluster_name" {
   description = "EKS cluster name"
   value       = aws_eks_cluster.main.name
+}
+
+output "oidc_provider_arn" {
+  description = "The ARN of the OIDC Provider for EKS IRSA"
+  value       = aws_iam_openid_connect_provider.eks.arn
 }
 
 output "cluster_certificate_authority" {

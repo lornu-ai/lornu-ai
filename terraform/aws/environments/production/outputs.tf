@@ -13,6 +13,16 @@ output "cluster_name" {
   value       = module.eks.cluster_name
 }
 
+output "eks_cluster_name" {
+  description = "Kubernetes Cluster Name (Epic Requirement)"
+  value       = module.eks.cluster_name
+}
+
+output "oidc_provider_arn" {
+  description = "The ARN of the OIDC Provider for EKS IRSA"
+  value       = module.eks.oidc_provider_arn
+}
+
 
 output "cloudfront_distribution_id" {
   description = "ID of the CloudFront distribution for api.lornu.ai"

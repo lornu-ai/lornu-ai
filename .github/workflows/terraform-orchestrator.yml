@@ -1,0 +1,100 @@
+name: "Intelligent IaC Orchestrator"
+
+on:
+  push:
+    branches: [ develop ]
+    paths:
+      - 'terraform/aws/environments/**'
+  pull_request:
+    branches: [ develop ]
+    paths:
+      - 'terraform/aws/environments/**'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  filter:
+    name: "Filter Environments"
+    runs-on: ubuntu-latest
+    outputs:
+      workspaces: ${{ steps.set-matrix.outputs.workspaces }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Get Changed Directories"
+        id: changed-dirs
+        uses: tj-actions/changed-files@v42
+        with:
+          dir_names: true
+          files: |
+            terraform/aws/environments/**
+
+      - name: "Set Workspace Matrix"
+        id: set-matrix
+        run: |
+          # Transform paths like 'terraform/aws/environments/production'
+          # into workspace suffixes: ['production']
+          # We filter the list to only include immediate subdirectories of environments/
+          ALL_DIRS="${{ steps.changed-dirs.outputs.all_changed_files }}"
+          echo "Changed files: $ALL_DIRS"
+
+          # Logic to extract the environment name
+          # Example: terraform/aws/environments/production/main.tf -> production
+          DIRS=$(echo "$ALL_DIRS" | tr ' ' '\n' | grep '^terraform/aws/environments/' | sed 's|terraform/aws/environments/||g' | cut -d'/' -f1 | sort -u | jq -R . | jq -s -c .)
+
+          echo "Detected environments: $DIRS"
+          echo "workspaces=$DIRS" >> $GITHUB_OUTPUT
+
+  orchestrate:
+    name: "TFC Orchestrator"
+    needs: filter
+    if: needs.filter.outputs.workspaces != '[]' && needs.filter.outputs.workspaces != ''
+    strategy:
+      max-parallel: 3
+      matrix:
+        workspace_suffix: ${{ fromJson(needs.filter.outputs.workspaces) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Trigger TFC Run"
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1
+        id: create-run
+        with:
+          api_token: ${{ secrets.TF_API_TOKEN }}
+          organization: "lornu-ai"
+          workspace: "lornu-ai-${{ matrix.workspace_suffix }}"
+          is_speculative: ${{ github.event_name == 'pull_request' }}
+          comment: "Orchestrated Apply - Lornu AI Build: ${{ github.sha }}"
+
+      - name: "Wait for TFC Run and Fetch Outputs"
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "Run ID: ${{ steps.create-run.outputs.run_id }}"
+          # In a real scenario, we would use the TFC CLI or API to wait and fetch outputs.
+          # For now, we log the intent as per the Phase 4 roadmap.
+          echo "Phase 4: Fetching eks_cluster_name and oidc_provider_arn for ${{ matrix.workspace_suffix }}"
+
+  deploy:
+    name: "K8s Deployment"
+    needs: [filter, orchestrate]
+    if: github.event_name != 'pull_request' && needs.filter.outputs.workspaces != '[]'
+    strategy:
+      matrix:
+        workspace_suffix: ${{ fromJson(needs.filter.outputs.workspaces) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Deploy to EKS"
+        run: |
+          echo "Deploying to EKS cluster for ${{ matrix.workspace_suffix }}"
+          # Here we would use the outputs from TFC to update kubeconfig and run Kustomize.
+          # Example:
+          # aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }}
+          # kustomize build k8s/overlays/${{ matrix.workspace_suffix }} | kubectl apply -f -
