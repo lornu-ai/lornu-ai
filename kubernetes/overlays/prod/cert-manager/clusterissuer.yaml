@@ -1,0 +1,50 @@
+---
+# Let's Encrypt ClusterIssuer for production TLS certificate provisioning
+# This ClusterIssuer is scoped to the entire cluster and will handle ACME challenges
+# via DNS01 validation with Route53 (AWS DNS service)
+
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: cert-manager
+    lornu.ai/environment: production
+    lornu.ai/managed-by: terraform-cloud
+spec:
+  acme:
+    # Let's Encrypt production ACME server
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@lornu.ai
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+    # DNS01 solver for wildcard and multi-domain certificates
+    - dns01:
+        route53:
+          region: us-east-1
+          # AWS credentials are provisioned via IRSA (IAM Roles for Service Accounts)
+          # The cert-manager service account assumes an IAM role with Route53 permissions
+---
+# Let's Encrypt ClusterIssuer for staging (testing before production)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  namespace: cert-manager
+  labels:
+    app.kubernetes.io/name: cert-manager
+    lornu.ai/environment: staging
+    lornu.ai/managed-by: terraform-cloud
+spec:
+  acme:
+    # Let's Encrypt staging ACME server (for testing, no rate limits)
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: admin@lornu.ai
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+    solvers:
+    - dns01:
+        route53:
+          region: us-east-1

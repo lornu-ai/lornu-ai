@@ -34,6 +34,33 @@ jobs:
           kubectl cluster-info
           kubectl auth can-i create deployments --namespace lornu-${{ matrix.env }}
 
+      - name: "Create/Update Secrets"
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          # Create or update the lornu-ai-secrets in each namespace
+          # Use kubectl create secret with --dry-run to generate the manifest, then apply
+          case "${{ matrix.env }}" in
+            prod)
+              NAMESPACE="lornu-prod"
+              ;;
+            staging)
+              NAMESPACE="lornu-staging"
+              ;;
+            dev)
+              NAMESPACE="lornu-dev"
+              ;;
+          esac
+
+          # Create namespace if it doesn't exist
+          kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+
+          # Create or update the secret with the RESEND_API_KEY
+          kubectl create secret generic lornu-ai-secrets \
+            --from-literal=RESEND_API_KEY="${RESEND_API_KEY}" \
+            -n ${NAMESPACE} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       - name: "Deploy to Namespace"
         run: |
           kubectl kustomize kubernetes/overlays/${{ matrix.env }} | kubectl apply -f - --validate=false
