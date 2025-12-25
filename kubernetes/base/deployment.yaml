@@ -34,6 +34,14 @@ spec:
           value: "0.0.0.0"
         - name: PYTHONPATH
           value: "/app"
+        - name: AWS_REGION
+          value: "us-east-1"
+        - name: S3_ASSETS_BUCKET
+          value: "lornu-ai-assets-${AWS_ACCOUNT_ID}"
+        - name: DYNAMODB_RATE_LIMIT_TABLE
+          value: "lornu-ai-rate-limit-kv"
+        - name: DYNAMODB_GENERAL_KV_TABLE
+          value: "lornu-ai-general-kv"
         envFrom:
         - configMapRef:
             name: lornu-ai-config
