@@ -65,11 +65,11 @@ jobs:
         uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.2
         id: create-run
         with:
-          api_token: ${{ secrets.TF_API_TOKEN }}
+          token: ${{ secrets.TF_API_TOKEN }}
           organization: "lornu-ai"
           workspace: "lornu-ai-${{ matrix.workspace_suffix }}"
-          is_speculative: ${{ github.event_name == 'pull_request' }}
-          comment: "Orchestrated Apply - Lornu AI Build: ${{ github.sha }}"
+          plan_only: ${{ github.event_name == 'pull_request' }}
+          message: "Orchestrated Apply - Lornu AI Build: ${{ github.sha }}"
 
       - name: "Wait for TFC Run and Fetch Outputs"
         if: github.event_name != 'pull_request'
