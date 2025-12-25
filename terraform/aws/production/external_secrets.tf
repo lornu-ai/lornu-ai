@@ -49,7 +49,12 @@ resource "helm_release" "external_secrets" {
   namespace        = "external-secrets"
   create_namespace = true
   version          = "0.9.13" # Pin version
-  depends_on       = [module.eks]
+  depends_on       = [module.eks, aws_acm_certificate_validation.main]
+  
+  timeouts {
+    create = "10m"
+    update = "10m"
+  }
 
   values = [
     yamlencode({
