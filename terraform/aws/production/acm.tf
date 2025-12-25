@@ -4,8 +4,7 @@ resource "aws_acm_certificate" "cloudfront" {
   domain_name       = var.domain_name
   validation_method = "DNS"
   subject_alternative_names = [
-    "*.${var.domain_name}",
-    var.api_domain
+    "*.${var.domain_name}"
   ]
 
   lifecycle {
@@ -23,8 +22,7 @@ resource "aws_acm_certificate" "alb" {
   domain_name       = var.domain_name
   validation_method = "DNS"
   subject_alternative_names = [
-    "*.${var.domain_name}",
-    var.api_domain
+    "*.${var.domain_name}"
   ]
 
   lifecycle {

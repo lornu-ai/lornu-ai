@@ -50,3 +50,6 @@ provider "kubernetes" {
 provider "helm" {
   # This provider automatically uses the configuration from the "kubernetes" provider.
 }
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}

@@ -13,15 +13,14 @@ output "cluster_name" {
   value       = module.eks.cluster_name
 }
 
-
 output "cloudfront_distribution_id" {
-  description = "ID of the CloudFront distribution for api.lornu.ai"
-  value       = aws_cloudfront_distribution.api.id
+  description = "The ID of the main CloudFront distribution."
+  value       = aws_cloudfront_distribution.main.id
 }
 
 output "cloudfront_domain_name" {
   description = "Domain name of the CloudFront distribution"
-  value       = aws_cloudfront_distribution.api.domain_name
+  value       = aws_cloudfront_distribution.main.domain_name
 }
 
 output "cloudfront_certificate_arn" {
@@ -29,22 +28,37 @@ output "cloudfront_certificate_arn" {
   value       = aws_acm_certificate.cloudfront.arn
 }
 
+output "alb_certificate_arn" {
+  description = "ACM certificate ARN for ALB (us-east-2)"
+  value       = aws_acm_certificate.alb.arn
+}
+
 output "route53_zone_id" {
-  description = "Route53 hosted zone ID used for api.lornu.ai"
+  description = "Route53 hosted zone ID used for the domain"
   value       = local.route53_zone_id
 }
 
-output "db_cluster_endpoint" {
-  description = "The cluster endpoint for the Aurora database"
-  value       = aws_rds_cluster.main.endpoint
+output "alb_dns_name" {
+  description = "The DNS name of the ALB."
+  value       = aws_lb.main.dns_name
 }
 
-output "db_cluster_reader_endpoint" {
-  description = "The cluster reader endpoint for the Aurora database"
-  value       = aws_rds_cluster.main.reader_endpoint
+output "target_group_arn" {
+  description = "The ARN of the main ALB target group."
+  value       = aws_lb_target_group.main.arn
 }
 
-output "waf_acl_arn" {
-  description = "ARN of the WAFv2 Web ACL"
-  value       = aws_wafv2_web_acl.main.arn
+output "frontend_s3_bucket" {
+  description = "The name of the frontend S3 bucket."
+  value       = aws_s3_bucket.frontend.id
+}
+
+output "waf_acl_global_arn" {
+  description = "ARN of the Global WAFv2 Web ACL (CloudFront)"
+  value       = aws_wafv2_web_acl.cloudfront.arn
+}
+
+output "waf_acl_regional_arn" {
+  description = "ARN of the Regional WAFv2 Web ACL (ALB)"
+  value       = aws_wafv2_web_acl.regional.arn
 }

@@ -26,6 +26,19 @@ resource "aws_route53_record" "apex" {
   }
 }
 
+# IPv6 DNS Record for Apex (lornu.ai) pointing to CloudFront
+resource "aws_route53_record" "apex_ipv6" {
+  zone_id = local.route53_zone_id
+  name    = var.domain_name
+  type    = "AAAA"
+
+  alias {
+    name                   = aws_cloudfront_distribution.main.domain_name
+    zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
 # DNS Record for API (api.lornu.ai) pointing to CloudFront
 resource "aws_route53_record" "api" {
   zone_id = local.route53_zone_id
@@ -39,6 +52,7 @@ resource "aws_route53_record" "api" {
   }
 }
 
+<<<<<<< HEAD
 resource "aws_route53_record" "cert_validation" {
   for_each = {
     for dvo in aws_acm_certificate.main.domain_validation_options : dvo.domain_name => dvo
@@ -58,5 +72,17 @@ resource "aws_acm_certificate_validation" "main" {
 
   timeouts {
     create = "1h15m"
+=======
+# IPv6 DNS Record for API (api.lornu.ai) pointing to CloudFront
+resource "aws_route53_record" "api_ipv6" {
+  zone_id = local.route53_zone_id
+  name    = var.api_domain
+  type    = "AAAA"
+
+  alias {
+    name                   = aws_cloudfront_distribution.main.domain_name
+    zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
+    evaluate_target_health = false
+>>>>>>> chore: fix linting and remove temporary files
   }
 }

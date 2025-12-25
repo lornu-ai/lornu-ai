@@ -1,0 +1,12 @@
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: lornu-ai-tgb
+spec:
+  serviceRef:
+    name: prod-lornu-ai # Matches namePrefix + service name
+    port: 80
+  # The Target Group is managed by Terraform in terraform/aws/production/alb.tf
+  # The ARN should be passed in via a deployment script or the Terraform output: target_group_arn
+  targetGroupARN: "{{TARGET_GROUP_ARN}}"
+  targetType: ip # Recommended for Fargate

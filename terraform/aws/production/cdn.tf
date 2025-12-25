@@ -110,20 +110,9 @@ resource "aws_cloudfront_distribution" "main" {
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer.id
   }
 
-  # Support React Router (SPA) by redirecting 404/403 to index.html
-  custom_error_response {
-    error_code            = 403
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 10
-  }
-
-  custom_error_response {
-    error_code            = 404
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 10
-  }
+  # Note: SPA routing (404/403 -> index.html) is omitted at the distribution level
+  # to avoid interfering with API responses. Use CloudFront Functions on the S3 origin
+  # if specific paths need rewriting.
 
   restrictions {
     geo_restriction {
