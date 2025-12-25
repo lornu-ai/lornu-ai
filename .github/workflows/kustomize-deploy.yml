@@ -20,16 +20,28 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
+      - name: "Set Environment Variables"
+        id: env-vars
+        run: |
+          if [[ "${{ matrix.env }}" == "prod" ]]; then
+            echo "CLUSTER_NAME=lornu-ai-production-cluster" >> $GITHUB_ENV
+            echo "ROLE_ARN=${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "AWS_REGION=${{ secrets.AWS_DEFAULT_REGION }}" >> $GITHUB_ENV
+          else
+            echo "CLUSTER_NAME=lornu-ai-staging" >> $GITHUB_ENV
+            echo "ROLE_ARN=${{ secrets.AWS_ACTIONS_ROLE_ARN }}" >> $GITHUB_ENV
+            echo "AWS_REGION=${{ secrets.AWS_DEFAULT_REGION }}" >> $GITHUB_ENV
+          fi
 
       - name: "Configure AWS Credentials"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-to-assume: ${{ env.ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: "Update Kubeconfig"
         run: |
-          aws eks update-kubeconfig --name lornu-ai-production-cluster --region ${{ secrets.AWS_DEFAULT_REGION }}
+          aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
       - name: "Deploy to Namespace"
         run: |
