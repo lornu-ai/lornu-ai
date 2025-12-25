@@ -4,8 +4,8 @@ on:
   pull_request:
     branches: [ develop ]
     paths:
-      - "terraform/aws/staging/**"
-      - "terraform/aws/production/**"
+      - "terraform/aws/environments/staging/**"
+      - "terraform/aws/environments/production/**"
       - "apps/web/src/**"
       - "apps/web/package.json"
       - "apps/web/bun.lock"
@@ -100,7 +100,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Terraform Init (no backend for PR validation)"
-        run: terraform -chdir=terraform/aws/staging init -backend=false
+        run: terraform -chdir=terraform/aws/environments/staging init -backend=false
 
       - name: "Setup TFLint"
         uses: terraform-linters/setup-tflint@v4
@@ -109,7 +109,7 @@ jobs:
 
       - name: "Run TFLint"
         run: |
-          cd terraform/aws/staging
+          cd terraform/aws/environments/staging
           tflint --init
           tflint --format compact
 
@@ -120,12 +120,12 @@ jobs:
           TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
           TF_VAR_resource_prefix: ${{ secrets.PROD_RESOURCE_PREFIX }}
           TF_VAR_github_repo: ${{ secrets.PROD_GITHUB_REPO }}
-        run: terraform -chdir=terraform/aws/staging plan
+        run: terraform -chdir=terraform/aws/environments/staging plan
 
       - name: "Terraform Security Scan"
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
-          working_directory: terraform/aws/staging
+          working_directory: terraform/aws/environments/staging
 
   apply:
     name: "Terraform Apply & Deploy"
@@ -154,7 +154,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Terraform Init"
-        run: terraform -chdir=terraform/aws/staging init
+        run: terraform -chdir=terraform/aws/environments/staging init
 
       - name: "Terraform Apply"
         env:
@@ -163,7 +163,7 @@ jobs:
           TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
           TF_VAR_resource_prefix: ${{ secrets.PROD_RESOURCE_PREFIX }}
           TF_VAR_github_repo: ${{ secrets.PROD_GITHUB_REPO }}
-        run: terraform -chdir=terraform/aws/staging apply -auto-approve
+        run: terraform -chdir=terraform/aws/environments/staging apply -auto-approve
 
       - name: "Update kubeconfig"
         run: |
@@ -218,7 +218,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Terraform Init"
-        run: terraform -chdir=terraform/aws/production init
+        run: terraform -chdir=terraform/aws/environments/production init
 
       - name: "Setup TFLint"
         uses: terraform-linters/setup-tflint@v4
@@ -227,17 +227,17 @@ jobs:
 
       - name: "Run TFLint"
         run: |
-          cd terraform/aws/production
+          cd terraform/aws/environments/production
           tflint --init
           tflint --format compact
 
       - name: "Terraform Plan"
-        run: terraform -chdir=terraform/aws/production plan
+        run: terraform -chdir=terraform/aws/environments/production plan
 
       - name: "Terraform Security Scan"
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
-          working_directory: terraform/aws/production
+          working_directory: terraform/aws/environments/production
 
   prod-apply:
     name: "Production Apply"
@@ -274,7 +274,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
       - name: "Terraform Init"
-        run: terraform -chdir=terraform/aws/production init
+        run: terraform -chdir=terraform/aws/environments/production init
 
       - name: "Terraform Apply"
-        run: terraform -chdir=terraform/aws/production apply -auto-approve
+        run: terraform -chdir=terraform/aws/environments/production apply -auto-approve

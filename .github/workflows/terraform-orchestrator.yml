@@ -62,7 +62,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "Trigger TFC Run"
-        uses: hashicorp/tfc-workflows-github/actions/create-run@v1
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.2
         id: create-run
         with:
           api_token: ${{ secrets.TF_API_TOKEN }}
