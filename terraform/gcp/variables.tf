@@ -20,3 +20,9 @@ variable "github_repo" {
   type        = string
   default     = "lornu-ai/lornu-ai"
 }
+
+variable "domain_name" {
+  description = "The root domain name for the application (e.g. lornu.ai)"
+  type        = string
+  default     = "lornu.ai"
+}

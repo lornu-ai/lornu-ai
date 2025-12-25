@@ -40,6 +40,16 @@ The service account used by Terraform (and GitHub Actions) needs the following r
 - **Needed for**: Allowing GKE to use the default Compute Engine service account
 - **Grants**: Permission to use service accounts in the project
 
+### 7. **Artifact Registry Administrator**
+- **Role**: `roles/artifactregistry.admin`
+- **Needed for**: Creating and managing Docker repositories (GAR)
+- **Grants**: Full access to Artifact Registry resources
+
+### 8. **DNS Administrator**
+- **Role**: `roles/dns.admin`
+- **Needed for**: Managing Cloud DNS zones and records (for TLS/Let's Encrypt)
+- **Grants**: Full access to Cloud DNS resources
+
 ---
 
 ## Grant Commands (All Required Roles)
@@ -82,6 +92,16 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member="serviceAccount:${SA_EMAIL}" \
   --role="roles/iam.serviceAccountUser"
+
+# Grant Artifact Registry Admin
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:${SA_EMAIL}" \
+  --role="roles/artifactregistry.admin"
+
+# Grant DNS Admin
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:${SA_EMAIL}" \
+  --role="roles/dns.admin"
 ```
 
 ---
@@ -92,7 +112,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 PROJECT_ID="your-project-id"
 SA_EMAIL="your-sa@your-project.iam.gserviceaccount.com"
 
-for role in roles/serviceusage.serviceUsageAdmin roles/container.admin roles/compute.networkAdmin roles/datastore.owner roles/iam.serviceAccountAdmin roles/resourcemanager.projectIamAdmin roles/iam.serviceAccountUser; do
+for role in roles/serviceusage.serviceUsageAdmin roles/container.admin roles/compute.networkAdmin roles/datastore.owner roles/iam.serviceAccountAdmin roles/resourcemanager.projectIamAdmin roles/iam.serviceAccountUser roles/artifactregistry.admin roles/dns.admin; do
   gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:${SA_EMAIL}" \
     --role="$role"
@@ -112,6 +132,8 @@ done
 | `roles/iam.serviceAccountAdmin` | Create service accounts | ✅ Yes |
 | `roles/resourcemanager.projectIamAdmin` | Grant IAM roles | ✅ Yes |
 | `roles/iam.serviceAccountUser` | Use service accounts (for GKE) | ✅ Yes |
+| `roles/artifactregistry.admin` | Manage Artifact Registry | ✅ Yes |
+| `roles/dns.admin` | Manage Cloud DNS | ✅ Yes |
 
 ---
 

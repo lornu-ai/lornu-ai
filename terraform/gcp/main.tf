@@ -125,3 +125,14 @@ resource "google_artifact_registry_repository" "lornu_repo" {
     google_project_service.artifactregistry
   ]
 }
+
+# Cloud DNS Managed Zone for the domain
+resource "google_dns_managed_zone" "lornu_zone" {
+  name        = "lornu-ai-zone"
+  dns_name    = "${var.domain_name}."
+  description = "Managed zone for ${var.domain_name}"
+
+  depends_on = [
+    google_project_service.dns
+  ]
+}
