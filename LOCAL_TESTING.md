@@ -68,21 +68,27 @@ kubectl logs -f -l app.kubernetes.io/name=lornu-ai -n lornu-dev
 kubectl describe pod -l app.kubernetes.io/name=lornu-ai -n lornu-dev
 ```
 
-## Deploy to AWS Fargate (Production)
+## Deploy to Google Cloud (GKE)
 
 Once local testing passes:
 
-```bash
-# 1. Ensure PR #146 is merged
-# 2. Push to remote
-git push origin develop
+1. **Push to remote branch**:
+   ```bash
+   git push origin gcp-develop
+   ```
 
-# 3. Trigger AWS deployment
-gh workflow run terraform-aws.yml
+2. **Wait for Infrastructure**:
+   The `GCP Terraform Deployment` workflow will verify and apply infrastructure changes.
 
-# Or use GitHub UI:
-# Actions → Terraform AWS → Run workflow
-```
+3. **Deploy the Application**:
+   The `GKE Build & Deploy` workflow will build the image, push to GAR, and update GKE.
+
+4. **Monitor**:
+   Use `kubectl` to check the cloud cluster after switching contexts:
+   ```bash
+   gcloud container clusters get-credentials lornu-ai-gke --region us-central1
+   kubectl get pods -n lornu-dev
+   ```
 
 ## Troubleshooting
 
@@ -119,10 +125,11 @@ minikube delete
 
 ## Resource Comparison
 
-| Environment | CPU | Memory | Cost |
-|------------|-----|--------|------|
-| Local (minikube) | 250m | 256Mi | $0 |
-| AWS Staging | 500m | 512Mi | ~$30/mo |
-| AWS Production | 1000m | 1Gi | ~$60/mo |
+| Environment | Namespace | CPU | Memory | Replicas |
+|------------|-----------|-----|--------|----------|
+| Local (minikube) | `lornu-dev` | 100m | 128Mi | 1 |
+| GKE Dev | `lornu-dev` | 100m | 128Mi | 1 |
+| GKE Staging | `lornu-stage` | 250m | 256Mi | 2 |
+| GKE Production | `lornu-prod` | 500m | 512Mi | 3 |
 
 **Save time & money**: Test locally first! ✨
