@@ -55,9 +55,8 @@ jobs:
       - name: Import Service Account
         if: github.event.inputs.action == 'import_sa'
         run: |
-          terraform -chdir=terraform/gcp import google_service_account.terraform_provisioner projects/${{ secrets.GCP_PROJECT_ID }}/serviceAccounts/${{ github.event.inputs.sa_email }}
+          terraform -chdir=terraform/gcp import -var="project_id=${{ secrets.GCP_PROJECT_ID }}" google_service_account.terraform_provisioner projects/${{ secrets.GCP_PROJECT_ID }}/serviceAccounts/${{ github.event.inputs.sa_email }}
         env:
-          TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
           GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS_JSON }}
 
       - name: Output Service Account Key
