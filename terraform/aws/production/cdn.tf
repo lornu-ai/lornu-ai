@@ -6,6 +6,18 @@ data "aws_cloudfront_origin_request_policy" "all_viewer" {
   name = "Managed-AllViewer"
 }
 
+# Query Kubernetes Ingress resource for ALB endpoint
+# The ALB Controller provisions an ALB based on the Ingress configuration
+# This data source retrieves the ALB's DNS name from the Ingress status
+data "kubernetes_ingress_v1" "app" {
+  metadata {
+    name      = "lornu-ai"
+    namespace = "default"
+  }
+
+  depends_on = [module.eks]
+}
+
 # S3 bucket for CloudFront access logs
 resource "aws_s3_bucket" "cloudfront_logs" {
   bucket        = "lornu-ai-cloudfront-logs-${data.aws_caller_identity.current.account_id}"
@@ -48,6 +60,8 @@ resource "aws_s3_bucket_public_access_block" "cloudfront_logs" {
 data "aws_caller_identity" "current" {}
 
 
+# Route53 Zone Management
+# CloudFront-only architecture: All DNS records (apex and subdomains) point to CloudFront
 data "aws_route53_zone" "primary" {
   count        = var.create_route53_zone ? 0 : 1
   name         = var.route53_zone_name
@@ -92,16 +106,19 @@ resource "aws_acm_certificate_validation" "cloudfront" {
 resource "aws_cloudfront_distribution" "api" {
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "Lornu AI API distribution"
-  aliases             = [var.api_domain]
+  comment             = "Lornu AI distribution"
+  aliases             = [var.domain_name, var.api_domain]
   price_class         = "PriceClass_100"
   default_root_object = ""
   http_version        = "http2and3"
 
   depends_on = [aws_acm_certificate_validation.cloudfront]
 
+  # Origin: ALB created by Kubernetes ALB Controller
+  # The ALB Controller watches for Ingress resources and automatically provisions an ALB
+  # This data source queries the Ingress status to get the ALB endpoint
   origin {
-    domain_name = aws_lb.main.dns_name
+    domain_name = data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname
     origin_id   = "alb-origin"
 
     custom_origin_config {
@@ -143,10 +160,18 @@ resource "aws_cloudfront_distribution" "api" {
   web_acl_id = var.cloudfront_web_acl_id != "" ? var.cloudfront_web_acl_id : null
 }
 
-resource "aws_route53_record" "api_cloudfront" {
+# DNS Records for CloudFront-only Architecture
+# All traffic for apex and API domains routes through CloudFront
+# CHANGED: Previously dns.tf managed apex domain with ALB certificate validation (1h15m timeout)
+# Now all DNS is managed here with CloudFront aliases (no validation delays)
+# Using for_each to consolidate A and AAAA records and reduce code duplication
+
+resource "aws_route53_record" "apex" {
+  for_each = toset(["A", "AAAA"])
+
   zone_id = local.route53_zone_id
-  name    = var.api_domain
-  type    = "A"
+  name    = var.domain_name
+  type    = each.key
 
   alias {
     name                   = aws_cloudfront_distribution.api.domain_name
@@ -155,10 +180,12 @@ resource "aws_route53_record" "api_cloudfront" {
   }
 }
 
-resource "aws_route53_record" "api_cloudfront_ipv6" {
+resource "aws_route53_record" "api_cloudfront" {
+  for_each = toset(["A", "AAAA"])
+
   zone_id = local.route53_zone_id
   name    = var.api_domain
-  type    = "AAAA"
+  type    = each.key
 
   alias {
     name                   = aws_cloudfront_distribution.api.domain_name
