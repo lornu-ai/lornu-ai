@@ -41,3 +41,6 @@ kubernetes/overlays/   # dev, staging, prod overlays
 ## PR Labeling (Required)
 - Apply a label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) to every PR. If the label doesn't exist, create it first.
 - Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.
+
+## PR Base Branch (Required)
+- Always open PRs against `develop`. For kustomize docs updates, use base `kustomize-develop`.
