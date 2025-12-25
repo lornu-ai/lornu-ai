@@ -46,6 +46,29 @@ EOF
 
   if echo "$CREATE_RESPONSE" | grep -q "\"type\":\"workspaces\""; then
     echo "Successfully created workspace $WORKSPACE_NAME."
+    WORKSPACE_ID=$(echo "$CREATE_RESPONSE" | jq -r .data.id)
+
+    # Inject OIDC Variables if ROLE_ARN is provided
+    ROLE_ARN=$4
+    if [ -n "$ROLE_ARN" ]; then
+      echo "Injecting OIDC variables for role $ROLE_ARN..."
+
+      # TFC_AWS_PROVIDER_AUTH
+      curl -s \
+        --header "Authorization: Bearer $TFC_TOKEN" \
+        --header "Content-Type: application/vnd.api+json" \
+        --request POST \
+        --data "{\"data\":{\"type\":\"vars\",\"attributes\":{\"key\":\"TFC_AWS_PROVIDER_AUTH\",\"value\":\"true\",\"category\":\"env\",\"hcl\":false,\"sensitive\":false}}}" \
+        "https://app.terraform.io/api/v2/workspaces/$WORKSPACE_ID/vars"
+
+      # TFC_AWS_RUN_ROLE_ARN
+      curl -s \
+        --header "Authorization: Bearer $TFC_TOKEN" \
+        --header "Content-Type: application/vnd.api+json" \
+        --request POST \
+        --data "{\"data\":{\"type\":\"vars\",\"attributes\":{\"key\":\"TFC_AWS_RUN_ROLE_ARN\",\"value\":\"$ROLE_ARN\",\"category\":\"env\",\"hcl\":false,\"sensitive\":false}}}" \
+        "https://app.terraform.io/api/v2/workspaces/$WORKSPACE_ID/vars"
+    fi
   else
     echo "Failed to create workspace: $CREATE_RESPONSE"
     exit 1

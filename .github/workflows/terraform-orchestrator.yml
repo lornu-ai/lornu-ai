@@ -64,7 +64,11 @@ jobs:
       - name: "Bootstrap Workspace"
         run: |
           chmod +x terraform/tfc-management/bootstrap.sh
-          ./terraform/tfc-management/bootstrap.sh "${{ secrets.TF_CLOUD_ORG }}" "lornu-ai-${{ matrix.workspace_suffix }}" "${{ secrets.TF_API_TOKEN }}"
+          # Extract role_arn for the current workspace_suffix from workspaces.tfvars
+          # This is a robust way to sync bootstrap with Hub settings
+          ROLE_ARN=$(grep -A 15 "\"${{ matrix.workspace_suffix }}\" =" terraform/tfc-management/workspaces.tfvars | grep "role_arn" | cut -d'"' -f2)
+          echo "Bootstrapping with role: $ROLE_ARN"
+          ./terraform/tfc-management/bootstrap.sh "${{ secrets.TF_CLOUD_ORG }}" "lornu-ai-${{ matrix.workspace_suffix }}" "${{ secrets.TF_API_TOKEN }}" "$ROLE_ARN"
 
       - name: "Upload Configuration"
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.2

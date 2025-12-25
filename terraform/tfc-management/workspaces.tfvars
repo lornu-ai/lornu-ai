@@ -10,7 +10,7 @@ aws_environments = {
     environment    = "staging"
     vcs_repo_path  = "terraform/aws/environments/staging-aws"
     aws_region     = "us-east-2"
-    role_arn       = "arn:aws:iam::123456789012:role/lornu-ai-staging-tfc-role"
+    role_arn       = "arn:aws:iam::702555543026:role/lornu-ai-staging-tfc-role"
   },
   "prod-aws" = {
     workspace_name = "lornu-ai-prod-aws"
@@ -18,7 +18,7 @@ aws_environments = {
     environment    = "production"
     vcs_repo_path  = "terraform/aws/environments/prod-aws"
     aws_region     = "us-east-2"
-    role_arn       = "arn:aws:iam::123456789012:role/lornu-ai-production-tfc-role"
+    role_arn       = "arn:aws:iam::702555543026:role/lornu-ai-production-tfc-role"
   }
 }
 
