@@ -113,3 +113,15 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value}/lornu-ai]"
 }
+
+# Artifact Registry for container images
+resource "google_artifact_registry_repository" "lornu_repo" {
+  location      = var.region
+  repository_id = "lornu-ai"
+  description   = "Docker repository for Lornu AI images"
+  format        = "DOCKER"
+
+  depends_on = [
+    google_project_service.artifactregistry
+  ]
+}
