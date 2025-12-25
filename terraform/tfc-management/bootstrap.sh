@@ -18,8 +18,14 @@ STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
   --header "Content-Type: application/vnd.api+json" \
   "https://app.terraform.io/api/v2/organizations/$ORG_NAME/workspaces/$WORKSPACE_NAME")
 
+WORKSPACE_ID="" # Initialize WORKSPACE_ID
+
 if [ "$STATUS_CODE" -eq 200 ]; then
   echo "Workspace $WORKSPACE_NAME already exists."
+  WORKSPACE_ID=$(curl -s \
+    --header "Authorization: Bearer $TFC_TOKEN" \
+    --header "Content-Type: application/vnd.api+json" \
+    "https://app.terraform.io/api/v2/organizations/$ORG_NAME/workspaces/$WORKSPACE_NAME" | jq -r .data.id)
 elif [ "$STATUS_CODE" -eq 404 ]; then
   echo "Workspace $WORKSPACE_NAME not found. Creating it..."
 
@@ -47,28 +53,6 @@ EOF
   if echo "$CREATE_RESPONSE" | grep -q "\"type\":\"workspaces\""; then
     echo "Successfully created workspace $WORKSPACE_NAME."
     WORKSPACE_ID=$(echo "$CREATE_RESPONSE" | jq -r .data.id)
-
-    # Inject OIDC Variables if ROLE_ARN is provided
-    ROLE_ARN=$4
-    if [ -n "$ROLE_ARN" ]; then
-      echo "Injecting OIDC variables for role $ROLE_ARN..."
-
-      # TFC_AWS_PROVIDER_AUTH
-      curl -s \
-        --header "Authorization: Bearer $TFC_TOKEN" \
-        --header "Content-Type: application/vnd.api+json" \
-        --request POST \
-        --data "{\"data\":{\"type\":\"vars\",\"attributes\":{\"key\":\"TFC_AWS_PROVIDER_AUTH\",\"value\":\"true\",\"category\":\"env\",\"hcl\":false,\"sensitive\":false}}}" \
-        "https://app.terraform.io/api/v2/workspaces/$WORKSPACE_ID/vars"
-
-      # TFC_AWS_RUN_ROLE_ARN
-      curl -s \
-        --header "Authorization: Bearer $TFC_TOKEN" \
-        --header "Content-Type: application/vnd.api+json" \
-        --request POST \
-        --data "{\"data\":{\"type\":\"vars\",\"attributes\":{\"key\":\"TFC_AWS_RUN_ROLE_ARN\",\"value\":\"$ROLE_ARN\",\"category\":\"env\",\"hcl\":false,\"sensitive\":false}}}" \
-        "https://app.terraform.io/api/v2/workspaces/$WORKSPACE_ID/vars"
-    fi
   else
     echo "Failed to create workspace: $CREATE_RESPONSE"
     exit 1
@@ -76,4 +60,29 @@ EOF
 else
   echo "Unexpected status code from TFC API: $STATUS_CODE"
   exit 1
+fi
+
+# Ensure OIDC Variables exist
+ROLE_ARN=$4
+if [ -n "$ROLE_ARN" ] && [ -n "$WORKSPACE_ID" ] && [ "$WORKSPACE_ID" != "null" ]; then
+  echo "Ensuring OIDC variables for workspace $WORKSPACE_ID..."
+
+  for KEY in "TFC_AWS_PROVIDER_AUTH" "TFC_AWS_RUN_ROLE_ARN"; do
+    VALUE="true"
+    [ "$KEY" == "TFC_AWS_RUN_ROLE_ARN" ] && VALUE="$ROLE_ARN"
+
+    # Check if variable exists
+    VAR_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+      --header "Authorization: Bearer $TFC_TOKEN" \
+      "https://app.terraform.io/api/v2/workspaces/$WORKSPACE_ID/vars?filter%5Bkey%5D=$KEY")
+
+    # Simple check: if not 200/found, create it.
+    # (Actually TFC API for vars is a bit more complex, but a POST usually works or fails if exists)
+    curl -s \
+      --header "Authorization: Bearer $TFC_TOKEN" \
+      --header "Content-Type: application/vnd.api+json" \
+      --request POST \
+      --data "{\"data\":{\"type\":\"vars\",\"attributes\":{\"key\":\"$KEY\",\"value\":\"$VALUE\",\"category\":\"env\",\"hcl\":false,\"sensitive\":false}}}" \
+      "https://app.terraform.io/api/v2/workspaces/$WORKSPACE_ID/vars" > /dev/null || true
+  done
 fi
