@@ -99,6 +99,21 @@ jobs:
         run: |
           cd k8s/overlays/$ENV
           kustomize edit set image lornu-ai=us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:$IMAGE_TAG
+          # Inject secrets from GitHub Actions into the kustomization
+          # Note: We use a generator or replace the placeholder
+          cat <<EOF > patches/secret-generator.yaml
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: lornu-ai-secrets
+          type: Opaque
+          stringData:
+            RESEND_API_KEY: "${{ secrets.RESEND_API_KEY }}"
+          EOF
+          
+          # Add the patch to kustomization.yaml dynamically
+          kustomize edit add patch --path patches/secret-generator.yaml
+
           kustomize build . | kubectl apply -f -
           kubectl rollout status deployment/lornu-ai -n $ENV --timeout=300s
 
