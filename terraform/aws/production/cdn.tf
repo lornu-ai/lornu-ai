@@ -48,6 +48,8 @@ resource "aws_s3_bucket_public_access_block" "cloudfront_logs" {
 data "aws_caller_identity" "current" {}
 
 
+# Route53 Zone Management
+# CloudFront-only architecture: All DNS records (apex and subdomains) point to CloudFront
 data "aws_route53_zone" "primary" {
   count        = var.create_route53_zone ? 0 : 1
   name         = var.route53_zone_name
