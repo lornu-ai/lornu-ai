@@ -6,6 +6,18 @@ data "aws_cloudfront_origin_request_policy" "all_viewer" {
   name = "Managed-AllViewer"
 }
 
+# Query Kubernetes Ingress resource for ALB endpoint
+# The ALB Controller provisions an ALB based on the Ingress configuration
+# This data source retrieves the ALB's DNS name from the Ingress status
+data "kubernetes_ingress_v1" "app" {
+  metadata {
+    name      = "lornu-ai"
+    namespace = "default"
+  }
+
+  depends_on = [module.eks]
+}
+
 # S3 bucket for CloudFront access logs
 resource "aws_s3_bucket" "cloudfront_logs" {
   bucket        = "lornu-ai-cloudfront-logs-${data.aws_caller_identity.current.account_id}"
@@ -102,9 +114,12 @@ resource "aws_cloudfront_distribution" "api" {
 
   depends_on = [aws_acm_certificate_validation.cloudfront]
 
+  # Origin: ALB created by Kubernetes ALB Controller
+  # The ALB Controller watches for Ingress resources and automatically provisions an ALB
+  # This data source queries the Ingress status to get the ALB endpoint
   origin {
-    domain_name = module.eks.cluster_endpoint
-    origin_id   = "eks-origin"
+    domain_name = data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname
+    origin_id   = "alb-origin"
 
     custom_origin_config {
       http_port              = 80
@@ -117,7 +132,7 @@ resource "aws_cloudfront_distribution" "api" {
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
-    target_origin_id = "eks-origin"
+    target_origin_id = "alb-origin"
 
     viewer_protocol_policy   = "redirect-to-https"
     cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
