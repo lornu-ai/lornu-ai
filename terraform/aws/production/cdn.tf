@@ -28,7 +28,7 @@ data "aws_cloudfront_origin_request_policy" "all_viewer" {
 data "kubernetes_ingress_v1" "app" {
   metadata {
     name      = "${var.k8s_namespace_prefix}lornu-ai"
-    namespace = "default"
+    namespace = "lornu-prod"
   }
 
   depends_on = [module.eks]
@@ -140,12 +140,12 @@ locals {
 
 resource "aws_acm_certificate" "cloudfront" {
   provider          = aws.us_east_1
-  domain_name       = var.domain_name
+  domain_name = var.api_domain != "" ? var.api_domain : var.domain_name
   validation_method = "DNS"
 
-  # Use compact() to exclude empty strings from subject_alternative_names
-  # This handles both cases: with api_domain (SAN included) and without (no SAN)
-  subject_alternative_names = compact([var.api_domain])
+  # Use conditional to exclude empty strings from subject_alternative_names
+  # Ensure both apex and API domains are covered by the certificate
+  subject_alternative_names = var.api_domain != "" ? [var.domain_name, var.api_domain] : [var.domain_name]
 
   lifecycle {
     create_before_destroy = true
