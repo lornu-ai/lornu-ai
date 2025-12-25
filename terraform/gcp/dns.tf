@@ -12,6 +12,12 @@ resource "google_dns_managed_zone" "public_zone" {
   }
 }
 
+# Import the existing manually created zone
+import {
+  to = google_dns_managed_zone.public_zone
+  id = "projects/gcp-lornu-ai/managedZones/lornu-ai-zone"
+}
+
 # Output nameservers for domain registrar configuration
 output "name_servers" {
   description = "Cloud DNS nameservers. Configure these at your domain registrar."
