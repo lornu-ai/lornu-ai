@@ -67,6 +67,13 @@ variable "github_repo" {
   type        = string
   default     = "lornu-ai"
 }
+
+variable "k8s_namespace_prefix" {
+  description = "Kubernetes namespace prefix (e.g., 'prod-' for production) to match Kustomize namePrefix"
+  type        = string
+  default     = "prod-"
+}
+
 variable "db_password" {
   description = "The master password for the database."
   type        = string

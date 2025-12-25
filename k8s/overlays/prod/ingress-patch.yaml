@@ -1,0 +1,8 @@
+# Production-specific Ingress configuration
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lornu-ai
+  annotations:
+    # ACM certificate will be injected via CI/CD with actual production certificate ARN
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/CERT_ID

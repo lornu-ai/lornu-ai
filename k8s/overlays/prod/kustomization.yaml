@@ -24,6 +24,10 @@ configMapGenerator:
 
 # Patch for production-specific settings
 patches:
+  - path: ingress-patch.yaml
+    target:
+      kind: Ingress
+      name: lornu-ai
   - patch: |-
       apiVersion: apps/v1
       kind: Deployment

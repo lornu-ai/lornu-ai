@@ -9,9 +9,10 @@ data "aws_cloudfront_origin_request_policy" "all_viewer" {
 # Query Kubernetes Ingress resource for ALB endpoint
 # The ALB Controller provisions an ALB based on the Ingress configuration
 # This data source retrieves the ALB's DNS name from the Ingress status
+# Note: Uses namePrefix from kustomization (e.g., "prod-lornu-ai" in production)
 data "kubernetes_ingress_v1" "app" {
   metadata {
-    name      = "lornu-ai"
+    name      = "${var.k8s_namespace_prefix}lornu-ai"
     namespace = "default"
   }
 
@@ -79,8 +80,12 @@ locals {
 
 resource "aws_acm_certificate" "cloudfront" {
   provider          = aws.us_east_1
-  domain_name       = var.api_domain
+  domain_name       = var.domain_name
   validation_method = "DNS"
+
+  subject_alternative_names = [
+    var.api_domain
+  ]
 
   lifecycle {
     create_before_destroy = true
@@ -88,19 +93,24 @@ resource "aws_acm_certificate" "cloudfront" {
 }
 
 resource "aws_route53_record" "cloudfront_cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.domain_name => dvo
+  }
+
   zone_id = local.route53_zone_id
-  name    = one([for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.resource_record_name])
-  type    = one([for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.resource_record_type])
+  name    = each.value.resource_record_name
+  type    = each.value.resource_record_type
   ttl     = 60
-  records = [one([for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.resource_record_value])]
+  records = [each.value.resource_record_value]
 
   depends_on = [aws_acm_certificate.cloudfront]
 }
 
+# Wait for ACM certificate validation to complete
 resource "aws_acm_certificate_validation" "cloudfront" {
   provider                = aws.us_east_1
   certificate_arn         = aws_acm_certificate.cloudfront.arn
-  validation_record_fqdns = [aws_route53_record.cloudfront_cert_validation.fqdn]
+  validation_record_fqdns = [for record in aws_route53_record.cloudfront_cert_validation : record.fqdn]
 }
 
 resource "aws_cloudfront_distribution" "api" {
@@ -116,9 +126,10 @@ resource "aws_cloudfront_distribution" "api" {
 
   # Origin: ALB created by Kubernetes ALB Controller
   # The ALB Controller watches for Ingress resources and automatically provisions an ALB
-  # This data source queries the Ingress status to get the ALB endpoint
+  # The Ingress must be annotated with alb.ingress.kubernetes.io/certificate-arn to enable SSL
+  # This uses the ALB's DNS name from the Ingress status
   origin {
-    domain_name = data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname
+    domain_name = try(data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname, null)
     origin_id   = "alb-origin"
 
     custom_origin_config {
