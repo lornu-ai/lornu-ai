@@ -77,10 +77,10 @@ resource "aws_route53_record" "cloudfront_cert_validation" {
   for_each = toset([var.api_domain])
 
   zone_id = local.route53_zone_id
-  name    = aws_acm_certificate.cloudfront.domain_validation_options[0].resource_record_name
-  type    = aws_acm_certificate.cloudfront.domain_validation_options[0].resource_record_type
+  name    = one([for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.resource_record_name])
+  type    = one([for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.resource_record_type])
   ttl     = 60
-  records = [aws_acm_certificate.cloudfront.domain_validation_options[0].resource_record_value]
+  records = [one([for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.resource_record_value])]
 
   depends_on = [aws_acm_certificate.cloudfront]
 }
