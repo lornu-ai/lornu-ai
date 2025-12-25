@@ -12,10 +12,10 @@ We follow strict TDD:
 ## Requirements (Issues #281, #282)
 
 ### Infrastructure
-- **Cloud Run**: Serverless backend deployment
+- **GKE Autopilot**: Serverless Kubernetes cluster (managed nodes, per-pod billing)
 - **Firestore**: NoSQL database for agent state
 - **Vertex AI**: LLM integration (Gemini)
-- **OIDC**: Workload Identity Federation (no static keys)
+- **Workload Identity**: IRSA-like functionality for K8s pods
 - **NO HELM**: Pure Terraform + Kustomize
 
 ### Terraform Cloud

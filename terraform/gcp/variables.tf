@@ -9,16 +9,10 @@ variable "region" {
   default     = "us-central1"
 }
 
-variable "service_name" {
-  description = "Name of the Cloud Run service"
+variable "cluster_name" {
+  description = "Name of the GKE cluster"
   type        = string
-  default     = "lornu-ai-backend"
-}
-
-variable "container_image" {
-  description = "Container image for Cloud Run service"
-  type        = string
-  default     = "gcr.io/cloudrun/hello" # Placeholder, will be replaced by CI/CD
+  default     = "lornu-ai-gke"
 }
 
 variable "github_repo" {

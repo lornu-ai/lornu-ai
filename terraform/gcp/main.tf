@@ -3,21 +3,74 @@ provider "google" {
   region  = var.region
 }
 
+# VPC Network for GKE
+resource "google_compute_network" "vpc" {
+  name                    = "lornu-ai-vpc"
+  auto_create_subnetworks = false
+}
+
+# Subnet for GKE cluster
+resource "google_compute_subnetwork" "gke_subnet" {
+  name          = "lornu-ai-gke-subnet"
+  ip_cidr_range = "10.0.0.0/16"
+  region        = var.region
+  network       = google_compute_network.vpc.id
+
+  secondary_ip_range {
+    range_name    = "pods"
+    ip_cidr_range = "10.1.0.0/16"
+  }
+
+  secondary_ip_range {
+    range_name    = "services"
+    ip_cidr_range = "10.2.0.0/16"
+  }
+}
+
+# GKE Autopilot Cluster (serverless Kubernetes)
+resource "google_container_cluster" "primary" {
+  name     = var.cluster_name
+  location = var.region
+
+  # Enable Autopilot mode for serverless management
+  enable_autopilot = true
+
+  network    = google_compute_network.vpc.name
+  subnetwork = google_compute_subnetwork.gke_subnet.name
+
+  # IP allocation for pods and services
+  ip_allocation_policy {
+    cluster_secondary_range_name  = "pods"
+    services_secondary_range_name = "services"
+  }
+
+  # Workload Identity for IRSA-like functionality
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
+  }
+
+  # Maintenance window
+  maintenance_policy {
+    daily_maintenance_window {
+      start_time = "03:00"
+    }
+  }
+}
+
 # Firestore Database for agent state persistence
 resource "google_firestore_database" "lornu_db" {
   name        = "(default)"
   location_id = var.region
   type        = "FIRESTORE_NATIVE"
 
-  # Prevent accidental deletion
   deletion_policy = "DELETE"
 }
 
-# Service Account for Cloud Run with Vertex AI and Firestore permissions
+# Service Account for Kubernetes workloads with Vertex AI and Firestore permissions
 resource "google_service_account" "lornu_backend" {
   account_id   = "lornu-backend"
   display_name = "Lornu AI Backend Service Account"
-  description  = "Service account for Cloud Run backend with Vertex AI and Firestore access"
+  description  = "Service account for Kubernetes workloads with Vertex AI and Firestore access"
 }
 
 # Grant Vertex AI User role (for Gemini API access)
@@ -34,57 +87,9 @@ resource "google_project_iam_member" "firestore_user" {
   member  = "serviceAccount:${google_service_account.lornu_backend.email}"
 }
 
-# Cloud Run Service for backend
-resource "google_cloud_run_v2_service" "backend" {
-  name     = var.service_name
-  location = var.region
-  ingress  = "INGRESS_TRAFFIC_ALL"
-
-  template {
-    service_account = google_service_account.lornu_backend.email
-
-    containers {
-      image = var.container_image
-
-      env {
-        name  = "GCP_PROJECT_ID"
-        value = var.project_id
-      }
-
-      env {
-        name  = "FIRESTORE_DATABASE"
-        value = google_firestore_database.lornu_db.name
-      }
-
-      env {
-        name  = "ENVIRONMENT"
-        value = "gcp-develop"
-      }
-
-      resources {
-        limits = {
-          cpu    = "2"
-          memory = "1Gi"
-        }
-      }
-    }
-
-    scaling {
-      min_instance_count = 0 # Scale to zero for OpEx optimization
-      max_instance_count = 10
-    }
-  }
-
-  depends_on = [
-    google_firestore_database.lornu_db,
-    google_service_account.lornu_backend
-  ]
-}
-
-# Make Cloud Run service publicly accessible
-resource "google_cloud_run_v2_service_iam_member" "public_access" {
-  name     = google_cloud_run_v2_service.backend.name
-  location = google_cloud_run_v2_service.backend.location
-  role     = "roles/run.invoker"
-  member   = "allUsers"
+# Bind service account to Kubernetes service account via Workload Identity
+resource "google_service_account_iam_member" "workload_identity_binding" {
+  service_account_id = google_service_account.lornu_backend.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/lornu-ai]"
 }
