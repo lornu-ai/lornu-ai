@@ -98,9 +98,9 @@ resource "aws_acm_certificate" "cloudfront" {
   domain_name       = var.domain_name
   validation_method = "DNS"
 
-  subject_alternative_names = [
-    var.api_domain
-  ]
+  # Use compact() to exclude empty strings from subject_alternative_names
+  # This handles both cases: with api_domain (SAN included) and without (no SAN)
+  subject_alternative_names = compact([var.api_domain])
 
   lifecycle {
     create_before_destroy = true
@@ -132,7 +132,9 @@ resource "aws_cloudfront_distribution" "api" {
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "Lornu AI distribution"
-  aliases             = [var.domain_name, var.api_domain]
+  # Use compact() to remove empty strings from aliases list
+  # Handles both: with api_domain (two aliases) and without (one alias)
+  aliases             = compact([var.domain_name, var.api_domain])
   price_class         = "PriceClass_100"
   default_root_object = ""
   http_version        = "http2and3"
@@ -207,7 +209,8 @@ resource "aws_route53_record" "apex" {
 }
 
 resource "aws_route53_record" "api_cloudfront" {
-  for_each = toset(["A", "AAAA"])
+  # Only create DNS records if api_domain is set (not empty)
+  for_each = var.api_domain != "" ? toset(["A", "AAAA"]) : toset([])
 
   zone_id = local.route53_zone_id
   name    = var.api_domain
