@@ -3,20 +3,18 @@ kind: Ingress
 metadata:
   name: lornu-ai
   annotations:
-    kubernetes.io/ingress.class: alb
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
-    alb.ingress.kubernetes.io/ssl-redirect: '443'
-    alb.ingress.kubernetes.io/certificate-arn: YOUR_ACM_CERTIFICATE_ARN_HERE
-    alb.ingress.kubernetes.io/healthcheck-path: /api/health
-    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '30'
-    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
-    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
-    alb.ingress.kubernetes.io/unhealthy-threshold-count: '3'
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.allow-http: "true"
 spec:
+  tls:
+  - hosts:
+    - lornu.ai
+    - www.lornu.ai
+    secretName: lornu-ai-tls
   rules:
-  - http:
+  - host: lornu.ai
+    http:
       paths:
       - path: /
         pathType: Prefix
@@ -24,4 +22,14 @@ spec:
           service:
             name: lornu-ai
             port:
-              number: 8080
+              number: 80
+  - host: www.lornu.ai
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: lornu-ai
+            port:
+              number: 80

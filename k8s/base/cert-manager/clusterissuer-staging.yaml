@@ -4,7 +4,6 @@ metadata:
   name: letsencrypt-staging
 spec:
   acme:
-    # Let's Encrypt staging server (for testing)
     server: https://acme-staging-v02.api.letsencrypt.org/directory
     email: admin@lornu.ai
     privateKeySecretRef:
@@ -13,6 +12,7 @@ spec:
     - dns01:
         cloudDNS:
           project: gcp-lornu-ai
+          hostedZoneName: lornu-ai-zone
           serviceAccountSecretRef:
             name: clouddns-dns01-solver-sa
             key: key.json
