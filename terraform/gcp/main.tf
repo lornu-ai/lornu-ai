@@ -105,9 +105,11 @@ resource "google_project_iam_member" "firestore_user" {
   member  = "serviceAccount:${google_service_account.lornu_backend.email}"
 }
 
-# Bind service account to Kubernetes service account via Workload Identity
+# Bind service account to Kubernetes service accounts across all environments
 resource "google_service_account_iam_member" "workload_identity_binding" {
+  for_each = toset(["lornu-prod", "lornu-stage", "lornu-dev"])
+
   service_account_id = google_service_account.lornu_backend.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/lornu-ai]"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value}/lornu-ai]"
 }

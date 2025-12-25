@@ -29,9 +29,12 @@ if ! minikube status >/dev/null 2>&1; then
         --driver="$DRIVER" \
         --cpus=2 \
         --memory=4096 \
-        --disk-size=20g \
-        --kubernetes-version=v1.28.0 \
-        --container-runtime="$CONTAINER_RUNTIME"
+        --disk-size=20g
+
+    # Set runtime if specifically docker
+    if [ "$CONTAINER_RUNTIME" = "docker" ]; then
+        minikube config set container-runtime docker
+    fi
 else
     echo "✅ Minikube already running"
 fi
@@ -44,7 +47,11 @@ minikube addons enable metrics-server
 
 # Build image inside the minikube runtime (works for podman or docker)
 echo "🐳 Building container image in minikube..."
-eval "$(minikube docker-env)"
+if [ "$CONTAINER_RUNTIME" = "podman" ]; then
+    eval "$(minikube podman-env)"
+else
+    eval "$(minikube docker-env)"
+fi
 "$CONTAINER_RUNTIME" build -t lornu-ai:local -f Dockerfile .
 
 echo ""

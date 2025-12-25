@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lornu-ai
+spec:
+  template:
+    spec:
+      containers:
+      - name: lornu-ai
+        env:
+        - name: ENVIRONMENT
+          value: staging

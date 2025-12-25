@@ -1,6 +1,14 @@
 # Local Development & Testing Guide
 
-Fast workflow for testing before deploying to AWS Fargate.
+Fast workflow using **Podman**, **Minikube**, and **Kustomize**.
+
+## Prerequisites
+
+```bash
+brew install podman minikube kubectl kustomize
+podman machine init
+podman machine start
+```
 
 ## Quick Start (5 minutes)
 
@@ -16,22 +24,21 @@ chmod +x scripts/local-k8s-*.sh
 ./scripts/local-k8s-test.sh
 
 # 4. Access the app
-kubectl port-forward svc/lornu-ai 8080:8080
+kubectl port-forward svc/lornu-ai 8080:8080 -n lornu-dev
 # Visit http://localhost:8080
 ```
 
 ## What This Does
 
-1. **local-k8s-setup.sh**: 
-   - Starts minikube with minimal resources (2 CPU, 4GB RAM)
-   - Auto-detects podman or docker as container runtime
-   - Enables registry, ingress, and metrics
-   - Builds container image in minikube's environment
+1. **local-k8s-setup.sh**:
+   - Starts minikube using the `podman` driver (fallback to docker)
+   - Auto-configures the environment (`minikube podman-env`)
+   - Builds the container image locally within minikube's runtime
 
 2. **local-k8s-deploy.sh**:
-   - Applies Kustomize manifests from `k8s/overlays/dev`
-   - Waits for deployment to be ready
-   - Shows pod status
+   - Applies Kustomize manifests from `k8s/overlays/lornu-dev`
+   - Resources are deployed in the `lornu-dev` namespace
+   - Waits for the deployment to be healthy
 
 3. **local-k8s-test.sh**:
    - Tests health endpoint (`/api/health`)
@@ -49,17 +56,16 @@ kubectl port-forward svc/lornu-ai 8080:8080
 # Make code changes
 vim apps/web/src/App.tsx
 
-# Rebuild and redeploy
-eval $(minikube docker-env)
-docker build -t lornu-ai:local .
-kubectl rollout restart deployment/lornu-ai
+# Rebuild and redeploy (using Podman)
+eval $(minikube podman-env)
+podman build -t lornu-ai:local .
+kubectl rollout restart deployment/lornu-ai -n lornu-dev
 
 # Watch logs
-kubectl logs -f -l app.kubernetes.io/name=lornu-ai
+kubectl logs -f -l app.kubernetes.io/name=lornu-ai -n lornu-dev
 
 # Debug
-kubectl describe pod -l app.kubernetes.io/name=lornu-ai
-kubectl get events --sort-by=.metadata.creationTimestamp
+kubectl describe pod -l app.kubernetes.io/name=lornu-ai -n lornu-dev
 ```
 
 ## Deploy to AWS Fargate (Production)
