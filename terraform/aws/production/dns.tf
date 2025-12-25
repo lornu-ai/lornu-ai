@@ -1,66 +1,23 @@
-data "aws_route53_zone" "primary" {
-  count        = var.create_route53_zone ? 0 : 1
-  name         = var.route53_zone_name
-  private_zone = false
-}
-
-resource "aws_route53_zone" "primary" {
-  count = var.create_route53_zone ? 1 : 0
-  name  = var.route53_zone_name
-}
-
-locals {
-  route53_zone_id = var.create_route53_zone ? aws_route53_zone.primary[0].zone_id : data.aws_route53_zone.primary[0].zone_id
-}
-
-# DNS Record for Apex (lornu.ai) pointing to CloudFront
-resource "aws_route53_record" "apex" {
-  zone_id = local.route53_zone_id
-  name    = var.domain_name
-  type    = "A"
-
-  alias {
-    name                   = aws_cloudfront_distribution.main.domain_name
-    zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
-    evaluate_target_health = false
-  }
-}
-
-# IPv6 DNS Record for Apex (lornu.ai) pointing to CloudFront
-resource "aws_route53_record" "apex_ipv6" {
-  zone_id = local.route53_zone_id
-  name    = var.domain_name
-  type    = "AAAA"
-
-  alias {
-    name                   = aws_cloudfront_distribution.main.domain_name
-    zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
-    evaluate_target_health = false
-  }
-}
-
-# DNS Record for API (api.lornu.ai) pointing to CloudFront
-resource "aws_route53_record" "api" {
-  zone_id = local.route53_zone_id
-  name    = var.api_domain
-  type    = "A"
-
-  alias {
-    name                   = aws_cloudfront_distribution.main.domain_name
-    zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
-    evaluate_target_health = false
-  }
-}
-
-# IPv6 DNS Record for API (api.lornu.ai) pointing to CloudFront
-resource "aws_route53_record" "api_ipv6" {
-  zone_id = local.route53_zone_id
-  name    = var.api_domain
-  type    = "AAAA"
-
-  alias {
-    name                   = aws_cloudfront_distribution.main.domain_name
-    zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
-    evaluate_target_health = false
-  }
-}
+# DNS infrastructure has been consolidated into cdn.tf
+#
+# ARCHITECTURE CHANGE: Transition to CloudFront-only
+# ==================
+# Previously, this file managed:
+#   - Route53 zone for apex domain (lornu.ai)
+#   - ACM certificate for ALB SSL/TLS termination
+#   - Route53 validation records (1h15m timeout delay)
+#   - DNS pointing to ALB listener
+#
+# Now all DNS is managed by cdn.tf:
+#   - Route53 zone and records (both apex and api subdomains)
+#   - CloudFront distribution with aliases for both domains
+#   - Single ACM certificate for CloudFront
+#   - Direct DNS aliases to CloudFront (no validation delays)
+#
+# Benefits:
+#   - Eliminates 1h15m ACM certificate validation timeout
+#   - Simpler architecture: CloudFront → EKS directly (no ALB)
+#   - SSL/TLS termination at edge with CloudFront
+#   - Reduced operational overhead
+#
+# This file is maintained for reference and can be removed in future refactoring.

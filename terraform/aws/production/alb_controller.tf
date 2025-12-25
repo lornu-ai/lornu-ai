@@ -7,7 +7,7 @@ module "lb_role" {
 
   oidc_providers = {
     main = {
-      provider_arn               = module.eks.oidc_provider_arn
+      provider_arn               = module.lornu_cluster.oidc_provider_arn
       namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
     }
   }
@@ -24,11 +24,11 @@ resource "helm_release" "aws_load_balancer_controller" {
   chart      = "aws-load-balancer-controller"
   namespace  = "kube-system"
   version    = "1.7.1" # Pin version for stability
-  depends_on = [module.eks]
+  depends_on = [module.lornu_cluster]
 
   values = [
     yamlencode({
-      clusterName = module.eks.cluster_name
+      clusterName = module.lornu_cluster.cluster_name
       serviceAccount = {
         create = true
         name   = "aws-load-balancer-controller"
@@ -37,7 +37,7 @@ resource "helm_release" "aws_load_balancer_controller" {
         }
       }
       region = var.aws_region
-      vpcId  = aws_vpc.main.id
+      vpcId  = aws_vpc.lornu_vpc.id
     })
   ]
 }

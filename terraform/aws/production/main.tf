@@ -22,7 +22,7 @@ terraform {
     organization = "lornu-ai"
 
     workspaces {
-      name = "lornu-ai-main"
+      name = "aws-kustomize"
     }
   }
 }
@@ -37,13 +37,13 @@ provider "aws" {
 }
 
 provider "kubernetes" {
-  host                   = module.eks.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  host                   = module.lornu_cluster.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.lornu_cluster.cluster_certificate_authority_data)
 
   exec {
     api_version = "client.authentication.k8s.io/v1"
     command     = "aws"
-    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name, "--region", var.aws_region]
+    args        = ["eks", "get-token", "--cluster-name", module.lornu_cluster.cluster_name, "--region", var.aws_region]
   }
 }
 
