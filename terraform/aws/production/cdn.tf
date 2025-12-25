@@ -141,7 +141,7 @@ locals {
 resource "aws_acm_certificate" "cloudfront" {
   provider          = aws.us_east_1
   domain_name       = var.api_domain != "" ? var.api_domain : var.domain_name
-  validation_method = "DNS"
+  validation_method = "HTTP"
 
   # Use conditional to exclude empty strings from subject_alternative_names
   # Ensure both apex and API domains are covered by the certificate
@@ -152,25 +152,21 @@ resource "aws_acm_certificate" "cloudfront" {
   }
 }
 
-resource "aws_route53_record" "cloudfront_cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.domain_name => dvo
-  }
+# HTTP validation (automatic): ACM will validate by checking HTTP responses on the domains
+# No Route53 configuration needed, so this breaks the circular dependency:
+# Previously: Route53 depends on CloudFront → CloudFront depends on ACM → ACM DNS validation depends on Route53
 
-  zone_id = local.route53_zone_id
-  name    = each.value.resource_record_name
-  type    = each.value.resource_record_type
-  ttl     = 60
-  records = [each.value.resource_record_value]
-
-  depends_on = [aws_acm_certificate.cloudfront]
-}
-
-# Wait for ACM certificate validation to complete
 resource "aws_acm_certificate_validation" "cloudfront" {
-  provider                = aws.us_east_1
-  certificate_arn         = aws_acm_certificate.cloudfront.arn
-  validation_record_fqdns = [for record in aws_route53_record.cloudfront_cert_validation : record.fqdn]
+  provider        = aws.us_east_1
+  certificate_arn = aws_acm_certificate.cloudfront.arn
+  
+  # HTTP validation completes automatically when ACM can reach the domain via HTTP
+  # For this to work, CloudFront must be able to reach the origin via HTTP on port 80
+  # Typically completes within 5-15 minutes after ACM is created
+  
+  timeouts {
+    create = "2h"  # Extended timeout to allow for slow validation
+  }
 }
 
 resource "aws_cloudfront_distribution" "api" {
