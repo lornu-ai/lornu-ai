@@ -1,4 +1,4 @@
-module "eks" {
+module "lornu_cluster" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
 
@@ -11,7 +11,7 @@ module "eks" {
 
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
-  vpc_id                   = aws_vpc.main.id
+  vpc_id                   = aws_vpc.lornu_vpc.id
   subnet_ids               = [aws_subnet.private_a.id, aws_subnet.private_b.id]
   control_plane_subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
 

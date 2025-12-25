@@ -7,8 +7,10 @@ resources:
 
 namespace: lornu-staging
 
-commonLabels:
-  lornu.ai/env: staging
+labels:
+- pairs:
+    lornu.ai/env: staging
+  includeSelectors: true
 
 patches:
 - target:
@@ -18,3 +20,10 @@ patches:
     - op: replace
       path: /spec/replicas
       value: 2
+- target:
+    kind: Ingress
+    name: lornu-ai
+  patch: |-
+    - op: add
+      path: /metadata/annotations/alb.ingress.kubernetes.io~1certificate-arn
+      value: "${STAGING_ACM_CERTIFICATE_ARN}"

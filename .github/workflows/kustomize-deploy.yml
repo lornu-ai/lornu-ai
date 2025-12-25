@@ -14,6 +14,7 @@ jobs:
   deploy:
     name: "Deploy Environments"
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     strategy:
       matrix:
         env: [dev, staging, prod]
@@ -30,6 +31,8 @@ jobs:
       - name: "Update Kubeconfig"
         run: |
           aws eks update-kubeconfig --name lornu-ai-production-cluster --region ${{ secrets.AWS_DEFAULT_REGION }}
+          kubectl cluster-info
+          kubectl auth can-i create deployments --namespace lornu-${{ matrix.env }}
 
       - name: "Create/Update Secrets"
         env:
@@ -48,10 +51,10 @@ jobs:
               NAMESPACE="lornu-dev"
               ;;
           esac
-          
+
           # Create namespace if it doesn't exist
           kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
-          
+
           # Create or update the secret with the RESEND_API_KEY
           kubectl create secret generic lornu-ai-secrets \
             --from-literal=RESEND_API_KEY="${RESEND_API_KEY}" \

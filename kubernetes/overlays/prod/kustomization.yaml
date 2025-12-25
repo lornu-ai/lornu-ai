@@ -9,8 +9,12 @@ resources:
 
 namespace: lornu-prod
 
-commonLabels:
-  lornu.ai/env: production
+labels:
+- pairs:
+    lornu.ai/environment: production
+    lornu.ai/managed-by: plan-a-orchestration
+    lornu.ai/asset-id: lornu-ai-production-app
+  includeSelectors: true
 
 patches:
 - target:
@@ -24,6 +28,9 @@ patches:
     kind: Ingress
     name: lornu-ai
   patch: |-
+    - op: add
+      path: /metadata/annotations/alb.ingress.kubernetes.io~1certificate-arn
+      value: "${PROD_ACM_CERTIFICATE_ARN}"
     - op: add
       path: /metadata/annotations/cert-manager.io~1cluster-issuer
       value: letsencrypt-prod
