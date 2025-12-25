@@ -1,6 +1,11 @@
 name: GCP Terraform Service Account Setup
 
 on:
+  push:
+    branches:
+      - gcp-develop
+    paths:
+      - '.github/workflows/gcp-sa-setup.yml'
   workflow_dispatch:
     inputs:
       action:
