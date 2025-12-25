@@ -4,7 +4,6 @@ kind: Kustomization
 namespace: cert-manager
 
 resources:
-  # Install cert-manager CRDs and deployment
   - https://github.com/cert-manager/cert-manager/releases/download/v1.14.1/cert-manager.yaml
   - clusterissuer-prod.yaml
   - clusterissuer-staging.yaml

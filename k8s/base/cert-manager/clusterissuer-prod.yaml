@@ -4,16 +4,15 @@ metadata:
   name: letsencrypt-prod
 spec:
   acme:
-    # Let's Encrypt production server
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: admin@lornu.ai  # Change to your email
+    email: principle@lornu.ai
     privateKeySecretRef:
       name: letsencrypt-prod-key
     solvers:
-    # DNS-01 challenge using Cloud DNS
     - dns01:
         cloudDNS:
-          project: gcp-lornu-ai  # Your GCP project ID
+          project: gcp-lornu-ai
+          hostedZoneName: lornu-ai-zone
           serviceAccountSecretRef:
             name: clouddns-dns01-solver-sa
             key: key.json
