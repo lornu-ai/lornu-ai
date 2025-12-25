@@ -32,8 +32,19 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${each.value}/lornu-ai]"
 }
 
-# Provisioning Service Account (Managed for role visibility, though created externally for bootstrap)
-# Note: We use google_project_iam_member instead of iam_policy to avoid wiping out other users' access.
+# Provisioning Service Account (Managed for role visibility)
+resource "google_service_account" "terraform_provisioner" {
+  account_id   = "terraform-provisioner"
+  display_name = "Terraform Provisioning Service Account"
+  description  = "Service account used by GitHub Actions/Terraform Cloud to provision infrastructure"
+}
+
+# Key for the provisioning service account (to be exported to GitHub Secrets)
+resource "google_service_account_key" "provisioner_key" {
+  service_account_id = google_service_account.terraform_provisioner.name
+}
+
+# Provisioning Service Account Roles
 resource "google_project_iam_member" "terraform_provisioner_roles" {
   for_each = toset([
     "roles/serviceusage.serviceUsageAdmin",
@@ -49,7 +60,5 @@ resource "google_project_iam_member" "terraform_provisioner_roles" {
 
   project = var.project_id
   role    = each.value
-  # We assume the SA name is known or passed in.
-  # For now, we'll use a local variable or hardcoded based on the one already in use if we want TF to manage its roles.
-  member = "serviceAccount:terraform-provisioner@${var.project_id}.iam.gserviceaccount.com"
+  member  = "serviceAccount:${google_service_account.terraform_provisioner.email}"
 }

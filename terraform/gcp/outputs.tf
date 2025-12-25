@@ -39,3 +39,9 @@ output "artifact_registry_repo" {
   description = "Artifact Registry repository URL"
   value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.lornu_repo.repository_id}"
 }
+
+output "terraform_provisioner_key" {
+  description = "Terraform Provisioner Service Account Key (JSON, base64 encoded)"
+  value       = google_service_account_key.provisioner_key.private_key
+  sensitive   = true
+}
