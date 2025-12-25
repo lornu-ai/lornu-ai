@@ -22,6 +22,11 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v4
 
+      - name: "Bootstrap Workspace"
+        run: |
+          chmod +x terraform/tfc-management/bootstrap.sh
+          ./terraform/tfc-management/bootstrap.sh "${{ secrets.TF_CLOUD_ORG }}" "lornu-ai-management" "${{ secrets.TF_API_TOKEN }}"
+
       - name: "Upload Configuration"
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.2
         id: upload
