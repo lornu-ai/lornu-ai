@@ -34,3 +34,8 @@ output "region" {
   description = "GCP Region"
   value       = var.region
 }
+
+output "artifact_registry_repo" {
+  description = "Artifact Registry repository URL"
+  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.lornu_repo.repository_id}"
+}

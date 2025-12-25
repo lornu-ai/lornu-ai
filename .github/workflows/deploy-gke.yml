@@ -1,0 +1,107 @@
+name: GKE Build & Deploy
+
+on:
+  push:
+    branches:
+      - gcp-develop
+    paths:
+      - 'apps/web/**'
+      - 'packages/api/**'
+      - 'k8s/**'
+      - 'Dockerfile'
+      - '.github/workflows/deploy-gke.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'lornu-dev'
+        type: choice
+        options:
+          - lornu-dev
+          - lornu-stage
+          - lornu-prod
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  REPOSITORY: lornu-ai
+  IMAGE: lornu-ai
+  CLUSTER_NAME: lornu-ai-gke
+
+jobs:
+  build-and-push:
+    name: Build & Push to GAR
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      - name: Set Image Tag
+        id: tag
+        run: |
+          TAG=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:${{ steps.tag.outputs.tag }}
+            us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to GKE
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Get GKE Credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.CLUSTER_NAME }}
+          location: ${{ env.REGION }}
+
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Deploy to GKE
+        env:
+          ENV: ${{ github.event.inputs.environment || 'lornu-dev' }}
+          IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
+        run: |
+          cd k8s/overlays/$ENV
+          kustomize edit set image lornu-ai=us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:$IMAGE_TAG
+          kustomize build . | kubectl apply -f -
+          kubectl rollout status deployment/lornu-ai -n $ENV --timeout=300s

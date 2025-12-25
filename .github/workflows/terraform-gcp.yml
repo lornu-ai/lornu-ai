@@ -12,6 +12,7 @@ on:
       - gcp-develop
     paths:
       - 'terraform/gcp/**'
+  workflow_dispatch:
 
 permissions:
   contents: read
