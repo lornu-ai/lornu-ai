@@ -24,6 +24,15 @@ module "eks" {
           namespace = "lornu-ai"
         },
         {
+          namespace = "lornu-dev"
+        },
+        {
+          namespace = "lornu-staging"
+        },
+        {
+          namespace = "lornu-prod"
+        },
+        {
           namespace = "kube-system"
         },
         {
