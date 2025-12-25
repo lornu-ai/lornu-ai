@@ -1,51 +1,14 @@
-# Migration Plan: Moving Legacy App to Subdomain
+# Plan A — Migration Notes
 
 ## Objective
-Move the current deployment (served from `../not-sure`) from `lornu.ai` to `rag.lornu.ai`.
-This frees up the top-level domain `lornu.ai` for the new product `lornu-ai` (this repository).
+Retire legacy ECS/Cloudflare/Helm references and align all infrastructure and documentation to the **Plan A** single-cluster, multi-namespace model.
 
-## Steps
+## Scope
+- Documentation realignment to `kubernetes/base/` and `kubernetes/overlays/`.
+- Namespace standardization: `lornu-dev`, `lornu-staging`, `lornu-prod`.
+- Protective Metadata enforcement on all Kubernetes resources.
 
-### 1. Update Legacy Repository (`not-sure`)
-The file `../not-sure/wrangler.jsonc` controls the routing for the current Cloudflare Worker.
-
-**Current Configuration:**
-```jsonc
-"routes": [
-    { "pattern": "lornu.ai", "custom_domain": true },
-    { "pattern": "www.lornu.ai", "custom_domain": true }
-]
-```
-
-**Required Change:**
-Replace the `routes` block in `../not-sure/wrangler.jsonc` with:
-
-```jsonc
-        "routes": [
-                {
-                        "pattern": "rag.lornu.ai",
-                        "custom_domain": true
-                }
-        ]
-```
-
-### 2. Apply Changes to Legacy App
-Run these commands to verify and push the change (assuming you are in the `lornu-ai` root):
-
-```bash
-# Verify the file exists
-ls -F ../not-sure/wrangler.jsonc
-
-# Edit the file (or use your IDE)
-# Then commit:
-cd ../not-sure
-git checkout -b migrate-domain
-# ... make changes ...
-git commit -am "chore: migrate domain to rag.lornu.ai"
-git push origin migrate-domain
-# Merge to main to deploy
-```
-
-### 3. Update New Repository (`lornu-ai`)
-1. Configure `apps/web/wrangler.toml` in this repo to claim `lornu.ai`.
-2. Push to `main` to deploy the new "Coming Soon" or MVP page to the main domain.
+## Checklist
+1. Remove ECS, Cloudflare, and Helm references from core docs.
+2. Ensure overlays contain `namespace.yaml` with required labels.
+3. Validate all doc paths and commands against the current repository structure.

@@ -140,12 +140,12 @@ locals {
 
 resource "aws_acm_certificate" "cloudfront" {
   provider          = aws.us_east_1
-  domain_name       = var.domain_name
+  domain_name       = var.api_domain != "" ? var.api_domain : var.domain_name
   validation_method = "DNS"
 
-  # Use compact() to exclude empty strings from subject_alternative_names
-  # This handles both cases: with api_domain (SAN included) and without (no SAN)
-  subject_alternative_names = compact([var.api_domain])
+  # Use conditional to exclude empty strings from subject_alternative_names
+  # Ensure both apex and API domains are covered by the certificate
+  subject_alternative_names = var.api_domain != "" ? [var.domain_name, var.api_domain] : [var.domain_name]
 
   lifecycle {
     create_before_destroy = true
@@ -174,9 +174,9 @@ resource "aws_acm_certificate_validation" "cloudfront" {
 }
 
 resource "aws_cloudfront_distribution" "api" {
-  enabled         = true
-  is_ipv6_enabled = true
-  comment         = "Lornu AI distribution"
+  enabled             = true
+  is_ipv6_enabled     = true
+  comment             = "Lornu AI distribution"
   # Use compact() to remove empty strings from aliases list
   # Handles both: with api_domain (two aliases) and without (one alias)
   aliases             = compact([var.domain_name, var.api_domain])
