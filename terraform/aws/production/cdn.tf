@@ -34,6 +34,51 @@ data "kubernetes_ingress_v1" "app" {
   depends_on = [module.eks]
 }
 
+# Local variable for ALB origin domain with robust validation
+# Handles both empty strings and whitespace-only values from Ingress status
+# 
+# Primary: ALB provisioned by Kubernetes ALB Controller (auto-populated in Ingress status)
+#   - Uses trimspace() to remove leading/trailing whitespace
+#   - Ternary operator checks that trimmed value is not empty
+#   - Returns null if empty or whitespace-only
+#
+# Secondary: Explicit alb_domain_name variable (useful for non-standard ALB setups or testing)
+#   - Also normalized with trimspace() and ternary to handle operator input edge cases
+#
+# If both are unavailable (null), precondition will fail at terraform plan time
+locals {
+  ingress_hostname = try(
+    trimspace(data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname) != "" ? trimspace(data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname) : null,
+    null
+  )
+  
+  alb_origin_domain = coalesce(
+    local.ingress_hostname,
+    trimspace(var.alb_domain_name) != "" ? trimspace(var.alb_domain_name) : null
+  )
+}
+
+# Precondition validation: Fail fast at terraform plan if ALB domain is not available
+# This prevents applying CloudFront with an invalid origin domain.
+# Operators will see this error during terraform plan, not during apply.
+#
+# Root causes for precondition failure:
+# 1. Ingress status not yet populated by ALB Controller (wait for controller to provision ALB)
+# 2. var.alb_domain_name not set and is empty/whitespace (explicitly provide ALB domain)
+#
+# Resolution:
+# - Option 1: Wait for ALB Controller to populate Ingress status (automatic, no action needed)
+# - Option 2: Set var.alb_domain_name to your ALB's DNS name (e.g., "k8s-lornu-xxx.elb.us-east-1.amazonaws.com")
+resource "null_resource" "validate_alb_origin" {
+  lifecycle {
+    precondition {
+      condition     = local.alb_origin_domain != null
+      error_message = "ALB origin domain is not available. Either wait for ALB Controller to provision the ALB and populate Ingress status (automatic after EKS cluster is ready), or explicitly set var.alb_domain_name to your ALB's DNS name (e.g., 'k8s-lornu-xxx.elb.us-east-1.amazonaws.com')."
+    }
+  }
+}
+
+
 # S3 bucket for CloudFront access logs
 resource "aws_s3_bucket" "cloudfront_logs" {
   bucket        = "lornu-ai-cloudfront-logs-${data.aws_caller_identity.current.account_id}"
@@ -139,14 +184,22 @@ resource "aws_cloudfront_distribution" "api" {
   default_root_object = ""
   http_version        = "http2and3"
 
-  depends_on = [aws_acm_certificate_validation.cloudfront]
+  depends_on = [aws_acm_certificate_validation.cloudfront, null_resource.validate_alb_origin]
 
   # Origin: ALB created by Kubernetes ALB Controller
   # The ALB Controller watches for Ingress resources and automatically provisions an ALB
   # The Ingress must be annotated with alb.ingress.kubernetes.io/certificate-arn to enable SSL
-  # This uses the ALB's DNS name from the Ingress status
+  #
+  # Domain name resolution (defined in locals.alb_origin_domain):
+  # 1. Kubernetes Ingress status (populated by ALB Controller after provisioning)
+  # 2. var.alb_domain_name variable (for manual override or non-controller setups)
+  # 3. Precondition validation ensures both #1 and #2 are evaluated before CloudFront is created
+  #
+  # If neither source provides a valid domain, the precondition will fail at terraform plan,
+  # preventing CloudFront from being created with an invalid origin. This is safer than
+  # allowing a placeholder value that would silently route traffic to nowhere.
   origin {
-    domain_name = try(data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname, null)
+    domain_name = local.alb_origin_domain
     origin_id   = "alb-origin"
 
     custom_origin_config {
