@@ -14,6 +14,7 @@ jobs:
   deploy:
     name: "Deploy Environments"
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     strategy:
       matrix:
         env: [dev, staging, prod]
@@ -30,7 +31,9 @@ jobs:
       - name: "Update Kubeconfig"
         run: |
           aws eks update-kubeconfig --name lornu-ai-production-cluster --region ${{ secrets.AWS_DEFAULT_REGION }}
+          kubectl cluster-info
+          kubectl auth can-i create deployments --namespace lornu-${{ matrix.env }}
 
       - name: "Deploy to Namespace"
         run: |
-          kubectl kustomize kubernetes/overlays/${{ matrix.env }} | kubectl apply -f -
+          kubectl kustomize kubernetes/overlays/${{ matrix.env }} | kubectl apply -f - --validate=false

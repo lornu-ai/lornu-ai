@@ -7,8 +7,10 @@ resources:
 
 namespace: lornu-staging
 
-commonLabels:
-  lornu.ai/env: staging
+labels:
+- pairs:
+    lornu.ai/env: staging
+  includeSelectors: true
 
 patches:
 - target:
