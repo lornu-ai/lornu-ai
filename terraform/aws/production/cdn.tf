@@ -144,9 +144,14 @@ resource "aws_cloudfront_distribution" "api" {
   # Origin: ALB created by Kubernetes ALB Controller
   # The ALB Controller watches for Ingress resources and automatically provisions an ALB
   # The Ingress must be annotated with alb.ingress.kubernetes.io/certificate-arn to enable SSL
-  # This uses the ALB's DNS name from the Ingress status
+  # This uses the ALB's DNS name from the Ingress status, with fallback to alb_domain_name variable
+  # If neither is available, use a placeholder that will fail validation (forcing explicit configuration)
   origin {
-    domain_name = try(data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname, null)
+    domain_name = coalesce(
+      try(data.kubernetes_ingress_v1.app.status[0].load_balancer[0].ingress[0].hostname, null),
+      var.alb_domain_name != "" ? var.alb_domain_name : null,
+      "unconfigured-alb.internal"  # Explicit fallback to catch configuration errors
+    )
     origin_id   = "alb-origin"
 
     custom_origin_config {

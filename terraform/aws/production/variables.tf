@@ -74,6 +74,12 @@ variable "k8s_namespace_prefix" {
   default     = "prod-"
 }
 
+variable "alb_domain_name" {
+  description = "The ALB domain name for CloudFront origin (e.g., alb.internal.lornu.ai). Falls back to Kubernetes Ingress status if not provided."
+  type        = string
+  default     = ""
+}
+
 variable "db_password" {
   description = "The master password for the database."
   type        = string
