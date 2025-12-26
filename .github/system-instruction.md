@@ -52,7 +52,7 @@ kubernetes/overlays/   # dev, staging, prod overlays
 - **Configuration Version Sync**: The `tfc-sync.yml` workflow automatically syncs configuration versions on push to `main`
 - **Manual Runs**: Manual TFC UI runs use the latest synced configuration version
 - **Workspaces**:
-  - AWS Production: `aws-kustomize` (terraform/aws/production)
+  - AWS Production: `aws-kustomize` (terraform/aws)
   - GCP: `gcp-lornu-ai` (terraform/gcp)
 
 See `docs/TFC_MANUAL_RUNS.md` for details on manual TFC UI runs.
@@ -74,7 +74,7 @@ See `docs/TFC_MANUAL_RUNS.md` for details on manual TFC UI runs.
 ## Dependabot
 - Dependabot manages routine version bumps; do not add manual upgrade PRs unless required.
 - Keep Dependabot PRs labeled with `dependencies`.
-- Dependabot PRs target `main`.
+- Dependabot PRs target `main` as the only exception to the `develop` base rule.
 
 ## Terraform Hygiene (Required)
 
