@@ -11,5 +11,8 @@ resources:
 commonLabels:
   app.kubernetes.io/part-of: lornu-ai
   lornu.ai/component: tls-management
+  lornu.ai/environment: production
+  lornu.ai/managed-by: terraform-cloud
+  lornu.ai/asset-id: lornu-ai-final-clear-bg
 
 namespace: cert-manager
