@@ -1,1 +1,2 @@
 *.png filter=lfs diff=lfs merge=lfs -text
+apps/web/src/assets/brand/lornu-ai-final-clear-bg.png !filter !diff !merge
