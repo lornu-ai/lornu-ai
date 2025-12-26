@@ -21,12 +21,6 @@ variable "api_domain" {
   default     = "api.lornu.ai"
 }
 
-variable "extra_domain_names" {
-  description = "Additional CloudFront aliases to include (e.g. staging domains)"
-  type        = list(string)
-  default     = []
-}
-
 variable "route53_zone_name" {
   description = "The Route53 hosted zone name"
   type        = string
@@ -90,33 +84,4 @@ variable "db_password" {
   description = "The master password for the database."
   type        = string
   sensitive   = true
-}
-
-variable "deploy_stage" {
-  description = "Deployment stage: 1 = ACM + Route53 zone + validation, 2 = CloudFront + alias records (requires stage 1 complete)"
-  type        = number
-  default     = 2
-
-  validation {
-    condition     = var.deploy_stage >= 1 && var.deploy_stage <= 2
-    error_message = "deploy_stage must be 1 or 2"
-  }
-}
-
-variable "existing_acm_certificate_arn" {
-  description = "ARN of an existing ACM certificate to use for CloudFront. If provided, skips certificate creation."
-  type        = string
-  default     = ""
-}
-
-variable "github_actions_role_arn" {
-  description = "ARN of the GitHub Actions OIDC IAM role. Allows GHA to authenticate with EKS cluster."
-  type        = string
-  sensitive   = true
-  default     = ""
-
-  validation {
-    condition     = var.github_actions_role_arn == "" || can(regex("^arn:aws:iam::", var.github_actions_role_arn))
-    error_message = "github_actions_role_arn must be a valid IAM role ARN"
-  }
 }

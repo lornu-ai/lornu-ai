@@ -18,15 +18,3 @@ variable "secrets_manager_arn_pattern" {
   description = "The ARN pattern for the secrets the application needs to access."
   type        = string
 }
-
-variable "resource_prefix" {
-  description = "The resource prefix for naming (e.g., lornu-ai)"
-  type        = string
-  default     = "lornu-ai"
-}
-
-variable "github_repo" {
-  description = "The GitHub repository name for tagging resources"
-  type        = string
-  default     = "lornu-ai"
-}

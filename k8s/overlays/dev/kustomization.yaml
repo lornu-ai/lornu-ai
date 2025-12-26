@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../../base
+- namespace.yaml
+namespace: lornu-dev
+namePrefix: dev-
+commonLabels:
+  app.kubernetes.io/name: lornu-ai
+  lornu.ai/environment: development
+  lornu.ai/managed-by: terraform-cloud
+  lornu.ai/asset-id: lornu-ai-final-clear-bg
+images:
+- name: lornu-ai
+  newName: lornu-ai
+  newTag: local
+patches:
+- path: deployment-patch.yaml
+- path: configmap-patch.yaml

@@ -1,0 +1,8 @@
+# Staging-specific ingress configuration
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lornu-ai
+  annotations:
+    # ACM certificate will be injected via CI/CD
+    alb.ingress.kubernetes.io/certificate-arn: placeholder-acm-cert

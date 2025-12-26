@@ -23,7 +23,7 @@ fi
 
 # Apply kustomize configuration
 echo "📦 Applying Kubernetes manifests..."
-kustomize build kubernetes/overlays/dev | kubectl apply -f -
+kustomize build k8s/overlays/dev | kubectl apply -f -
 
 # Wait for deployment
 echo "⏳ Waiting for deployment to be ready..."

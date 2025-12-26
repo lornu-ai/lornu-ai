@@ -1,4 +1,4 @@
-module "lornu_cluster" {
+module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
 
@@ -11,7 +11,7 @@ module "lornu_cluster" {
 
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
-  vpc_id                   = aws_vpc.lornu_vpc.id
+  vpc_id                   = aws_vpc.main.id
   subnet_ids               = [aws_subnet.private_a.id, aws_subnet.private_b.id]
   control_plane_subnet_ids = [aws_subnet.private_a.id, aws_subnet.private_b.id]
 
@@ -24,15 +24,6 @@ module "lornu_cluster" {
           namespace = "lornu-ai"
         },
         {
-          namespace = "lornu-dev"
-        },
-        {
-          namespace = "lornu-staging"
-        },
-        {
-          namespace = "lornu-prod"
-        },
-        {
           namespace = "kube-system"
         },
         {
@@ -43,21 +34,6 @@ module "lornu_cluster" {
   }
 
   enable_cluster_creator_admin_permissions = true
-
-  access_entries = {
-    # Allow GitHub Actions to deploy to the cluster
-    github_actions = {
-      principal_arn = aws_iam_role.github_actions.arn
-      policy_associations = {
-        admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        }
-      }
-    }
-  }
 
   tags = {
     Environment = "production"

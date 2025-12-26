@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: lornu-ai-assets
-data:
-  logo-id: "lornu-ai-final-clear-bg"
-  logo-url: "https://lornu.ai/assets/lornu-ai-final-clear-bg.png"
