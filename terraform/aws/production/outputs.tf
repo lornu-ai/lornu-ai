@@ -16,17 +16,17 @@ output "cluster_name" {
 
 output "cloudfront_distribution_id" {
   description = "ID of the CloudFront distribution for api.lornu.ai"
-  value       = aws_cloudfront_distribution.api.id
+  value       = var.deploy_stage >= 2 ? aws_cloudfront_distribution.api[0].id : null
 }
 
 output "cloudfront_domain_name" {
   description = "Domain name of the CloudFront distribution"
-  value       = aws_cloudfront_distribution.api.domain_name
+  value       = var.deploy_stage >= 2 ? aws_cloudfront_distribution.api[0].domain_name : null
 }
 
 output "cloudfront_certificate_arn" {
   description = "ACM certificate ARN for CloudFront (us-east-1)"
-  value       = aws_acm_certificate.cloudfront.arn
+  value       = local.acm_certificate_arn
 }
 
 output "route53_zone_id" {

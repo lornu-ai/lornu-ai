@@ -4,14 +4,16 @@ kind: Kustomization
 resources:
 - ../../base
 - namespace.yaml
+# cert-manager deployed separately: kubectl apply -k kubernetes/overlays/prod/cert-manager
+- assets-kv-config.yaml
 
 namespace: lornu-prod
 
 labels:
 - pairs:
     lornu.ai/environment: production
-    lornu.ai/managed-by: plan-a-orchestration
-    lornu.ai/asset-id: lornu-ai-production-app
+    lornu.ai/managed-by: terraform-cloud
+    lornu.ai/asset-id: lornu-ai-final-clear-bg
   includeSelectors: true
 
 patches:
@@ -22,3 +24,23 @@ patches:
     - op: replace
       path: /spec/replicas
       value: 3
+- target:
+    kind: Ingress
+    name: lornu-ai
+  patch: |-
+    - op: add
+      path: /metadata/annotations/alb.ingress.kubernetes.io~1certificate-arn
+      value: "${PROD_ACM_CERTIFICATE_ARN}"
+    - op: add
+      path: /metadata/annotations/cert-manager.io~1cluster-issuer
+      value: letsencrypt-prod
+    - op: add
+      path: /metadata/annotations/cert-manager.io~1certificate-name
+      value: lornu-ai-tls
+    - op: add
+      path: /spec/tls
+      value:
+      - hosts:
+        - lornu.ai
+        - api.lornu.ai
+        secretName: lornu-ai-tls
