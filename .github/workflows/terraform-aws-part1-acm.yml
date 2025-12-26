@@ -48,7 +48,7 @@ jobs:
     outputs:
       acm_certificate_arn: ${{ steps.acm_arn.outputs.value }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4

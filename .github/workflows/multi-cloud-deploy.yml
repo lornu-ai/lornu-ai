@@ -17,7 +17,7 @@ jobs:
       aws-changed: ${{ steps.filter.outputs.aws }}
       gcp-changed: ${{ steps.filter.outputs.gcp }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: dorny/paths-filter@v2
         id: filter

@@ -24,7 +24,7 @@ jobs:
       CONFIG_DIRECTORY: "./terraform/aws"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Upload Configuration to TFC (AWS)
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
@@ -60,7 +60,7 @@ jobs:
       CONFIG_DIRECTORY: "./terraform/gcp"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Upload Configuration to TFC (GCP)
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
