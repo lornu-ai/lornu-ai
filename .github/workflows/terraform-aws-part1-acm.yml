@@ -48,7 +48,7 @@ jobs:
     outputs:
       acm_certificate_arn: ${{ steps.acm_arn.outputs.value }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -57,7 +57,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.8.0
           cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
