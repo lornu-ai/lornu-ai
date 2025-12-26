@@ -12,7 +12,7 @@ Local Testing (minikube) → AWS Staging (EKS) → AWS Production (EKS)
 
 ## Phase 1: Local Testing (Start Here)
 
-**Time**: 5-10 minutes  
+**Time**: 5-10 minutes
 **Cost**: $0
 
 ### Setup
@@ -54,7 +54,7 @@ kubectl logs -f -l app.kubernetes.io/name=lornu-ai
 
 ## Phase 2: AWS Staging Deployment
 
-**Time**: 10-15 minutes (first time)  
+**Time**: 10-15 minutes (first time)
 **Cost**: ~$30/month (~$0.04/hour)
 
 ### Prerequisites
@@ -116,7 +116,7 @@ curl https://staging.lornu.ai/api/health
 
 ## Phase 3: Production Deployment
 
-**Time**: 15-20 minutes  
+**Time**: 15-20 minutes
 **Cost**: ~$60/month (~$0.08/hour)
 
 ### Prerequisites

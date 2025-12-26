@@ -78,7 +78,7 @@ describe('Home - Contact Form Submission', () => {
 
   it('should handle non-JSON error responses (e.g., 502 Bad Gateway)', async () => {
     const user = userEvent.setup()
-    const errorText = '502 Bad Gateway from Cloudflare'
+    const errorText = '502 Bad Gateway from Load Balancer'
 
     fetchMock.mockResolvedValueOnce({
       ok: false,

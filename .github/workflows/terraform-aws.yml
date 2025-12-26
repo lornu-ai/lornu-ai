@@ -167,7 +167,7 @@ jobs:
 
       - name: "Deploy to EKS with Kustomize"
         run: |
-          kustomize build k8s/overlays/staging | \
+          kustomize build kubernetes/overlays/lornu-staging | \
           kubectl set image deployment/staging-lornu-ai \
             lornu-ai=${{ needs.build.outputs.image-uri }} \
             --filename - | \

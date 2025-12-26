@@ -23,6 +23,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /bin/uv
 # UV_COMPILE_BYTECODE=1 speeds up startup
 ENV UV_COMPILE_BYTECODE=1
 COPY packages/api/pyproject.toml packages/api/uv.lock ./
+# --frozen: use exact versions from uv.lock for reproducible builds
 # --no-dev: production deps only
 # --no-editable: standard install
 RUN uv sync --frozen --no-dev --no-editable
@@ -32,7 +33,7 @@ FROM python:3.12-slim AS runtime
 WORKDIR /app
 
 # Create non-root user for security (best practice for EKS)
-# Use fixed UID 1000 to match k8s/base/deployment.yaml runAsUser context
+# Use fixed UID 1000 to match kubernetes/base/deployment.yaml runAsUser context
 RUN groupadd -r -g 1000 lornu && useradd -r -u 1000 -g lornu lornu
 
 # Copy Virtual Environment from builder (contains all installed deps)

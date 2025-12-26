@@ -142,7 +142,7 @@ export default function Home() {
     <>
       <SEOHead
         title="Enterprise AI RAG Search & Deep Dive Analysis"
-        description="LornuAI is an AI-powered Retrieval-Augmented Generation platform for enterprise knowledge retrieval, content generation, and data analysis using Cloudflare AI and Google Vertex AI."
+        description="LornuAI is an AI-powered Retrieval-Augmented Generation platform for enterprise knowledge retrieval, content generation, and data analysis using Google Vertex AI and high-performance inference engines."
         canonical="/"
         ogTitle="LornuAI - Enterprise AI RAG Search"
         ogDescription="Transform your business with cutting-edge AI and automation solutions that deliver results fast."
