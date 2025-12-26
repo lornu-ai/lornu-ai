@@ -1,5 +1,6 @@
 # EKS aws-auth ConfigMap Management
-# Allows GitHub Actions OIDC role and other IAM roles to access the cluster
+# NOTE: GitHub Actions access is now managed via access_entries in eks.tf (modern approach)
+# This file only manages node role mappings for worker nodes
 
 locals {
   aws_auth_configmap_yaml = yamlencode({
@@ -20,13 +21,8 @@ locals {
           rolearn  = module.lornu_cluster.worker_iam_role_arn
           username = "system:node:{{EC2PrivateDNSName}}"
           groups   = ["system:bootstrappers", "system:nodes"]
-        },
-        {
-          # GitHub Actions OIDC Role - allows GHA to deploy to the cluster
-          rolearn  = var.github_actions_role_arn
-          username = "github-actions"
-          groups   = ["system:masters"]  # Full access for deployments (can be restricted to specific namespaces)
         }
+        # GitHub Actions access is managed via access_entries in eks.tf
       ])
       mapUsers = yamlencode([
         # Add additional IAM users here if needed
@@ -56,27 +52,12 @@ resource "kubernetes_config_map" "aws_auth" {
         rolearn  = module.lornu_cluster.worker_iam_role_arn
         username = "system:node:{{EC2PrivateDNSName}}"
         groups   = ["system:bootstrappers", "system:nodes"]
-      },
-      {
-        # GitHub Actions OIDC Role - allows GHA to deploy to the cluster
-        rolearn  = var.github_actions_role_arn
-        username = "github-actions"
-        groups   = ["system:masters"]  # Full access for deployments
       }
+      # GitHub Actions access is managed via access_entries in eks.tf
     ])
   }
 
   depends_on = [
     module.lornu_cluster
   ]
-}
-
-# Output the aws-auth entry for reference
-output "github_actions_aws_auth_entry" {
-  description = "The aws-auth ConfigMap entry for GitHub Actions OIDC role"
-  value = {
-    rolearn  = var.github_actions_role_arn
-    username = "github-actions"
-    groups   = ["system:masters"]
-  }
 }

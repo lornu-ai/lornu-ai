@@ -41,6 +41,6 @@ patches:
       path: /spec/tls
       value:
       - hosts:
-        - example.com
-        - api.example.com
+        - lornu.ai
+        - api.lornu.ai
         secretName: lornu-ai-tls
