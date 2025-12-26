@@ -11,12 +11,48 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
-    name: "Deploy Environments"
+  stage1-acm-staging:
+    name: "Stage 1 - ACM (staging)"
+    uses: ./.github/workflows/terraform-aws-stage1-acm.yml
+    with:
+      environment: staging
+      action: plan
+    secrets: inherit
+
+  stage1-acm-prod:
+    name: "Stage 1 - ACM (prod)"
+    uses: ./.github/workflows/terraform-aws-stage1-acm.yml
+    with:
+      environment: prod
+      action: plan
+    secrets: inherit
+
+  stage2-cdn-staging:
+    name: "Stage 2 - CDN (staging)"
+    needs: stage1-acm-staging
+    uses: ./.github/workflows/terraform-aws-stage2-cdn.yml
+    with:
+      environment: staging
+      action: plan
+      acm_certificate_arn: ${{ needs.stage1-acm-staging.outputs.acm_certificate_arn }}
+    secrets: inherit
+
+  stage2-cdn-prod:
+    name: "Stage 2 - CDN (prod)"
+    needs: stage1-acm-prod
+    uses: ./.github/workflows/terraform-aws-stage2-cdn.yml
+    with:
+      environment: prod
+      action: plan
+      acm_certificate_arn: ${{ needs.stage1-acm-prod.outputs.acm_certificate_arn }}
+    secrets: inherit
+
+  deploy-dev:
+    name: "Deploy (dev)"
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        env: [dev, staging, prod]
+    needs:
+      - stage2-cdn-staging
+      - stage2-cdn-prod
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -33,4 +69,52 @@ jobs:
 
       - name: "Deploy to Namespace"
         run: |
-          kubectl kustomize kubernetes/overlays/${{ matrix.env }} | kubectl apply -f -
+          kubectl kustomize kubernetes/overlays/dev | kubectl apply -f -
+
+  deploy-staging:
+    name: "Deploy (staging)"
+    runs-on: ubuntu-latest
+    needs:
+      - stage2-cdn-staging
+      - stage2-cdn-prod
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: "Update Kubeconfig"
+        run: |
+          aws eks update-kubeconfig --name lornu-ai-production-cluster --region ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: "Deploy to Namespace"
+        run: |
+          kubectl kustomize kubernetes/overlays/staging | kubectl apply -f -
+
+  deploy-prod:
+    name: "Deploy (prod)"
+    runs-on: ubuntu-latest
+    needs:
+      - stage2-cdn-staging
+      - stage2-cdn-prod
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: "Update Kubeconfig"
+        run: |
+          aws eks update-kubeconfig --name lornu-ai-production-cluster --region ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: "Deploy to Namespace"
+        run: |
+          kubectl kustomize kubernetes/overlays/prod | kubectl apply -f -
