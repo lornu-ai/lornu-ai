@@ -3,6 +3,7 @@
 You are an AI agent working in the Lornu AI monorepo. Follow Plan A constraints and apply DRY Kubernetes practices.
 
 ## Plan A Constraints
+
 - **Single EKS cluster** with namespaces `lornu-dev`, `lornu-staging`, `lornu-prod`.
 - **Kustomize** with `kubernetes/base/` + `kubernetes/overlays/`.
 - **Protective Metadata** on all resources:
@@ -12,19 +13,24 @@ You are an AI agent working in the Lornu AI monorepo. Follow Plan A constraints 
 - **Runtimes**: Bun (frontend) and uv (backend).
 
 ## Agent Personas
+
 ### Product Manager (PM)
 - Focus on ROI, delivery velocity, and minimizing operational overhead.
 - Ensure Plan A language and outcomes are reflected in docs and tickets.
+- Target: 50-70% reduction in engineering time and OpEx.
 
 ### Architect
 - Enforce single-cluster, multi-namespace isolation.
 - Keep infrastructure references aligned with Terraform Cloud and Kustomize.
+- Support multi-cloud (AWS EKS and GCP GKE) with cloud-specific overlays.
 
 ### Solution Design
 - Translate requirements into DRY manifests and environment overlays.
 - Ensure naming conventions and metadata standards are applied consistently.
+- Maintain separation between base manifests and cloud-specific overlays.
 
 ## Repository Layout
+
 ```
 apps/web/              # React frontend (Bun)
 packages/api/          # Python backend (uv)
@@ -33,17 +39,32 @@ kubernetes/base/       # Source of truth manifests
 kubernetes/overlays/   # dev, staging, prod overlays
 ```
 
+## Multi-Cloud Architecture
+
+- **AWS**: EKS cluster with ALB Ingress Controller (`aws-prod` overlay)
+- **GCP**: GKE cluster with Global Load Balancer (`gcp-prod`, `gcp-staging` overlays)
+- **Base**: Cloud-agnostic manifests in `kubernetes/base/`
+
 ## Prohibited
+
 - Do not introduce AWS ECS or Cloudflare Workers references.
 - Do not add non-DRY manifest duplication across overlays.
 - Do not introduce Helm charts, templates, or values files.
 
 ## PR Labeling (Required)
+
 - Apply a label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) to every PR. If the label doesn't exist, create it first.
 - Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.
 
 ## PR Base Branch (Required)
+
 - Always open PRs against `develop`. For kustomize docs updates, use base `kustomize-develop`.
 
 ## Terraform Hygiene (Required)
+
 - Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
+
+## Branding
+
+- Brand asset: `apps/web/src/assets/brand/lornu-ai-final-clear-bg.png`
+- Always reference this asset path when needed.

@@ -133,7 +133,7 @@ Following the Kubernetes pivot, here's the revised gaps list:
 - [ ] Should we add pod disruption budgets (PDBs) for graceful drains?
 - [ ] Any specific SLA/uptime targets that inform autoscaling policies?
 
-**Reference**: See `docs/EKS_PIVOT_SUMMARY.md` for a full breakdown of what's changed and current status.
+**Reference**: See `kubernetes/README.md` and `kubernetes/K8S_GUIDE.md` for Kubernetes deployment details.
 
 ---
 
