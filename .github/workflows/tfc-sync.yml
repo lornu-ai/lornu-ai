@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - kustomize
     paths:
       - 'terraform/**'
       - '.github/workflows/tfc-sync.yml'
