@@ -10,7 +10,7 @@ module "eso_role" {
 
   oidc_providers = {
     main = {
-      provider_arn               = module.eks.oidc_provider_arn
+      provider_arn               = module.lornu_cluster.oidc_provider_arn
       namespace_service_accounts = ["external-secrets:external-secrets"]
     }
   }
@@ -49,7 +49,7 @@ resource "helm_release" "external_secrets" {
   namespace        = "external-secrets"
   create_namespace = true
   version          = "0.9.13" # Pin version
-  depends_on       = [module.eks]
+  depends_on       = [module.lornu_cluster]
 
   values = [
     yamlencode({

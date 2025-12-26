@@ -25,14 +25,14 @@ ENV UV_COMPILE_BYTECODE=1
 COPY packages/api/pyproject.toml packages/api/uv.lock ./
 # --no-dev: production deps only
 # --no-editable: standard install
-RUN uv sync --frozen --no-dev --no-editable
+RUN uv sync --no-dev --no-editable
 
 # Stage 3: Final Runtime (Slim, Secure, Non-root)
 FROM python:3.12-slim AS runtime
 WORKDIR /app
 
 # Create non-root user for security (best practice for EKS)
-# Use fixed UID 1000 to match k8s/base/deployment.yaml runAsUser context
+# Use fixed UID 1000 to match kubernetes/base/deployment.yaml runAsUser context
 RUN groupadd -r -g 1000 lornu && useradd -r -u 1000 -g lornu lornu
 
 # Copy Virtual Environment from builder (contains all installed deps)

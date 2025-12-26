@@ -82,7 +82,7 @@ export default function Privacy() {
                     When you access the Service, we automatically collect certain technical information:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>IP Address:</strong> Your device's Internet Protocol (IP) address (collected by our load balancers and ingress)</li>
+                    <li><strong>IP Address:</strong> Your device's Internet Protocol (IP) address</li>
                     <li><strong>Timestamps:</strong> Date and time of your requests and interactions</li>
                     <li><strong>Browser Information:</strong> Browser type, version, and user agent string</li>
                     <li><strong>Device Information:</strong> Device type, operating system, and screen resolution</li>
@@ -107,8 +107,8 @@ export default function Privacy() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Service Delivery:</strong> To process your queries through AI models and return generated responses</li>
-                    <li><strong>Performance Optimization:</strong> To cache frequently requested content in managed cache and storage services for faster response times</li>
-                    <li><strong>Analytics:</strong> To understand usage patterns and improve Service performance through application and infrastructure monitoring</li>
+                    <li><strong>Performance Optimization:</strong> To cache frequently requested content in high-speed storage (Google Firestore/Cloud Storage) for faster response times</li>
+                    <li><strong>Analytics:</strong> To understand usage patterns and improve Service performance through integrated monitoring and telemetry</li>
                     <li><strong>Security:</strong> To detect, prevent, and respond to security incidents, abuse, and fraudulent activity</li>
                     <li><strong>Service Improvement:</strong> To develop new features and improve existing functionality</li>
                     <li><strong>Communication:</strong> To respond to your inquiries and provide customer support</li>
@@ -121,33 +121,34 @@ export default function Privacy() {
                 <section>
                   <h2 className="text-2xl font-semibold mb-4">4. Data Storage and Retention</h2>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-4">4.1 Managed Cache (Key-Value Storage)</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-4">4.1 Distributed Caching (Firestore / Redis)</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    We use managed cache services to store AI response metadata for performance optimization:
+                    We use distributed caching to optimize AI responses:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>What is Stored:</strong> Query hashes (not full query text) and associated AI-generated responses</li>
                     <li><strong>Purpose:</strong> To serve repeated queries faster without re-invoking AI models</li>
                     <li><strong>Retention:</strong> Cached data expires automatically after 7 days of inactivity</li>
-                    <li><strong>Location:</strong> Stored in cloud regions where we operate</li>
+                    <li><strong>Location:</strong> Google Cloud (US) and AWS regions</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-6">4.2 Managed Object Storage</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-6">4.2 Secure Object Storage (GCS / S3)</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    We may use managed object storage for longer-term data storage related to RAG functionality:
+                    We use secure object storage for data related to RAG functionality:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>What is Stored:</strong> Indexed document embeddings and metadata (if you upload documents for RAG)</li>
                     <li><strong>Purpose:</strong> To enable retrieval-augmented generation with your custom knowledge base</li>
                     <li><strong>Retention:</strong> Data is retained until you explicitly delete it or terminate your account</li>
-                    <li><strong>Location:</strong> Cloud regions where we operate</li>
+                    <li><strong>Location:</strong> US-based cloud regions</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">4.3 Logs and Analytics</h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Request logs (IP address, timestamp, query metadata) are retained in our gateway and ingress logs for up to 30 days
-                    for analytics and security purposes. These logs do not contain full query content, only metadata such as request size,
-                    model used, and response time.
+                    Request logs (IP address, timestamp, query metadata) are retained for up to 30 days
+                    for analytics and security purposes in accordance with our cloud infrastructure providers.
+                    These logs do not contain full query content, only metadata such as
+                    request size, model used, and response time.
                   </p>
                 </section>
 
@@ -160,6 +161,16 @@ export default function Privacy() {
                   <p className="text-muted-foreground leading-relaxed mb-4">
                     Your queries are processed by third-party AI providers. We explicitly disclose what data is shared:
                   </p>
+
+                  <div className="bg-secondary/20 p-4 rounded-lg mb-4">
+                    <h4 className="font-semibold mb-2">AWS Bedrock / AWS Sagemaker</h4>
+                    <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
+                      <li><strong>Data Shared:</strong> Your query text and selected model parameters</li>
+                      <li><strong>Purpose:</strong> AI inference using Llama, Titan, and other models</li>
+                      <li><strong>Retention:</strong> AWS does not use customer data to train models and data is processed in accordance with AWS security standards</li>
+                      <li><strong>Privacy Policy:</strong> <a href="https://aws.amazon.com/privacy/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">AWS Privacy Notice</a></li>
+                    </ul>
+                  </div>
 
                   <div className="bg-secondary/20 p-4 rounded-lg">
                     <h4 className="font-semibold mb-2">Google Vertex AI (Gemini Models)</h4>
@@ -174,19 +185,14 @@ export default function Privacy() {
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">5.2 Infrastructure Providers</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    Our Service is hosted on managed Kubernetes clusters in AWS and Google Cloud:
+                    Our Service is hosted on the following enterprise infrastructure:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Kubernetes Compute:</strong> Containerized services with namespace isolation</li>
-                    <li><strong>Ingress and Load Balancers:</strong> Secure routing and traffic management</li>
-                    <li><strong>Managed Storage:</strong> Object storage and databases for caching and RAG functionality</li>
+                    <li><strong>Google Cloud (GCP):</strong> Managed Kubernetes (GKE), Vertex AI, Firestore, and Cloud Storage</li>
+                    <li><strong>Amazon Web Services (AWS):</strong> Managed Kubernetes (EKS), Bedrock, DynamoDB, and S3</li>
                   </ul>
                   <p className="text-muted-foreground leading-relaxed mt-4">
-                    AWS and Google Cloud act as subprocessors on our behalf. Their security and privacy practices are detailed in their
-                    <a href="https://aws.amazon.com/compliance/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline ml-1">AWS Compliance</a>
-                    and
-                    <a href="https://cloud.google.com/security" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline ml-1">Google Cloud Security</a>
-                    documentation.
+                    These providers act as data processors on our behalf and maintain strict security and compliance standards.
                   </p>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">5.3 Analytics Services</h3>
@@ -201,7 +207,7 @@ export default function Privacy() {
                     <li><strong>Privacy Policy:</strong> <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Google Privacy & Terms</a></li>
                   </ul>
                   <p className="text-muted-foreground leading-relaxed mt-4">
-                    We also use internal analytics metrics from our application and infrastructure monitoring, which do not rely on tracking cookies.
+                    We also use internal analytics and observability tools (GitHub Actions, internal telemetry) that do not rely on tracking cookies.
                   </p>
                 </section>
 
@@ -214,11 +220,11 @@ export default function Privacy() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Encryption in Transit:</strong> All data transmission uses TLS 1.3 encryption</li>
-                    <li><strong>Encryption at Rest:</strong> Data stored in managed services is encrypted using industry-standard algorithms</li>
-                    <li><strong>Access Controls:</strong> Strict authentication and authorization for all Service components</li>
-                    <li><strong>Secret Management:</strong> API keys and secrets are stored securely using Kubernetes Secrets and environment variables</li>
-                    <li><strong>Workload Isolation:</strong> Kubernetes namespaces and policies isolate environments</li>
-                    <li><strong>DDoS Protection:</strong> Cloud provider network protections mitigate distributed denial-of-service attacks</li>
+                    <li><strong>Encryption at Rest:</strong> Data stored in Firestore, GCS, and S3 is encrypted using AES-256</li>
+                    <li><strong>Access Controls:</strong> Strict authentication and authorization via enterprise-grade IAM</li>
+                    <li><strong>Secret Management:</strong> API keys and secrets are stored securely using Kubernetes Secrets and Vault systems</li>
+                    <li><strong>Container Security:</strong> All services run in secure, isolated containerized environments (GKE/EKS)</li>
+                    <li><strong>DDoS Protection:</strong> Global cloud network provides protection against distributed denial-of-service attacks</li>
                   </ul>
                   <p className="text-muted-foreground leading-relaxed mt-4">
                     However, no method of transmission over the Internet or electronic storage is 100% secure. While we strive to
@@ -266,8 +272,8 @@ export default function Privacy() {
                   <p className="text-muted-foreground leading-relaxed">
                     Your information may be processed in countries other than your country of residence. These countries may have
                     data protection laws that are different from the laws of your country. By using the Service, you consent to
-                    the transfer of information to the United States and other countries where our cloud providers operate data centers.
-                    Our providers maintain appropriate safeguards for international data transfers as detailed in their compliance documentation.
+                    the transfer of information to the United States and other countries where our infrastructure providers operate data centers.
+                    Google Cloud and AWS maintain appropriate safeguards for international data transfers in accordance with GDPR and other regulations.
                   </p>
                 </section>
 

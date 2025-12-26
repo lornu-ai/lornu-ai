@@ -29,11 +29,11 @@ All other components remain aligned with your vision:
 4. **ADK/A2A Readiness**: Kubernetes is the de facto standard for orchestrating agent-to-agent communication at scale
 
 #### Progress So Far
-- ✅ Created `k8s/base/` and `k8s/overlays/{staging,production}` with Kustomize manifests
+- ✅ Created `kubernetes/base/` and `kubernetes/overlays/{lornu-staging,lornu-prod}` with Kustomize manifests
 - ✅ Provisioned EKS cluster scaffold in `terraform/aws/production/eks.tf`
 - ✅ Added production GitHub Actions OIDC role for secure CI/CD
 - ✅ Updated CI workflow to deploy via `kubectl apply -k` instead of ECS task updates
-- ✅ Documented local dev setup in `docs/LOCAL_TESTING.md` and `k8s/K8S_GUIDE.md`
+- ✅ Documented local dev setup in `docs/LOCAL_TESTING.md` and `kubernetes/K8S_GUIDE.md`
 
 #### Next Steps (Refined for EKS)
 1. **Complete Production Terraform**:
@@ -87,7 +87,7 @@ Following the Kubernetes pivot, here's the revised gaps list:
 - ❌ No production Terraform Cloud workspace (`lornu-ai-prod-aws`) linked — Needed
 
 #### Kubernetes/Kustomize Gaps (Updated)
-- ✅ `k8s/overlays/production/` exists with 3 replicas, pod anti-affinity
+- ✅ `kubernetes/overlays/lornu-prod/` exists with 3 replicas, pod anti-affinity
 - ✅ Base manifests include security context, IRSA ServiceAccount, health probes
 - ❌ Production-specific ConfigMap secrets (RESEND_API_KEY, etc.) — Needs manual creation in cluster
 
@@ -110,7 +110,7 @@ Following the Kubernetes pivot, here's the revised gaps list:
 
 2. **Deploy ALB Ingress Controller** (1 day):
    - Helm chart or Kustomize patch to deploy controller in kube-system
-   - Update k8s/overlays/production/ingress.yaml to route traffic via ALB
+   - Update kubernetes/overlays/lornu-prod/ingress.yaml to route traffic via ALB
 
 3. **Update GitHub Actions** (1 day):
    - Add production job with `terraform apply` for `terraform/aws/production`
@@ -177,13 +177,13 @@ Deploying build to <env> via Kustomize on EKS.
 
 Details:
 - Image: `<account>.dkr.ecr.<region>.amazonaws.com/lornu-ai-<env>:<tag>`
-- Manifests: `k8s/overlays/<env>`
+- Manifests: `kubernetes/overlays/lornu-<env>`
 - Health endpoint: `/api/health`
 
 Planned Steps:
 1) Apply manifests
 ```bash
-kubectl apply -k k8s/overlays/<env>
+kubectl apply -k kubernetes/overlays/lornu-<env>
 ```
 2) Verify rollout
 ```bash
@@ -332,7 +332,7 @@ Options:
 
 Confirmation Checklist:
 - [ ] Secret created in AWS SM and policy allows access
-- [ ] IRSA mapped to service account in `k8s/base/serviceaccount.yaml`
+- [ ] IRSA mapped to service account in `kubernetes/base/serviceaccount.yaml`
 - [ ] App verifies secret presence on startup
 
 ---

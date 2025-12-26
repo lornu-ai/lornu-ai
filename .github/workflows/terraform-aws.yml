@@ -118,8 +118,6 @@ jobs:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
           TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
-          TF_VAR_resource_prefix: ${{ secrets.PROD_RESOURCE_PREFIX }}
-          TF_VAR_github_repo: ${{ secrets.PROD_GITHUB_REPO }}
         run: terraform -chdir=terraform/aws/staging plan
 
       - name: "Terraform Security Scan"
@@ -161,8 +159,6 @@ jobs:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
           TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
-          TF_VAR_resource_prefix: ${{ secrets.PROD_RESOURCE_PREFIX }}
-          TF_VAR_github_repo: ${{ secrets.PROD_GITHUB_REPO }}
         run: terraform -chdir=terraform/aws/staging apply -auto-approve
 
       - name: "Update kubeconfig"
@@ -173,7 +169,7 @@ jobs:
 
       - name: "Deploy to EKS with Kustomize"
         run: |
-          kustomize build k8s/overlays/staging | \
+          kustomize build kubernetes/overlays/lornu-staging | \
           kubectl set image deployment/staging-lornu-ai \
             lornu-ai=${{ needs.build.outputs.image-uri }} \
             --filename - | \

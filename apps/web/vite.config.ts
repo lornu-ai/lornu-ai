@@ -20,7 +20,15 @@ export default defineConfig({
     sparkPlugin() as PluginOption,
     {
       name: 'force-port',
-      config: () => ({ server: { port: 5174, strictPort: true } }),
+      config: () => ({
+        server: {
+          port: 5174,
+          strictPort: true,
+          proxy: {
+            '/api': 'http://127.0.0.1:8080',
+          },
+        },
+      }),
     }
   ],
   resolve: {
@@ -36,9 +44,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunks for better caching and code splitting
           if (id.includes('node_modules')) {
-            // React core + ecosystem packages share a single chunk to avoid context mismatches
+            // Group React core, ecosystem dependencies, and Radix UI together to ensure context sharing
             if (
               id.includes('/react/') ||
               id.includes('/react-dom/') ||
@@ -52,17 +59,14 @@ export default defineConfig({
               id.includes('sonner') ||
               id.includes('vaul') ||
               id.includes('cmdk') ||
-              id.includes('embla-carousel-react')
+              id.includes('embla-carousel-react') ||
+              id.includes('@radix-ui')
             ) {
               return 'vendor-react';
             }
             // Icon libraries
             if (id.includes('@phosphor-icons') || id.includes('@heroicons') || id.includes('lucide-react')) {
               return 'vendor-icons';
-            }
-            // Radix UI components
-            if (id.includes('@radix-ui')) {
-              return 'vendor-radix-ui';
             }
             // Animation library
             if (id.includes('framer-motion')) {

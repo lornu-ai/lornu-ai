@@ -55,7 +55,7 @@ test.describe('Smoke Tests', () => {
     // Wait for success message (toast notification)
     // The form should show a success message after submission
     await expect(
-      page.getByText(/message sent|success|thank you/i)
+      page.locator('[data-sonner-toast]').first()
     ).toBeVisible({ timeout: 10000 });
   });
 
@@ -71,7 +71,7 @@ test.describe('Smoke Tests', () => {
     const contentType = response.headers()['content-type'];
     if (contentType?.includes('application/json')) {
       const body = await response.json();
-      expect(body).toEqual({ status: 'ok' });
+      expect(body).toEqual({ status: 'ok', service: 'api' });
     } else {
       // In dev server, the endpoint returns HTML (SPA fallback)
       // This is expected behavior - the health endpoint only works in production/worker

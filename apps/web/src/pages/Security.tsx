@@ -70,56 +70,54 @@ export default function Security() {
                     <h2 className="text-2xl font-semibold">1. Infrastructure Security</h2>
                   </div>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-4">1.1 Managed Kubernetes Platforms</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-4">1.1 Distributed Cloud Infrastructure (GKE / EKS)</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    Our Service runs on managed Kubernetes clusters in AWS and Google Cloud with strong isolation controls:
+                    Our Service operates on enterprise-grade managed Kubernetes platforms (Google Kubernetes Engine and Amazon EKS):
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Namespace Isolation:</strong> Workloads are separated by Kubernetes namespaces and policies</li>
-                    <li><strong>Node Security:</strong> Hardened nodes and managed control planes reduce operational risk</li>
-                    <li><strong>Zero Trust Posture:</strong> Service-to-service access is scoped and least-privileged</li>
-                    <li><strong>DDoS Protection:</strong> Cloud provider network protections mitigate volumetric attacks</li>
-                    <li><strong>WAF (Web Application Firewall):</strong> Protection against common web vulnerabilities (SQL injection, XSS, etc.)</li>
+                    <li><strong>Isolation:</strong> Each service component runs in isolated containers within private namespaces, ensuring strict process and network isolation.</li>
+                    <li><strong>Multi-Region Availability:</strong> Deployed across global cloud regions for high availability and low latency.</li>
+                    <li><strong>Dynamic Scaling:</strong> Automatic resource adjustment to handle varying loads without performance degradation.</li>
+                    <li><strong>DDoS Protection:</strong> Native cloud-provider protection against sophisticated network-level attacks.</li>
+                    <li><strong>Cloud Armor / AWS WAF:</strong> Enterprise Web Application Firewalls protecting against common vulnerabilities (SQLi, XSS, etc.).</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-6">1.2 API Gateway and Ingress Controls</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-6">1.2 AI Infrastructure Security</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    AI inference requests are routed through our API gateway and ingress controls, which provide:
+                    All AI inference requests are managed via secure, private endpoints with the following protections:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Unified Security Layer:</strong> Single point of control for all AI model interactions</li>
-                    <li><strong>Rate Limiting:</strong> Automatic protection against abuse and excessive API usage</li>
-                    <li><strong>Request Validation:</strong> Schema validation and sanitization before forwarding to AI providers</li>
-                    <li><strong>Analytics and Monitoring:</strong> Real-time visibility into all AI requests for anomaly detection</li>
-                    <li><strong>Caching:</strong> Secure caching layer to reduce exposure to third-party AI services</li>
+                    <li><strong>Private Connectivity:</strong> Direct, internal routing to AI providers (Google Vertex AI, AWS Bedrock) avoiding the public internet.</li>
+                    <li><strong>Rate Limiting:</strong> Granular control over request frequency per client and service.</li>
+                    <li><strong>Robust Monitoring:</strong> Real-time observability through cloud-native metrics and centralized logging.</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">1.3 Data Storage Security</h3>
                   <div className="bg-secondary/20 p-4 rounded-lg mb-4">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <Lock size={20} weight="bold" className="text-accent" />
-                      Managed Cache (Key-Value Store)
+                      Enterprise Database (Firestore / DynamoDB)
                     </h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>Encrypted at rest using AES-256 encryption</li>
-                      <li>Encrypted in transit using TLS 1.3</li>
-                      <li>Regionally replicated with automated backups</li>
-                      <li>Access controlled via cloud IAM policies</li>
-                      <li>Automatic TTL (Time-To-Live) expiration for cached data</li>
+                      <li>Encrypted at rest using industry-standard AES-256</li>
+                      <li>Encrypted in transit using TLS 1.3/TLS 1.2</li>
+                      <li>High availability with automatic cross-zone replication</li>
+                      <li>Access controlled via granular IAM policies</li>
+                      <li>Audit logging enabled for all data plane operations</li>
                     </ul>
                   </div>
 
                   <div className="bg-secondary/20 p-4 rounded-lg">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <Lock size={20} weight="bold" className="text-accent" />
-                      Managed Object Storage
+                      Object Storage (GCS / S3)
                     </h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>Encrypted at rest with customer-managed or provider-managed keys</li>
-                      <li>Encrypted in transit using TLS 1.3</li>
-                      <li>Access control via presigned URLs and IAM policies</li>
-                      <li>Versioning support for data integrity</li>
-                      <li>Audit logging for all access and modifications</li>
+                      <li>Encrypted at rest with provider-managed or customer-managed keys (CMEK)</li>
+                      <li>Strict Access Control Lists (ACLs) and Bucket Policies</li>
+                      <li>Private bucket access only; no public read/write allowed</li>
+                      <li>Data lifecycle management for automated retention and deletion</li>
+                      <li>Comprehensive object-level auditing and access tracking</li>
                     </ul>
                   </div>
                 </section>
@@ -137,9 +135,9 @@ export default function Security() {
                     All sensitive credentials (API keys, tokens, secrets) are managed using industry best practices:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Kubernetes Secrets:</strong> Production API keys are stored as Kubernetes Secrets, never in code or configuration files</li>
+                    <li><strong>Kubernetes Secrets:</strong> Production secrets are managed via K8s Secret resources and external secret managers (Google Secret Manager / AWS Secrets Manager)</li>
                     <li><strong>GitHub Secrets:</strong> CI/CD pipeline secrets stored securely in GitHub's encrypted secrets storage</li>
-                    <li><strong>Environment Variables:</strong> Runtime secrets injected via Kubernetes environment variables</li>
+                    <li><strong>Environment Variables:</strong> Runtime configurations injected securely into containerized environments</li>
                     <li><strong>No Hardcoding:</strong> Zero tolerance policy for hardcoded credentials in source code</li>
                     <li><strong>Secret Rotation:</strong> Regular rotation schedule for all API keys and access tokens</li>
                   </ul>
@@ -150,7 +148,7 @@ export default function Security() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Role-Based Access:</strong> Team members have access only to resources required for their role</li>
-                    <li><strong>Multi-Factor Authentication:</strong> MFA required for all cloud provider and GitHub accounts</li>
+                    <li><strong>Multi-Factor Authentication:</strong> MFA required for all cloud provider and version control accounts</li>
                     <li><strong>API Scoping:</strong> Third-party API keys are scoped to minimum required permissions</li>
                     <li><strong>Audit Trails:</strong> All access to production secrets is logged and monitored</li>
                   </ul>
@@ -186,7 +184,7 @@ export default function Security() {
                     <li><strong>TLS 1.3:</strong> All data in transit is encrypted using the latest TLS protocol</li>
                     <li><strong>HTTPS Only:</strong> No support for insecure HTTP connections</li>
                     <li><strong>HSTS:</strong> HTTP Strict Transport Security headers enforce secure connections</li>
-                    <li><strong>Certificate Management:</strong> Automatic certificate provisioning and renewal via cert-manager and cloud provider integrations</li>
+                    <li><strong>Certificate Management:</strong> Automatic certificate provisioning and renewal using Cert-Manager and Cloud DNS / Route53</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">3.3 API Security</h3>
@@ -219,10 +217,10 @@ export default function Security() {
                   <h3 className="text-xl font-semibold mb-3 mt-6">4.2 Data Retention Policy</h3>
                   <div className="bg-secondary/20 p-4 rounded-lg">
                     <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 text-sm">
-                      <li><strong>Cache Layer:</strong> Automatic expiration after 7 days of inactivity</li>
-                      <li><strong>Object Storage:</strong> User-controlled retention; data deleted upon request</li>
+                      <li><strong>KV Cache:</strong> Automatic expiration after 7 days of inactivity</li>
+                      <li><strong>R2 Storage:</strong> User-controlled retention; data deleted upon request</li>
                       <li><strong>Request Logs:</strong> 30-day retention for analytics and security, then purged</li>
-                      <li><strong>Third-Party Processing:</strong> Google Vertex AI processes queries in real-time with minimal retention (see <Link to="/privacy" className="text-accent hover:underline">Privacy Policy</Link>)</li>
+                      <li><strong>Third-Party Processing:</strong> Google Vertex AI and AWS Bedrock process queries in real-time with enterprise-grade privacy (see <Link to="/privacy" className="text-accent hover:underline">Privacy Policy</Link>)</li>
                     </ul>
                   </div>
 
@@ -247,24 +245,24 @@ export default function Security() {
                   </p>
 
                   <div className="bg-secondary/20 p-4 rounded-lg mb-4">
-                    <h4 className="font-semibold mb-2">AWS (Infrastructure Provider)</h4>
+                    <h4 className="font-semibold mb-2">Google Cloud (GCP)</h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>SOC 1, SOC 2, SOC 3 certified</li>
-                      <li>ISO 27001, ISO 27017, ISO 27018 certified</li>
-                      <li>PCI DSS compliant</li>
-                      <li>GDPR and CCPA compliant</li>
-                      <li>Regular third-party security audits</li>
+                      <li>SOC 1, 2, and 3 compliant</li>
+                      <li>ISO/IEC 27001, 27017, 27018 certified</li>
+                      <li>PCI DSS and HIPAA compliant</li>
+                      <li>Enterprise-grade SLAs for uptime and security</li>
+                      <li>Advanced threat detection and identity management (IAM)</li>
                     </ul>
                   </div>
 
                   <div className="bg-secondary/20 p-4 rounded-lg">
-                    <h4 className="font-semibold mb-2">Google Cloud (Vertex AI Provider)</h4>
+                    <h4 className="font-semibold mb-2">Amazon Web Services (AWS)</h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>SOC 1, SOC 2, SOC 3 certified</li>
-                      <li>ISO 27001, ISO 27017, ISO 27018 certified</li>
-                      <li>FedRAMP Authorized</li>
-                      <li>GDPR and HIPAA compliant</li>
-                      <li>Customer data not used for model training</li>
+                      <li>SOC 1, 2, and 3 certified</li>
+                      <li>ISO/IEC 27001, 27017, 27018 certified</li>
+                      <li>FedRAMP High Authorization</li>
+                      <li>GDPR, HIPAA, and PCI DSS Level 1 compliant</li>
+                      <li>Data-at-rest and data-in-transit encryption by default</li>
                     </ul>
                   </div>
 
@@ -291,7 +289,7 @@ export default function Security() {
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Real-Time Alerts:</strong> Automated alerting for anomalous behavior and potential threats</li>
                     <li><strong>Log Analysis:</strong> Centralized logging with automated analysis for security events</li>
-                    <li><strong>Performance Monitoring:</strong> Application and infrastructure metrics track request patterns</li>
+                    <li><strong>Performance Monitoring:</strong> Real-time APM (Application Performance Monitoring) and distributed tracing</li>
                     <li><strong>Dependency Scanning:</strong> Automated scanning for vulnerable dependencies in our codebase</li>
                   </ul>
 
@@ -331,14 +329,14 @@ export default function Security() {
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>GDPR:</strong> General Data Protection Regulation (EU)</li>
                     <li><strong>CCPA:</strong> California Consumer Privacy Act (US)</li>
-                    <li><strong>SOC 2:</strong> Service Organization Control 2 (via cloud provider infrastructure)</li>
+                    <li><strong>SOC 2:</strong> Service Organization Control 2 (via Cloudflare infrastructure)</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">7.2 Security Audits</h3>
                   <p className="text-muted-foreground leading-relaxed">
                     We conduct regular security assessments and audits of our platform, including vulnerability scanning,
                     penetration testing, and code security reviews. While LornuAI is an early-stage company, we leverage the
-                    security certifications and audits of our infrastructure providers (AWS, Google Cloud) to ensure
+                    security certifications and audits of our infrastructure providers (Google Cloud, AWS) to ensure
                     enterprise-grade security.
                   </p>
                 </section>
