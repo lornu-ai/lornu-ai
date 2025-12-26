@@ -10,8 +10,8 @@ The deployment pipeline is intentionally split into three layers to keep global 
    - File: `.github/workflows/terraform-aws-stage2-cdn.yml`
    - Purpose: CloudFront distribution + Route53 records.
 3. **Kustomize Deploy**
-   - File: `.github/workflows/kustomize-deploy.yml`
+   - Handled by `terraform-aws.yml` after terraform apply
    - Purpose: Apply namespace-scoped Kubernetes manifests.
 
 ## Orchestration
-`kustomize-deploy.yml` calls the Stage 1 and Stage 2 workflows via `workflow_call` and only deploys after both succeed.
+`infra-orchestrator.yml` orchestrates Stage 1 and Stage 2 workflows. Kustomize deployments are handled by `terraform-aws.yml` after successful terraform apply.

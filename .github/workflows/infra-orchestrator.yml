@@ -35,8 +35,5 @@ jobs:
       acm_certificate_arn: ${{ needs.stage1-acm.outputs.acm_certificate_arn }}
     secrets: inherit
 
-  deploy:
-    name: "Deploy Kustomize"
-    needs: stage2-cdn
-    uses: ./.github/workflows/kustomize-deploy.yml
-    secrets: inherit
+  # Kustomize deployment is handled by terraform-aws.yml after terraform apply
+  # No separate kustomize-deploy workflow needed per Plan A
