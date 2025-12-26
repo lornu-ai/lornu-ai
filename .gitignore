@@ -121,3 +121,5 @@ wrangler.toml
 apps/web/worker.ts
 .wrangler/
 .dev.vars
+.gemini/
+test-results.json
