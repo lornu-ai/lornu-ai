@@ -45,7 +45,8 @@ export default defineConfig({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // Group React core, ecosystem dependencies, and Radix UI together to ensure context sharing
+            // Group React core + ecosystem packages that depend on React context
+            // MUST be in the same chunk to ensure React is available when deps initialize
             if (
               id.includes('/react/') ||
               id.includes('/react-dom/') ||
@@ -60,7 +61,10 @@ export default defineConfig({
               id.includes('vaul') ||
               id.includes('cmdk') ||
               id.includes('embla-carousel-react') ||
-              id.includes('@radix-ui')
+              id.includes('@radix-ui') ||
+              id.includes('react-day-picker') ||
+              id.includes('react-resizable-panels') ||
+              id.includes('input-otp')
             ) {
               return 'vendor-react';
             }
