@@ -11,9 +11,3 @@ patches:
     target:
       kind: Ingress
       name: lornu-ai
-  - target:
-      kind: Ingress
-      name: lornu-ai
-    patch: |-
-      - op: remove
-        path: /metadata/annotations/cert-manager.io~1cluster-issuer
