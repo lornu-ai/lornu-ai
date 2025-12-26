@@ -61,8 +61,8 @@ test.describe('Smoke Tests', () => {
 
   test('Health endpoint is accessible', async ({ request }) => {
     // Test the health endpoint directly
-    // Note: This only works when running through Cloudflare Worker (wrangler dev),
-    // not through Vite dev server. In CI, we test with the built worker.
+    // Note: This only works when the backend serves /api/health,
+    // not through the Vite dev server.
     const response = await request.get('/api/health');
 
     expect(response.status()).toBe(200);

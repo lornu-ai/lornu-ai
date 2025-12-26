@@ -144,45 +144,6 @@ async function testContactAPI(baseUrl: string): Promise<TestResult> {
   }
 }
 
-async function checkWranglerSecrets(): Promise<TestResult> {
-  try {
-    const process = await Bun.spawn(['bunx', 'wrangler', 'secret', 'list'], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    });
-
-    const output = await new Response(process.stdout).text();
-    const errorOutput = await new Response(process.stderr).text();
-    const exitCode = await process.exited;
-
-    if (exitCode !== 0) {
-      return {
-        name: 'Wrangler Secrets Check',
-        success: false,
-        error: `Command failed with exit code ${exitCode}`,
-        details: { stderr: errorOutput },
-      };
-    }
-
-    const hasResendKey = output.includes('RESEND_API_KEY');
-
-    return {
-      name: 'Wrangler Secrets Check',
-      success: hasResendKey,
-      error: hasResendKey ? undefined : 'RESEND_API_KEY secret not found',
-      details: {
-        output: output.split('\n').filter(line => line.trim()).slice(0, 10), // First 10 lines
-      },
-    };
-  } catch (error) {
-    return {
-      name: 'Wrangler Secrets Check',
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to check secrets',
-    };
-  }
-}
-
 async function main() {
   console.log('🧪 Contact Form Test Script\n');
   console.log('This script will test your contact form email functionality.\n');
@@ -199,17 +160,9 @@ async function main() {
 
   if (!resendApiKey) {
     console.log('⚠️  RESEND_API_KEY environment variable not set.');
-    console.log('   Trying to check Wrangler secrets...\n');
-
-    const secretCheck = await checkWranglerSecrets();
-    logResult(secretCheck);
-
-    if (!secretCheck.success) {
-      console.log('\n❌ Cannot proceed without Resend API key.');
-      console.log('   Please set RESEND_API_KEY environment variable or configure it in Wrangler:');
-      console.log('   bunx wrangler secret put RESEND_API_KEY\n');
-      process.exit(1);
-    }
+    console.log('\n❌ Cannot proceed without Resend API key.');
+    console.log('   Please set RESEND_API_KEY in your environment or in the Kubernetes secret.');
+    process.exit(1);
   }
 
   // Test Resend API directly
@@ -260,8 +213,8 @@ function printSummary() {
     console.log('\n🔍 Troubleshooting Tips:');
     console.log('1. Verify domain is verified in Resend dashboard');
     console.log('2. Check Resend API key has correct permissions');
-    console.log('3. Check Cloudflare Worker logs for errors');
-    console.log('4. Ensure RESEND_API_KEY secret is set in Wrangler');
+    console.log('3. Check backend service logs for errors');
+    console.log('4. Ensure RESEND_API_KEY is set in the runtime environment');
     console.log('5. Test Resend API directly with curl (see CONTACT_FORM_SETUP.md)');
   }
 

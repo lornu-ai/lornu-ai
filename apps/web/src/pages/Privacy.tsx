@@ -223,7 +223,7 @@ export default function Privacy() {
                     <li><strong>Encryption in Transit:</strong> All data transmission uses TLS 1.3 encryption</li>
                     <li><strong>Encryption at Rest:</strong> Data stored in Cloudflare KV/R2 is encrypted using AES-256</li>
                     <li><strong>Access Controls:</strong> Strict authentication and authorization for all Service components</li>
-                    <li><strong>Secret Management:</strong> API keys and secrets are stored securely using Wrangler and Cloudflare environment variables</li>
+                    <li><strong>Secret Management:</strong> API keys and secrets are stored securely using Kubernetes Secrets and environment variables</li>
                     <li><strong>Edge Security:</strong> Cloudflare Workers run in a secure, isolated sandbox environment</li>
                     <li><strong>DDoS Protection:</strong> Cloudflare's network provides protection against distributed denial-of-service attacks</li>
                   </ul>

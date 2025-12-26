@@ -137,9 +137,9 @@ export default function Security() {
                     All sensitive credentials (API keys, tokens, secrets) are managed using industry best practices:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Wrangler Secrets:</strong> Production API keys are stored using <code className="bg-secondary px-1.5 py-0.5 rounded text-sm">wrangler secret put</code>, never in code or configuration files</li>
+                    <li><strong>Kubernetes Secrets:</strong> Production API keys are stored as Kubernetes Secrets, never in code or configuration files</li>
                     <li><strong>GitHub Secrets:</strong> CI/CD pipeline secrets stored securely in GitHub's encrypted secrets storage</li>
-                    <li><strong>Environment Variables:</strong> Runtime secrets injected via Cloudflare Workers environment variables</li>
+                    <li><strong>Environment Variables:</strong> Runtime secrets injected via Kubernetes environment variables</li>
                     <li><strong>No Hardcoding:</strong> Zero tolerance policy for hardcoded credentials in source code</li>
                     <li><strong>Secret Rotation:</strong> Regular rotation schedule for all API keys and access tokens</li>
                   </ul>
@@ -150,7 +150,7 @@ export default function Security() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Role-Based Access:</strong> Team members have access only to resources required for their role</li>
-                    <li><strong>Multi-Factor Authentication:</strong> MFA required for all Cloudflare and GitHub accounts</li>
+                    <li><strong>Multi-Factor Authentication:</strong> MFA required for all cloud provider and GitHub accounts</li>
                     <li><strong>API Scoping:</strong> Third-party API keys are scoped to minimum required permissions</li>
                     <li><strong>Audit Trails:</strong> All access to production secrets is logged and monitored</li>
                   </ul>
