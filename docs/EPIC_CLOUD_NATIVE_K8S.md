@@ -11,21 +11,21 @@
 **Goal:** Establish the core Kustomize directory structure and migrate base manifests.
 
 *   **Story 1.1: Setup Kustomize Directory Structure**
-    *   **Description:** Create the directory hierarchy `k8s/base` and `k8s/overlays`.
+    *   **Description:** Create the directory hierarchy `kubernetes/base` and `kubernetes/overlays`.
     *   **Acceptance Criteria:** Directory structure exists in repo.
 *   **Story 1.2: Migrate Core Manifests to Base**
-    *   **Description:** Refactor existing Deployment, Service, and ConfigMap YAMLs into `k8s/base/`. Ensure they are environment-agnostic.
-    *   **Acceptance Criteria:** `deployment.yaml`, `service.yaml` in `k8s/base`. `kustomization.yaml` created in `base`.
+    *   **Description:** Refactor existing Deployment, Service, and ConfigMap YAMLs into `kubernetes/base/`. Ensure they are environment-agnostic.
+    *   **Acceptance Criteria:** `deployment.yaml`, `service.yaml` in `kubernetes/base`. `kustomization.yaml` created in `base`.
 *   **Story 1.3: Local Development Overlay**
-    *   **Description:** Create `k8s/overlays/dev` specific for local testing (Podman/Kind).
-    *   **Acceptance Criteria:** Functional `kustomize build k8s/overlays/dev` command. Includes dev-specific config (e.g., debug logging).
+    *   **Description:** Create `kubernetes/overlays/lornu-dev` specific for local testing (Podman/Kind).
+    *   **Acceptance Criteria:** Functional `kustomize build kubernetes/overlays/lornu-dev` command. Includes dev-specific config (e.g., debug logging).
     *   **Task:** Update `package.json` script `dev:k8s` to use Kustomize.
 
 ### Epic 2: Staging Environment Configuration
 **Goal:** Define the Staging environment configuration using Kustomize overlays.
 
 *   **Story 2.1: Staging Overlay Implementation**
-    *   **Description:** Create `k8s/overlays/staging`.
+    *   **Description:** Create `kubernetes/overlays/lornu-staging`.
     *   **Acceptance Criteria:** Staging specific `kustomization.yaml` properly patches image tags, replicas (if different), and resource limits.
 *   **Story 2.2: Secret Management Strategy**
     *   **Description:** Define how secrets (API keys) are injected in Staging (e.g., SealedSecrets or external secret store reference).
@@ -46,9 +46,9 @@
 ## 2. Implementation Plan
 
 ### Phase A: Setup (Week 1)
-1.  Initialize `k8s/` structure.
+1.  Initialize `kubernetes/` structure.
 2.  Port existing raw YAMLs to `base`.
-3.  Verify local build with `kustomize build k8s/base`.
+3.  Verify local build with `kustomize build kubernetes/base`.
 
 ### Phase B: Development Overlay (Week 1)
 1.  Create `overlays/dev`.
@@ -63,8 +63,8 @@
 ---
 
 ## 3. Checklist
-- [ ] Base Kustomization (`k8s/base`)
-- [ ] Dev Overlay (`k8s/overlays/dev`)
-- [ ] Staging Overlay (`k8s/overlays/staging`)
+- [ ] Base Kustomization (`kubernetes/base`)
+- [ ] Dev Overlay (`kubernetes/overlays/lornu-dev`)
+- [ ] Staging Overlay (`kubernetes/overlays/lornu-staging`)
 - [ ] CI/CD Pipeline Update
 - [ ] Documentation Updated (README.md)

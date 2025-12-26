@@ -5,10 +5,14 @@ resources:
 - ../../base
 - namespace.yaml
 
-namespace: lornu-dev
+namespace: lornu-prod
 
-commonLabels:
-  lornu.ai/env: development
+labels:
+- pairs:
+    lornu.ai/environment: production
+    lornu.ai/managed-by: plan-a-orchestration
+    lornu.ai/asset-id: lornu-ai-production-app
+  includeSelectors: true
 
 patches:
 - target:
@@ -17,7 +21,4 @@ patches:
   patch: |-
     - op: replace
       path: /spec/replicas
-      value: 1
-    - op: replace
-      path: /spec/template/spec/containers/0/image
-      value: lornu-ai:latest
+      value: 3

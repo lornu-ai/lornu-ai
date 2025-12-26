@@ -5,7 +5,7 @@ Deploy Lornu AI to AWS EKS and local Kubernetes clusters (minikube, K3s) using K
 ## Directory Structure
 
 ```
-k8s/
+kubernetes/
 ├── base/                 # Base manifests (platform-agnostic)
 │   ├── serviceaccount.yaml
 │   ├── deployment.yaml
@@ -49,14 +49,14 @@ kubectl create secret generic lornu-ai-secrets \
 
 ## Overlays
 
-### Development (`k8s/overlays/dev`)
+### Development (`kubernetes/overlays/dev`)
 
 Local minikube or K3s setup with:
 - 1 replica (minimal resource usage)
 - Local image (`lornu-ai:local`)
 - Debug logging
 
-### Staging (`k8s/overlays/staging`)
+### Staging (`kubernetes/overlays/staging`)
 
 AWS EKS staging cluster with:
 - 2 replicas
@@ -66,10 +66,10 @@ AWS EKS staging cluster with:
 
 Apply:
 ```bash
-kustomize build k8s/overlays/staging | kubectl apply -f -
+kustomize build kubernetes/overlays/staging | kubectl apply -f -
 ```
 
-### Production (`k8s/overlays/production`)
+### Production (`kubernetes/overlays/production`)
 
 AWS EKS production cluster with:
 - 3 replicas
@@ -80,7 +80,7 @@ AWS EKS production cluster with:
 
 Apply:
 ```bash
-kustomize build k8s/overlays/production | kubectl apply -f -
+kustomize build kubernetes/overlays/production | kubectl apply -f -
 ```
 
 ## Local Development
@@ -131,7 +131,7 @@ kustomize build k8s/overlays/production | kubectl apply -f -
 
 3. Deploy with Kustomize:
    ```bash
-   kustomize build k8s/overlays/staging | kubectl apply -f -
+   kustomize build kubernetes/overlays/staging | kubectl apply -f -
    ```
 
 4. Check deployment status:
@@ -144,7 +144,7 @@ kustomize build k8s/overlays/production | kubectl apply -f -
 
 ### Updating the Image Tag
 
-Modify `k8s/overlays/staging/kustomization.yaml`:
+Modify `kubernetes/overlays/staging/kustomization.yaml`:
 ```yaml
 images:
 - name: lornu-ai
@@ -204,4 +204,4 @@ imagePullSecrets:
 - Dropped all Linux capabilities
 - Network policies recommended for production
 
-See [k8s/base/deployment.yaml](base/deployment.yaml) for full security context.
+See [kubernetes/base/deployment.yaml](base/deployment.yaml) for full security context.

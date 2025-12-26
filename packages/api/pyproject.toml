@@ -7,7 +7,10 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.124.4",
     "uvicorn>=0.40.0",
-    "vtracer>=0.6.11",
-    "rembg>=2.0.50",
     "pillow>=10.0.0",
+    "python-multipart>=0.0.9",
+    "google-cloud-storage>=2.14.0",
+    "google-cloud-firestore>=2.14.0",
+    "resend>=0.8.0",
+    "email-validator>=2.1.0",
 ]
