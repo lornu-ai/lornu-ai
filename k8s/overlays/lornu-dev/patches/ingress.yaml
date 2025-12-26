@@ -2,6 +2,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: lornu-ai
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: lornu-ai-ingress-ip
 spec:
   rules:
   - host: d2.lornu.ai
@@ -17,4 +19,4 @@ spec:
   tls:
   - hosts:
     - d2.lornu.ai
-    secretName: lornu-ai-tls
+    secretName: lornu-ai-dev-tls

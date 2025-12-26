@@ -24,7 +24,7 @@ resource "google_dns_record_set" "dev_d2" {
   type         = "A"
   ttl          = 300
   managed_zone = google_dns_managed_zone.public_zone.name
-  rrdatas      = ["34.49.129.46"] # GKE Ingress IP for lornu-dev
+  rrdatas      = [google_compute_global_address.ingress_ip.address]
 }
 
 # Output nameservers for domain registrar configuration
