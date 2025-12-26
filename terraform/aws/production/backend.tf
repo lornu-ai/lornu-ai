@@ -3,7 +3,7 @@ terraform {
     organization = "lornu-ai"
 
     workspaces {
-      name = "lornu-ai"
+      name = "aws-kustomize"
     }
   }
 

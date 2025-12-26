@@ -52,7 +52,7 @@ kubernetes/overlays/   # dev, staging, prod overlays
 - **Configuration Version Sync**: The `tfc-sync.yml` workflow automatically syncs configuration versions on push to `main` or `kustomize` branches
 - **Manual Runs**: Manual TFC UI runs use the latest synced configuration version
 - **Workspaces**:
-  - AWS Production: `lornu-ai` (terraform/aws/production)
+  - AWS Production: `aws-kustomize` (terraform/aws/production)
   - GCP: `gcp-lornu-ai` (terraform/gcp)
 
 See `docs/TFC_MANUAL_RUNS.md` for details on manual TFC UI runs.

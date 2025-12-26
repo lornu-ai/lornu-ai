@@ -21,7 +21,7 @@ jobs:
     env:
       TF_CLOUD_ORGANIZATION: "lornu-ai"
       TF_API_TOKEN: ${{ secrets.AWS_TF_API_TOKEN }}
-      TF_WORKSPACE: "lornu-ai"
+      TF_WORKSPACE: "aws-kustomize"
       CONFIG_DIRECTORY: "./terraform/aws/production"
     steps:
       - name: Checkout
