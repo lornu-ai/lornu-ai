@@ -30,8 +30,6 @@ permissions:
   contents: read
 
 env:
-  TF_CLOUD_ORG: ${{ secrets.TF_CLOUD_ORG }}
-  TF_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
 jobs:
