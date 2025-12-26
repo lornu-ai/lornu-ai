@@ -96,3 +96,9 @@ variable "deploy_stage" {
     error_message = "deploy_stage must be 1 or 2"
   }
 }
+
+variable "existing_acm_certificate_arn" {
+  description = "ARN of an existing ACM certificate to use for CloudFront. If provided, skips certificate creation."
+  type        = string
+  default     = ""
+}

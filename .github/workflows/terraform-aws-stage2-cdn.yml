@@ -89,6 +89,7 @@ jobs:
           TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
           TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
           TF_VAR_create_route53_zone: "true"
+          TF_VAR_existing_acm_certificate_arn: ${{ secrets.PROD_ACM_CERTIFICATE_ARN }}
         run: |
           echo "☁️  Stage 2: Creating CloudFront distribution"
           echo "   This will create:"
@@ -113,6 +114,7 @@ jobs:
           TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
           TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
           TF_VAR_create_route53_zone: "true"
+          TF_VAR_existing_acm_certificate_arn: ${{ secrets.PROD_ACM_CERTIFICATE_ARN }}
         run: |
           echo "🚀 Applying Stage 2..."
           echo "   CloudFront distribution typically takes 10-15 minutes to deploy."

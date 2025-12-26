@@ -39,10 +39,12 @@ locals {
 }
 
 # -----------------------------------------------------------------------------
-# STAGE 1: ACM Certificate + DNS Validation
+# STAGE 1: ACM Certificate + DNS Validation (skipped if existing cert provided)
 # -----------------------------------------------------------------------------
 
+# Only create certificate if no existing certificate ARN is provided
 resource "aws_acm_certificate" "cloudfront" {
+  count             = var.existing_acm_certificate_arn == "" ? 1 : 0
   provider          = aws.us_east_1
   domain_name       = var.api_domain != "" ? var.api_domain : var.domain_name
   validation_method = "DNS"
@@ -61,9 +63,9 @@ resource "aws_acm_certificate" "cloudfront" {
 }
 
 resource "aws_route53_record" "cloudfront_cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.cloudfront.domain_validation_options : dvo.domain_name => dvo
-  }
+  for_each = var.existing_acm_certificate_arn == "" ? {
+    for dvo in aws_acm_certificate.cloudfront[0].domain_validation_options : dvo.domain_name => dvo
+  } : {}
 
   zone_id = local.route53_zone_id
   name    = each.value.resource_record_name
@@ -75,13 +77,19 @@ resource "aws_route53_record" "cloudfront_cert_validation" {
 }
 
 resource "aws_acm_certificate_validation" "cloudfront" {
+  count                   = var.existing_acm_certificate_arn == "" ? 1 : 0
   provider                = aws.us_east_1
-  certificate_arn         = aws_acm_certificate.cloudfront.arn
+  certificate_arn         = aws_acm_certificate.cloudfront[0].arn
   validation_record_fqdns = [for record in aws_route53_record.cloudfront_cert_validation : record.fqdn]
 
   timeouts {
     create = "45m"
   }
+}
+
+locals {
+  # Use existing certificate ARN if provided, otherwise use the created one
+  acm_certificate_arn = var.existing_acm_certificate_arn != "" ? var.existing_acm_certificate_arn : try(aws_acm_certificate.cloudfront[0].arn, "")
 }
 
 # -----------------------------------------------------------------------------
@@ -196,7 +204,8 @@ resource "aws_cloudfront_distribution" "api" {
   default_root_object = ""
   http_version        = "http2and3"
 
-  depends_on = [aws_acm_certificate_validation.cloudfront, null_resource.validate_alb_origin]
+  # Only depend on certificate validation if we're creating a new certificate
+  depends_on = [null_resource.validate_alb_origin]
 
   origin {
     domain_name = local.alb_origin_domain
@@ -227,7 +236,7 @@ resource "aws_cloudfront_distribution" "api" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.cloudfront.arn
+    acm_certificate_arn      = local.acm_certificate_arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }

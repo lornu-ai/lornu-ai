@@ -26,7 +26,7 @@ output "cloudfront_domain_name" {
 
 output "cloudfront_certificate_arn" {
   description = "ACM certificate ARN for CloudFront (us-east-1)"
-  value       = aws_acm_certificate.cloudfront.arn
+  value       = local.acm_certificate_arn
 }
 
 output "route53_zone_id" {
