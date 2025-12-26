@@ -5,10 +5,10 @@ on:
   push:
     branches:
       - main
-      - kustomize
     paths:
       - 'terraform/aws/**'
       - '.github/workflows/terraform-aws.yml'
+  workflow_dispatch:
 
 permissions:
   id-token: write

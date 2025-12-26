@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      - kustomize
-      - feat/multi-cloud-consolidation
     paths:
       - 'terraform/**'
       - 'kubernetes/**'

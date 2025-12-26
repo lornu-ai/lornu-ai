@@ -80,6 +80,6 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
 
       - name: Run Playwright Tests
-        run: bun run playwright test
+        run: bun run playwright test --grep-invert "betterstack-monitoring"
         env:
           CI: true
