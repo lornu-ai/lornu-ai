@@ -49,8 +49,14 @@ Plan A supports both AWS and GCP:
 - `main`: Production (single source of truth)
 - `develop`: (deprecated) Staging integration branch
 - Feature branches: `feat/` or `feature/`
-- Always use PRs; never push directly to `main`.
-- Always open PRs against `main`.
+- Always use PRs; never push directly to `main` or `develop`.
+- Always open PRs against `develop`.
+
+## Dependabot
+- Dependabot PRs target `main` as the only exception to the `develop` base rule.
+- Dependabot PRs must keep the `dependencies` label.
+- Review automated updates for lockfile changes and CI impact; avoid manual version bumps unless necessary.
+
 ## PR Labeling (Required)
 
 - Apply a label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) to every PR. If the label doesn't exist, create it first.

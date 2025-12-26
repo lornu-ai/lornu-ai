@@ -49,10 +49,10 @@ kubernetes/overlays/   # dev, staging, prod overlays
 
 - **CLI-Driven Workflow**: TFC workspaces are managed via GitHub Actions, not VCS connections
 - **"Not Connected" Status**: This is intentional and expected in TFC UI
-- **Configuration Version Sync**: The `tfc-sync.yml` workflow automatically syncs configuration versions on push to `main` or `kustomize` branches
+- **Configuration Version Sync**: The `tfc-sync.yml` workflow automatically syncs configuration versions on push to `main`
 - **Manual Runs**: Manual TFC UI runs use the latest synced configuration version
 - **Workspaces**:
-  - AWS Production: `aws-kustomize` (terraform/aws/production)
+  - AWS Production: `aws-kustomize` (terraform/aws)
   - GCP: `gcp-lornu-ai` (terraform/gcp)
 
 See `docs/TFC_MANUAL_RUNS.md` for details on manual TFC UI runs.
@@ -69,8 +69,12 @@ See `docs/TFC_MANUAL_RUNS.md` for details on manual TFC UI runs.
 - Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.
 
 ## PR Base Branch (Required)
+- Always open PRs against `develop`.
 
-- Always open PRs against `main`.
+## Dependabot
+- Dependabot manages routine version bumps; do not add manual upgrade PRs unless required.
+- Keep Dependabot PRs labeled with `dependencies`.
+- Dependabot PRs target `main` as the only exception to the `develop` base rule.
 
 ## Terraform Hygiene (Required)
 
