@@ -51,23 +51,26 @@ test.describe('Production Health - Synthetic Monitoring', () => {
 
     test('Critical navigation paths work', async ({ page }) => {
         await page.goto(PRODUCTION_URL);
+        await page.waitForLoadState('networkidle');
 
-        // Test navigation to Terms page
+        // Test navigation to Terms page - required critical path
         const termsLink = page.getByRole('link', { name: /terms/i });
+        await expect(termsLink).toBeVisible({ timeout: 5000 });
         await termsLink.click();
 
         await expect(page).toHaveURL(/\/terms/, { timeout: 5000 });
-        await expect(page.getByRole('heading', { name: /terms of service/i })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /terms of service/i })).toBeVisible({ timeout: 5000 });
 
-        // Test navigation to Privacy page
+        // Test navigation to Privacy page - required critical path
         await page.goto(PRODUCTION_URL);
+        await page.waitForLoadState('networkidle');
+        
         const privacyLink = page.getByRole('link', { name: /privacy/i });
-
-        if (await privacyLink.isVisible()) {
-            await privacyLink.click();
-            await expect(page).toHaveURL(/\/privacy/, { timeout: 5000 });
-            await expect(page.getByRole('heading', { name: 'Privacy Policy', exact: true })).toBeVisible();
-        }
+        await expect(privacyLink).toBeVisible({ timeout: 5000 });
+        await privacyLink.click();
+        
+        await expect(page).toHaveURL(/\/privacy/, { timeout: 5000 });
+        await expect(page.getByRole('heading', { name: /privacy/i })).toBeVisible({ timeout: 5000 });
     });
 
     test('Contact form is accessible', async ({ page }) => {
@@ -112,39 +115,46 @@ test.describe('Production Health - Synthetic Monitoring', () => {
         // Wait for page to fully load
         await page.waitForLoadState('networkidle');
 
-        // Assert no critical errors occurred
-        const criticalErrors = errors.filter(err =>
-            !err.includes('favicon') && // Ignore favicon errors
-            !err.includes('AdBlock') && // Ignore ad blocker warnings
-            !err.includes('Failed to load resource') && // Ignore external resource failures
-            !err.includes('405') // Ignore method not allowed on some trackers
-        );
+        // Filter to only critical, application errors (not third-party tracking errors)
+        const criticalErrors = errors.filter(err => {
+            // Allow known non-critical error sources
+            if (err.includes('favicon')) return false; // Favicon not found is non-critical
+            if (err.includes('AdBlock')) return false; // Ad blocker warnings
+            if (err.includes('google-analytics')) return false; // GA errors are non-critical
+            if (err.includes('gtag')) return false; // Google tag errors
+            if (err.includes('recaptcha') || err.includes('reCAPTCHA')) return false; // ReCAPTCHA errors
+            if (err.includes('tracking')) return false; // Third-party tracking
+            
+            // Report all other errors as they may indicate real application issues
+            return true;
+        });
 
         expect(criticalErrors).toHaveLength(0);
     });
 
     test('Static assets load successfully', async ({ page }) => {
-        await page.goto(PRODUCTION_URL);
-
-        // Wait for all network requests to complete
-        await page.waitForLoadState('networkidle');
-
-        // Verify no failed requests for critical assets
         const failedRequests: string[] = [];
 
+        // Attach listener BEFORE navigation to capture all request failures
         page.on('requestfailed', request => {
             const url = request.url();
-            // Track failures for JS, CSS, and images
-            if (url.match(/\.(js|css|png|jpg|svg|woff2)$/)) {
+            // Track failures for application-critical assets (JS, CSS, images)
+            // Exclude third-party tracking and analytics which may fail without affecting app
+            if (url.match(/\.(js|css|png|jpg|svg|woff2|woff|ttf)$/) &&
+                !url.includes('google') &&
+                !url.includes('analytics') &&
+                !url.includes('tracking') &&
+                !url.includes('facebook') &&
+                !url.includes('twitter')) {
                 failedRequests.push(url);
             }
         });
 
-        // Reload to capture failures
-        await page.reload();
+        // Navigate to page and wait for all requests to complete
+        await page.goto(PRODUCTION_URL);
         await page.waitForLoadState('networkidle');
 
-        // Assert no critical assets failed to load
+        // Assert no critical application assets failed to load
         expect(failedRequests).toHaveLength(0);
     });
 });
