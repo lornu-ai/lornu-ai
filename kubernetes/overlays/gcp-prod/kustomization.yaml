@@ -4,8 +4,6 @@ kind: Kustomization
 resources:
 - ../../base
 - namespace.yaml
-# cert-manager deployed separately: kubectl apply -k kubernetes/overlays/prod/cert-manager
-- assets-kv-config.yaml
 
 namespace: lornu-prod
 
@@ -17,6 +15,10 @@ labels:
   includeSelectors: true
 
 patches:
+- path: ingress-patch.yaml
+  target:
+    kind: Ingress
+    name: lornu-ai
 - target:
     kind: Deployment
     name: lornu-ai

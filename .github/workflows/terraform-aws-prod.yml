@@ -1,13 +1,7 @@
 name: Terraform AWS Production
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'terraform/aws/production/**'
-      - 'Dockerfile'
-      - '.github/workflows/terraform-aws-prod.yml'
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   id-token: write
@@ -60,6 +54,21 @@ jobs:
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
 
+      - name: Set extra domain aliases for SAN certificate
+        run: |
+          domains=()
+          if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
+            domains+=("${{ secrets.STAGE_DOMAIN }}")
+          fi
+
+          # Convert array to JSON string
+          if [ ${#domains[@]} -gt 0 ]; then
+            json_domains=$(printf '%s\n' "${domains[@]}" | jq -R . | jq -s .)
+            echo "TF_VAR_extra_domain_names=$json_domains" >> "$GITHUB_ENV"
+          else
+            echo "TF_VAR_extra_domain_names=[]" >> "$GITHUB_ENV"
+          fi
+
       - name: Terraform Plan
         env:
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
@@ -86,7 +95,7 @@ jobs:
     name: Terraform Apply & Deploy
     runs-on: ubuntu-latest
     needs: plan
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
 
@@ -109,6 +118,21 @@ jobs:
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
 
+      - name: Set extra domain aliases for SAN certificate
+        run: |
+          domains=()
+          if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
+            domains+=("${{ secrets.STAGE_DOMAIN }}")
+          fi
+
+          # Convert array to JSON string
+          if [ ${#domains[@]} -gt 0 ]; then
+            json_domains=$(printf '%s\n' "${domains[@]}" | jq -R . | jq -s .)
+            echo "TF_VAR_extra_domain_names=$json_domains" >> "$GITHUB_ENV"
+          else
+            echo "TF_VAR_extra_domain_names=[]" >> "$GITHUB_ENV"
+          fi
+
       - name: Terraform Apply
         env:
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
@@ -128,7 +152,7 @@ jobs:
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
-            --name lornu-ai-production \
+            --name lornu-ai-production-cluster \
             --region ${{ env.AWS_REGION }}
 
       - name: Install Kustomize
@@ -137,13 +161,16 @@ jobs:
           sudo mv kustomize /usr/local/bin/
 
       - name: Deploy to EKS with Kustomize
+        env:
+          ACM_CERTIFICATE_ARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
         run: |
-          kustomize build kubernetes/overlays/lornu-prod | \
-          kubectl set image deployment/production-lornu-ai \
+          kustomize build kubernetes/overlays/aws-prod | \
+          envsubst | \
+          kubectl set image deployment/lornu-ai \
             lornu-ai=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
-            --filename - | \
+            --local -f - -o yaml | \
           kubectl apply -f -
 
       - name: Wait for Deployment
         run: |
-          kubectl rollout status deployment/production-lornu-ai -n default --timeout=5m
+          kubectl rollout status deployment/lornu-ai -n lornu-prod --timeout=5m

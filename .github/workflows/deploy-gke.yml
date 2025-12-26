@@ -1,15 +1,13 @@
 name: GKE Build & Deploy
 
 on:
-  push:
-    branches:
-      - gcp-develop
-    paths:
-      - 'apps/web/**'
-      - 'packages/api/**'
-      - 'kubernetes/**'
-      - 'Dockerfile'
-      - '.github/workflows/deploy-gke.yml'
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'lornu-dev'
+        type: string
   workflow_dispatch:
     inputs:
       environment:
@@ -20,7 +18,7 @@ on:
         options:
           - lornu-dev
           - lornu-staging
-          - lornu-prod
+          - gcp-prod
 
 permissions:
   contents: read

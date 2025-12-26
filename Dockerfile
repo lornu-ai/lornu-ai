@@ -23,9 +23,10 @@ COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /bin/uv
 # UV_COMPILE_BYTECODE=1 speeds up startup
 ENV UV_COMPILE_BYTECODE=1
 COPY packages/api/pyproject.toml packages/api/uv.lock ./
+# --frozen: use exact versions from uv.lock for reproducible builds
 # --no-dev: production deps only
 # --no-editable: standard install
-RUN uv sync --no-dev --no-editable
+RUN uv sync --frozen --no-dev --no-editable
 
 # Stage 3: Final Runtime (Slim, Secure, Non-root)
 FROM python:3.12-slim AS runtime

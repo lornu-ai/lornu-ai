@@ -1,17 +1,7 @@
 name: GCP Terraform
 
 on:
-  push:
-    branches:
-      - gcp-develop
-    paths:
-      - 'terraform/gcp/**'
-      - '.github/workflows/terraform-gcp.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'terraform/gcp/**'
+  workflow_call:
 
 env:
   TF_CLOUD_ORGANIZATION: "lornu-ai"
@@ -61,15 +51,15 @@ jobs:
         with:
           script: |
             const output = `#### Terraform Cloud Plan 📖\`${{ steps.plan-run.outputs.run_status }}\`
-            
+
             <details><summary>Show Plan</summary>
-            
+
             \`\`\`\n
             ${process.env.PLAN}
             \`\`\`
-            
+
             </details>`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -78,7 +68,7 @@ jobs:
             })
 
       - name: Apply
-        if: github.ref == 'refs/heads/gcp-develop' && github.event_name == 'push'
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/kustomize' || contains(github.ref, 'feat/multi-cloud-consolidation')) && github.event_name == 'push'
         uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.0
         with:
           run: ${{ steps.plan-run.outputs.run_id }}

@@ -83,6 +83,7 @@ describe('Home - Contact Form Submission', () => {
     fetchMock.mockResolvedValueOnce({
       ok: false,
       status: 502,
+      headers: new Headers({ 'Content-Type': 'text/html' }),
       text: async () => errorText,
     })
 
@@ -100,6 +101,7 @@ describe('Home - Contact Form Submission', () => {
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalled()
+      expect(mockToastError).toHaveBeenCalledWith(errorText)
     })
   })
 
@@ -108,6 +110,7 @@ describe('Home - Contact Form Submission', () => {
     fetchMock.mockResolvedValueOnce({
       ok: false,
       status: 400,
+      headers: new Headers({ 'Content-Type': 'application/json' }),
       text: async () => JSON.stringify({ error: 'Invalid email address' }),
     })
 
@@ -131,7 +134,8 @@ describe('Home - Contact Form Submission', () => {
 
   it('should handle network failures', async () => {
     const user = userEvent.setup()
-    fetchMock.mockRejectedValueOnce(new Error('Network error'))
+    const networkError = new Error('Network error')
+    fetchMock.mockRejectedValueOnce(networkError)
 
     renderHome()
 
@@ -147,6 +151,7 @@ describe('Home - Contact Form Submission', () => {
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalled()
+      expect(mockToastError).toHaveBeenCalledWith(networkError.message)
     })
   })
 
