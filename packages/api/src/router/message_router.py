@@ -131,7 +131,7 @@ def contact_form(request: ContactRequest):
     if not email_agent.enabled:
         # Fallback during migration if Resend is not yet configured
         logger.warning(f"Contact form submission received but email is disabled: {request.name} <{request.email}>")
-        return {"status": "received", "info": "Email delivery is currently disabled for maintenance."}
+        return {"status": "success", "message": "Email delivery is currently disabled for maintenance, but we have received your message."}
 
     success = email_agent.send_contact_email(
         name=request.name,

@@ -75,6 +75,13 @@ export default function Privacy() {
                     <li><strong>Query Content:</strong> The text prompts, questions, and inputs you submit to our AI models</li>
                     <li><strong>Contact Information:</strong> Name and email address if you submit an inquiry through our contact form</li>
                     <li><strong>Feedback:</strong> Any feedback, comments, or suggestions you provide about the Service</li>
+                    <li><strong>Gmail Integration (Optional):</strong> If you enable the "Agentic Triage" feature, we request access to:
+                      <ul className="list-disc list-inside ml-6 mt-1">
+                        <li><code>gmail.readonly</code>: To read email headers and body for summarization and triage</li>
+                        <li><code>gmail.send</code>: To draft replies on your behalf (only upon explicit user approval)</li>
+                      </ul>
+                      <span className="text-sm mt-1 block">We only process essential email data required for the triage task. Raw email data is <strong>never</strong> used for training our LLMs.</span>
+                    </li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">2.2 Automatically Collected Information</h3>
@@ -143,7 +150,18 @@ export default function Privacy() {
                     <li><strong>Location:</strong> Cloudflare's global object storage infrastructure</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-6">4.3 Logs and Analytics</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-6">4.3 Agent Summaries (Firestore)</h3>
+                  <p className="text-muted-foreground leading-relaxed mb-4">
+                    For the "Agentic Triage" feature, we store generated summaries:
+                  </p>
+                  <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
+                    <li><strong>What is Stored:</strong> AI-generated summaries of email threads and triage decisions</li>
+                    <li><strong>Purpose:</strong> To provide you with a history of agent actions and decisions</li>
+                    <li><strong>Retention:</strong> Strict 30-day retention window. Data is hard-deleted from Firestore after 30 days.</li>
+                    <li><strong>Account Termination:</strong> All user data, including summaries, is immediately deleted upon account termination.</li>
+                  </ul>
+
+                  <h3 className="text-xl font-semibold mb-3 mt-6">4.4 Logs and Analytics</h3>
                   <p className="text-muted-foreground leading-relaxed">
                     Request logs (IP address, timestamp, query metadata) are retained in Cloudflare AI Gateway for up to 30 days
                     for analytics and security purposes. These logs do not contain full query content, only metadata such as
