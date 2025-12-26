@@ -294,7 +294,6 @@ jobs:
               }
               return tests;
             }
-
             // Read test results for error details
             let errorDetails = 'Test results not available';
             try {
