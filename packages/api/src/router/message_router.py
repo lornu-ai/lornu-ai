@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.get("/health")
+@router.get("/health", include_in_schema=False)
+@router.head("/health", include_in_schema=False)
 def health_check():
     return {"status": "ok", "service": "api"}
 
