@@ -68,7 +68,7 @@ jobs:
             })
 
       - name: Apply
-        if: github.ref == 'refs/heads/gcp-develop' && github.event_name == 'push'
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/kustomize' || contains(github.ref, 'feat/multi-cloud-consolidation')) && github.event_name == 'push'
         uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.0
         with:
           run: ${{ steps.plan-run.outputs.run_id }}
