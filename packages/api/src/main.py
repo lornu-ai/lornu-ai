@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -8,12 +7,7 @@ from .router.message_router import router as api_router
 app = FastAPI(title="Lornu API", description="Backend API for Lornu Agents")
 
 # API routes
-app.include_router(api_router, prefix="/api/v1")
-
-# Health check endpoint
-@app.get("/api/health")
-def health_check():
-    return {"status": "ok", "service": "api"}
+app.include_router(api_router, prefix="/api")
 
 # Serve frontend static files
 FRONTEND_DIR = Path("/app/apps/web/dist")
