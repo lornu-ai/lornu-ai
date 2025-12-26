@@ -64,8 +64,9 @@ jobs:
         env:
           PLAYWRIGHT_BASE_URL: ${{ steps.set-url.outputs.url }}
           CI: true
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ../../test-results.json
         run: |
-          bun run test:e2e tests/e2e/betterstack-monitoring.spec.ts --project=chromium --reporter=json --output=../../test-results.json || true
+          bun run test:e2e tests/e2e/betterstack-monitoring.spec.ts --project=chromium --reporter=json || true
 
       - name: Parse Test Results
         id: parse-results
