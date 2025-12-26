@@ -93,9 +93,9 @@ export default function Home() {
         if (contentType && contentType.includes('application/json')) {
           try {
             const data = JSON.parse(responseText)
-            errorMessage = data?.error || errorMessage
+            errorMessage = data?.error ?? errorMessage
           } catch {
-            // Not a valid JSON, fall back to responseText
+            // Not valid JSON, fall back to responseText
           }
         }
         throw new Error(errorMessage || 'Failed to send message')
