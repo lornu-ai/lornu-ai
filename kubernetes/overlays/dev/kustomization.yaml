@@ -8,7 +8,9 @@ resources:
 namespace: lornu-dev
 
 commonLabels:
-  lornu.ai/env: development
+  lornu.ai/environment: development
+  lornu.ai/managed-by: terraform-cloud
+  lornu.ai/asset-id: lornu-ai-final-clear-bg
 
 patches:
 - target:

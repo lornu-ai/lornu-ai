@@ -9,7 +9,9 @@ namespace: lornu-staging
 
 labels:
 - pairs:
-    lornu.ai/env: staging
+    lornu.ai/environment: staging
+    lornu.ai/managed-by: terraform-cloud
+    lornu.ai/asset-id: lornu-ai-final-clear-bg
   includeSelectors: true
 
 patches:

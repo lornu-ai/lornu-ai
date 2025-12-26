@@ -12,8 +12,8 @@ namespace: lornu-prod
 labels:
 - pairs:
     lornu.ai/environment: production
-    lornu.ai/managed-by: plan-a-orchestration
-    lornu.ai/asset-id: lornu-ai-production-app
+    lornu.ai/managed-by: terraform-cloud
+    lornu.ai/asset-id: lornu-ai-final-clear-bg
   includeSelectors: true
 
 patches:
