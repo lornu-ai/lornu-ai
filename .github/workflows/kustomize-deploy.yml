@@ -5,54 +5,19 @@ on:
     branches: [ kustomize ]
   pull_request:
     branches: [ kustomize ]
+  workflow_call:
 
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  stage1-acm-staging:
-    name: "Stage 1 - ACM (staging)"
-    uses: ./.github/workflows/terraform-aws-stage1-acm.yml
-    with:
-      environment: staging
-      action: plan
-    secrets: inherit
-
-  stage1-acm-prod:
-    name: "Stage 1 - ACM (prod)"
-    uses: ./.github/workflows/terraform-aws-stage1-acm.yml
-    with:
-      environment: prod
-      action: plan
-    secrets: inherit
-
-  stage2-cdn-staging:
-    name: "Stage 2 - CDN (staging)"
-    needs: stage1-acm-staging
-    uses: ./.github/workflows/terraform-aws-stage2-cdn.yml
-    with:
-      environment: staging
-      action: plan
-      acm_certificate_arn: ${{ needs.stage1-acm-staging.outputs.acm_certificate_arn }}
-    secrets: inherit
-
-  stage2-cdn-prod:
-    name: "Stage 2 - CDN (prod)"
-    needs: stage1-acm-prod
-    uses: ./.github/workflows/terraform-aws-stage2-cdn.yml
-    with:
-      environment: prod
-      action: plan
-      acm_certificate_arn: ${{ needs.stage1-acm-prod.outputs.acm_certificate_arn }}
-    secrets: inherit
-
-  deploy-dev:
-    name: "Deploy (dev)"
+  deploy:
+    name: "Deploy"
     runs-on: ubuntu-latest
-    needs:
-      - stage2-cdn-staging
-      - stage2-cdn-prod
+    strategy:
+      matrix:
+        env: [dev, staging, prod]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -67,90 +32,18 @@ jobs:
         run: |
           aws eks update-kubeconfig --name lornu-ai-production-cluster --region ${{ secrets.AWS_DEFAULT_REGION }}
           kubectl cluster-info
-          kubectl auth can-i create deployments --namespace lornu-dev
+          kubectl auth can-i create deployments --namespace lornu-${{ matrix.env }}
 
       - name: "Create/Update Secrets"
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
-          kubectl create namespace lornu-dev --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create namespace lornu-${{ matrix.env }} --dry-run=client -o yaml | kubectl apply -f -
           kubectl create secret generic lornu-ai-secrets \
             --from-literal=RESEND_API_KEY="${RESEND_API_KEY}" \
-            -n lornu-dev \
+            -n lornu-${{ matrix.env }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: "Deploy to Namespace"
         run: |
-          kubectl kustomize kubernetes/overlays/dev | kubectl apply -f -
-
-  deploy-staging:
-    name: "Deploy (staging)"
-    runs-on: ubuntu-latest
-    needs:
-      - stage2-cdn-staging
-      - stage2-cdn-prod
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Configure AWS Credentials"
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
-
-      - name: "Update Kubeconfig"
-        run: |
-          aws eks update-kubeconfig --name lornu-ai-production-cluster --region ${{ secrets.AWS_DEFAULT_REGION }}
-          kubectl cluster-info
-          kubectl auth can-i create deployments --namespace lornu-staging
-
-      - name: "Create/Update Secrets"
-        env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-        run: |
-          kubectl create namespace lornu-staging --dry-run=client -o yaml | kubectl apply -f -
-          kubectl create secret generic lornu-ai-secrets \
-            --from-literal=RESEND_API_KEY="${RESEND_API_KEY}" \
-            -n lornu-staging \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: "Deploy to Namespace"
-        run: |
-          kubectl kustomize kubernetes/overlays/staging | kubectl apply -f -
-
-  deploy-prod:
-    name: "Deploy (prod)"
-    runs-on: ubuntu-latest
-    needs:
-      - stage2-cdn-staging
-      - stage2-cdn-prod
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Configure AWS Credentials"
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
-
-      - name: "Update Kubeconfig"
-        run: |
-          aws eks update-kubeconfig --name lornu-ai-production-cluster --region ${{ secrets.AWS_DEFAULT_REGION }}
-          kubectl cluster-info
-          kubectl auth can-i create deployments --namespace lornu-prod
-
-      - name: "Create/Update Secrets"
-        env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-        run: |
-          kubectl create namespace lornu-prod --dry-run=client -o yaml | kubectl apply -f -
-          kubectl create secret generic lornu-ai-secrets \
-            --from-literal=RESEND_API_KEY="${RESEND_API_KEY}" \
-            -n lornu-prod \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: "Deploy to Namespace"
-        run: |
-          kubectl kustomize kubernetes/overlays/prod | kubectl apply -f -
+          kubectl kustomize kubernetes/overlays/${{ matrix.env }} | kubectl apply -f - --validate=false
