@@ -70,22 +70,19 @@ async def vectorize_image(file: UploadFile = File(...)):
         # Process
         result = image_agent.process_vectorization(input_file, output_file)
 
-        if result and result.exists():
-            # Return the file with a background task to clean up the temp dir
-            return FileResponse(
-                result,
-                media_type="image/svg+xml",
-                filename=result.name,
-                background=BackgroundTask(cleanup_temp_dir, temp_dir)
-            )
-        else:
-            cleanup_temp_dir(temp_dir)
-            raise HTTPException(status_code=500, detail="Vectorization failed")
+        if not (result and result.exists()):
+            raise Exception("Vectorization failed")
 
+        return FileResponse(
+            result,
+            media_type="image/svg+xml",
+            filename=result.name,
+            background=BackgroundTask(cleanup_temp_dir, temp_dir)
+        )
     except Exception as e:
         cleanup_temp_dir(temp_dir)
-        logger.error(f"Error in vectorize_image: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error during image vectorization: {e}")
+        raise HTTPException(status_code=500, detail="Image processing failed.")
 
 @router.post("/remove-bg")
 async def remove_background(file: UploadFile = File(...)):
@@ -112,21 +109,19 @@ async def remove_background(file: UploadFile = File(...)):
 
         result = media_agent.remove_background(input_file, output_file)
 
-        if result and result.exists():
-            return FileResponse(
-                result,
-                media_type="image/png",
-                filename=result.name,
-                background=BackgroundTask(cleanup_temp_dir, temp_dir)
-            )
-        else:
-            cleanup_temp_dir(temp_dir)
-            raise HTTPException(status_code=500, detail="Background removal failed")
+        if not (result and result.exists()):
+            raise Exception("Background removal failed")
 
+        return FileResponse(
+            result,
+            media_type="image/png",
+            filename=result.name,
+            background=BackgroundTask(cleanup_temp_dir, temp_dir)
+        )
     except Exception as e:
         cleanup_temp_dir(temp_dir)
-        logger.error(f"Error in remove_background: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error during background removal: {e}")
+        raise HTTPException(status_code=500, detail="Image processing failed.")
 
 @router.post("/contact")
 def contact_form(request: ContactRequest):
