@@ -55,6 +55,28 @@ jobs:
       - name: Install Playwright Browsers
         run: bun run playwright install --with-deps
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install Backend Dependencies
+        run: |
+          cd ../..
+          uv sync --frozen --no-dev
+
+      - name: Start Backend API Server
+        run: |
+          cd ../..
+          uv run -- uvicorn packages.api.main:app --host 0.0.0.0 --port 8080 &
+          sleep 5
+          curl -f http://localhost:8080/api/health || exit 1
+        env:
+          PORT: 8080
+
       - name: Run Playwright Tests
         run: bun run playwright test
         env:

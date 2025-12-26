@@ -35,22 +35,13 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: [
-    // Start backend API server
-    {
-      command: 'cd ../.. && uv run -- uvicorn packages.api.main:app --host 0.0.0.0 --port 8080',
-      url: 'http://localhost:8080/api/health',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120 * 1000,
-      stdout: 'ignore',
-      stderr: 'pipe',
-    },
-    // Start frontend dev server
-    {
-      command: 'bun run dev',
-      url: 'http://localhost:5174',
-      reuseExistingServer: !process.env.CI,
-      timeout: 120 * 1000,
-    },
-  ],
+  webServer: {
+    command: 'bun run dev',
+    url: 'http://localhost:5174',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+    // Start backend API in parallel using a shell script
+    // The backend will be started by the test setup or CI workflow
+    // For local dev, ensure backend is running on port 8080
+  },
 });
