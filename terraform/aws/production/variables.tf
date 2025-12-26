@@ -96,3 +96,16 @@ variable "deploy_stage" {
     error_message = "deploy_stage must be 1 or 2"
   }
 }
+
+variable "github_actions_role_arn" {
+  description = "ARN of the GitHub Actions OIDC IAM role. Allows GHA to authenticate with EKS cluster."
+  type        = string
+  sensitive   = true
+  default     = ""
+
+  validation {
+    condition     = var.github_actions_role_arn == "" || can(regex("^arn:aws:iam::", var.github_actions_role_arn))
+    error_message = "github_actions_role_arn must be a valid IAM role ARN"
+  }
+}
+
