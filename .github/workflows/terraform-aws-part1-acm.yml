@@ -98,10 +98,12 @@ jobs:
             fi
           fi
           
-          # Convert array to JSON string
+          # Convert array to JSON string (single line, properly escaped)
           if [ ${#domains[@]} -gt 0 ]; then
-            json_domains=$(printf '%s\n' "${domains[@]}" | jq -R . | jq -s .)
-            echo "TF_VAR_extra_domain_names=$json_domains" >> "$GITHUB_ENV"
+            json_domains=$(printf '%s\n' "${domains[@]}" | jq -R . | jq -s -c .)
+            echo "TF_VAR_extra_domain_names<<EOF" >> "$GITHUB_ENV"
+            echo "$json_domains" >> "$GITHUB_ENV"
+            echo "EOF" >> "$GITHUB_ENV"
           else
             echo "TF_VAR_extra_domain_names=[]" >> "$GITHUB_ENV"
           fi
