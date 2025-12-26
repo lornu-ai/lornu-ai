@@ -1,6 +1,6 @@
 "use client"
 
-import { ComponentProps, createContext, useCallback, useContext, useEffect, useState, KeyboardEvent } from "react"
+import { ComponentProps, createContext, useCallback, useContext, useEffect, useSyncExternalStore, KeyboardEvent } from "react"
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
 } from "embla-carousel-react"
@@ -59,14 +59,6 @@ function Carousel({
     },
     plugins
   )
-  const [canScrollPrev, setCanScrollPrev] = useState(false)
-  const [canScrollNext, setCanScrollNext] = useState(false)
-
-  const onSelect = useCallback((api: CarouselApi) => {
-    if (!api) return
-    setCanScrollPrev(api.canScrollPrev())
-    setCanScrollNext(api.canScrollNext())
-  }, [])
 
   const scrollPrev = useCallback(() => {
     api?.scrollPrev()
@@ -75,6 +67,30 @@ function Carousel({
   const scrollNext = useCallback(() => {
     api?.scrollNext()
   }, [api])
+
+  const subscribe = useCallback((callback: () => void) => {
+    if (!api) return () => {}
+    const handler = () => callback()
+    api.on("select", handler)
+    api.on("reInit", handler)
+
+    return () => {
+      api.off("select", handler)
+      api.off("reInit", handler)
+    }
+  }, [api])
+
+  const canScrollPrev = useSyncExternalStore(
+    subscribe,
+    () => (api ? api.canScrollPrev() : false),
+    () => false
+  )
+
+  const canScrollNext = useSyncExternalStore(
+    subscribe,
+    () => (api ? api.canScrollNext() : false),
+    () => false
+  )
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
@@ -93,17 +109,6 @@ function Carousel({
     if (!api || !setApi) return
     setApi(api)
   }, [api, setApi])
-
-  useEffect(() => {
-    if (!api) return
-    onSelect(api)
-    api.on("reInit", onSelect)
-    api.on("select", onSelect)
-
-    return () => {
-      api?.off("select", onSelect)
-    }
-  }, [api, onSelect])
 
   return (
     <CarouselContext.Provider
