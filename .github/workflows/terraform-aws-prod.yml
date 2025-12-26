@@ -60,7 +60,7 @@ jobs:
           if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
             domains+=("${{ secrets.STAGE_DOMAIN }}")
           fi
-          
+
           # Convert array to JSON string
           if [ ${#domains[@]} -gt 0 ]; then
             json_domains=$(printf '%s\n' "${domains[@]}" | jq -R . | jq -s .)
@@ -124,7 +124,7 @@ jobs:
           if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
             domains+=("${{ secrets.STAGE_DOMAIN }}")
           fi
-          
+
           # Convert array to JSON string
           if [ ${#domains[@]} -gt 0 ]; then
             json_domains=$(printf '%s\n' "${domains[@]}" | jq -R . | jq -s .)
