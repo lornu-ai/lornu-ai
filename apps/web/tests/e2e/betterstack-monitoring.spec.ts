@@ -34,9 +34,6 @@ test.describe('Production Health - Synthetic Monitoring', () => {
         // Verify navigation is present
         const nav = page.getByRole('navigation');
         await expect(nav).toBeVisible();
-
-        // Take a screenshot for debugging if needed
-        await page.screenshot({ path: 'home-page.png', fullPage: false });
     });
 
     test('API health endpoint responds correctly', async ({ request }) => {
@@ -56,14 +53,14 @@ test.describe('Production Health - Synthetic Monitoring', () => {
         await page.goto(PRODUCTION_URL);
 
         // Test navigation to Terms page
-        const termsLink = page.getByRole('link', { name: /terms/i });
-        await termsLink.click();
+        await page.getByRole('link', { name: /terms/i }).click();
 
         await expect(page).toHaveURL(/\/terms/, { timeout: 5000 });
         await expect(page.getByRole('heading', { name: /terms of service/i })).toBeVisible();
 
-        // Test navigation to Privacy page
-        await page.goto(PRODUCTION_URL);
+        // Test navigation to Privacy page by going back to the home page
+        await page.goBack();
+        await expect(page).toHaveURL(PRODUCTION_URL);
         const privacyLink = page.getByRole('link', { name: /privacy/i });
 
         if (await privacyLink.isVisible()) {
@@ -125,14 +122,9 @@ test.describe('Production Health - Synthetic Monitoring', () => {
     });
 
     test('Static assets load successfully', async ({ page }) => {
-        await page.goto(PRODUCTION_URL);
-
-        // Wait for all network requests to complete
-        await page.waitForLoadState('networkidle');
-
-        // Verify no failed requests for critical assets
         const failedRequests: string[] = [];
 
+        // Attach listener before navigation to capture all failures
         page.on('requestfailed', request => {
             const url = request.url();
             // Track failures for JS, CSS, and images
@@ -141,8 +133,8 @@ test.describe('Production Health - Synthetic Monitoring', () => {
             }
         });
 
-        // Reload to capture failures
-        await page.reload();
+        // Navigate to page and wait for all requests to complete
+        await page.goto(PRODUCTION_URL);
         await page.waitForLoadState('networkidle');
 
         // Assert no critical assets failed to load
