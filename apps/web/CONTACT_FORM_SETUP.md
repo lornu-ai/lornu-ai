@@ -34,18 +34,17 @@ The frontend only posts to `/api/contact`; the backend service in Kubernetes is 
 
 The backend deployment reads secrets from a Kubernetes Secret named `lornu-ai-secrets`.
 
-Create or update the secret with the Resend API key:
+Create or update the secret with the required Resend API key. You can also include the optional `CONTACT_EMAIL` at the same time.
 
 ```bash
+# Create secret with required key only
 kubectl -n <namespace> create secret generic lornu-ai-secrets \
   --from-literal=RESEND_API_KEY=YOUR_RESEND_API_KEY \
   --dry-run=client -o yaml | kubectl apply -f -
-```
 
-Optional secret to override the default recipient (defaults to `contact@lornu.ai`):
-
-```bash
+# Or, create secret with both required and optional keys
 kubectl -n <namespace> create secret generic lornu-ai-secrets \
+  --from-literal=RESEND_API_KEY=YOUR_RESEND_API_KEY \
   --from-literal=CONTACT_EMAIL=team@lornu.ai \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
