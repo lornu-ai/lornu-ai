@@ -94,7 +94,7 @@ export default function Home() {
           try {
             const data = JSON.parse(responseText)
             errorMessage = data?.error || errorMessage
-          } catch (e) {
+          } catch {
             // Not a valid JSON, fall back to responseText
           }
         }
