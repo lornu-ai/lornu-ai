@@ -57,7 +57,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.8.0
           cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
