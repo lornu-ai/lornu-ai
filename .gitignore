@@ -101,23 +101,16 @@ logs
 *.sln
 *.sw?
 
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.eggs/
-*.egg-info/
-*.egg
+# Build outputs
+dist/
+dist-worker/
 
-# Cloudflare Workers (use lornu-ai-dev fork for Cloudflare development)
-wrangler.toml
-apps/web/worker.ts
-.wrangler/
-.dev.vars
+# Dependencies
+node_modules/
+.next/
+.venv/
+__pycache__/
+
+# Environment
+.env.local
+.env.*.local

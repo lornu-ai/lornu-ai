@@ -85,23 +85,21 @@ export default function Home() {
         body: JSON.stringify({ name, email, message }),
       })
 
-      if (!response.ok) {
-        const contentType = response.headers.get('content-type')
-        const responseText = await response.text()
-        let errorMessage = responseText
+      let data: { error?: string } | null = null
+      const responseText = await response.text()
 
-        if (contentType && contentType.includes('application/json')) {
-          try {
-            const data = JSON.parse(responseText)
-            errorMessage = data?.error ?? errorMessage
-          } catch {
-            // Not valid JSON, fall back to responseText
-          }
-        }
-        throw new Error(errorMessage || 'Failed to send message')
+      try {
+        data = JSON.parse(responseText)
+      } catch {
+        data = { error: responseText || 'Failed to parse error response' }
       }
 
-      toast.success("Message sent! We'll be in touch soon.")
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to send message')
+      }
+
+      toast.success('Message sent! We\'ll be in touch soon.')
+      // Reset the form after successful submission
       form.reset()
     } catch (error) {
       console.error('Error submitting form:', error)
@@ -142,7 +140,7 @@ export default function Home() {
     <>
       <SEOHead
         title="Enterprise AI RAG Search & Deep Dive Analysis"
-        description="LornuAI is an AI-powered Retrieval-Augmented Generation platform for enterprise knowledge retrieval, content generation, and data analysis using Google Vertex AI and high-performance inference engines."
+        description="LornuAI is an AI-powered Retrieval-Augmented Generation platform for enterprise knowledge retrieval, content generation, and data analysis using AWS EKS and Google Vertex AI."
         canonical="/"
         ogTitle="LornuAI - Enterprise AI RAG Search"
         ogDescription="Transform your business with cutting-edge AI and automation solutions that deliver results fast."

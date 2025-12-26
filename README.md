@@ -1,5 +1,11 @@
 # Plan A — Lornu AI
 
+[![Bun](https://img.shields.io/badge/Bun-1.3+-black?logo=bun&logoColor=white)](https://bun.sh)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Terraform](https://img.shields.io/badge/Terraform-Cloud-623CE4?logo=terraform&logoColor=white)](https://terraform.io)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-EKS%20%2F%20GKE-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io)
+[![Kustomize](https://img.shields.io/badge/Kustomize-v5+-1ABC9C?logo=kubernetes&logoColor=white)](https://kustomize.io)
+
 ## Mission
 
 **Deliver a 50–70% reduction in engineering time and operational overhead** through a hardened, metadata-driven **Minimum Viable Infrastructure (MVI)**. Plan A consolidates delivery onto **one EKS cluster** with **Kustomize-based multi-namespace isolation**.

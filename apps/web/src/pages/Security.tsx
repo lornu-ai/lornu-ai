@@ -70,54 +70,56 @@ export default function Security() {
                     <h2 className="text-2xl font-semibold">1. Infrastructure Security</h2>
                   </div>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-4">1.1 Distributed Cloud Infrastructure (GKE / EKS)</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-4">1.1 Kubernetes Cluster Security (AWS EKS)</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    Our Service operates on enterprise-grade managed Kubernetes platforms (Google Kubernetes Engine and Amazon EKS):
+                    Our Service runs on Amazon EKS (Elastic Kubernetes Service), a managed Kubernetes platform with built-in security:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Isolation:</strong> Each service component runs in isolated containers within private namespaces, ensuring strict process and network isolation.</li>
-                    <li><strong>Multi-Region Availability:</strong> Deployed across global cloud regions for high availability and low latency.</li>
-                    <li><strong>Dynamic Scaling:</strong> Automatic resource adjustment to handle varying loads without performance degradation.</li>
-                    <li><strong>DDoS Protection:</strong> Native cloud-provider protection against sophisticated network-level attacks.</li>
-                    <li><strong>Cloud Armor / AWS WAF:</strong> Enterprise Web Application Firewalls protecting against common vulnerabilities (SQLi, XSS, etc.).</li>
+                    <li><strong>Pod Isolation:</strong> Each pod runs in isolation with network policies enforcing zero-trust communication</li>
+                    <li><strong>RBAC (Role-Based Access Control):</strong> Fine-grained access control for all cluster resources</li>
+                    <li><strong>Network Security:</strong> VPC isolation, security groups, and network policies protect cluster traffic</li>
+                    <li><strong>DDoS Protection:</strong> AWS Shield provides automatic protection against distributed denial-of-service attacks</li>
+                    <li><strong>WAF (Web Application Firewall):</strong> AWS WAFv2 protection against common web vulnerabilities (SQL injection, XSS, etc.)</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-6">1.2 AI Infrastructure Security</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-6">1.2 API Gateway & Load Balancing</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    All AI inference requests are managed via secure, private endpoints with the following protections:
+                    All requests are routed through AWS Application Load Balancer (ALB) with TLS/HTTPS:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Private Connectivity:</strong> Direct, internal routing to AI providers (Google Vertex AI, AWS Bedrock) avoiding the public internet.</li>
-                    <li><strong>Rate Limiting:</strong> Granular control over request frequency per client and service.</li>
-                    <li><strong>Robust Monitoring:</strong> Real-time observability through cloud-native metrics and centralized logging.</li>
+                    <li><strong>TLS 1.3 Encryption:</strong> All traffic encrypted in transit using modern TLS standards</li>
+                    <li><strong>ACM Certificates:</strong> AWS Certificate Manager handles automatic certificate provisioning and renewal</li>
+                    <li><strong>Rate Limiting:</strong> Automatic protection against abuse and excessive API usage</li>
+                    <li><strong>Request Validation:</strong> ALB and application-level validation before processing</li>
+                    <li><strong>Health Checks:</strong> Continuous monitoring and automatic failover for service availability</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">1.3 Data Storage Security</h3>
                   <div className="bg-secondary/20 p-4 rounded-lg mb-4">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <Lock size={20} weight="bold" className="text-accent" />
-                      Enterprise Database (Firestore / DynamoDB)
+                      Amazon RDS (Relational Database)
                     </h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>Encrypted at rest using industry-standard AES-256</li>
-                      <li>Encrypted in transit using TLS 1.3/TLS 1.2</li>
-                      <li>High availability with automatic cross-zone replication</li>
-                      <li>Access controlled via granular IAM policies</li>
-                      <li>Audit logging enabled for all data plane operations</li>
+                      <li>Encrypted at rest using AWS KMS (Key Management Service)</li>
+                      <li>Encrypted in transit using SSL/TLS</li>
+                      <li>Automated backups with point-in-time recovery</li>
+                      <li>Access controlled via IAM database authentication</li>
+                      <li>Multi-AZ replication for high availability</li>
                     </ul>
                   </div>
 
                   <div className="bg-secondary/20 p-4 rounded-lg">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <Lock size={20} weight="bold" className="text-accent" />
-                      Object Storage (GCS / S3)
+                      Amazon S3 (Object Storage)
                     </h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>Encrypted at rest with provider-managed or customer-managed keys (CMEK)</li>
-                      <li>Strict Access Control Lists (ACLs) and Bucket Policies</li>
-                      <li>Private bucket access only; no public read/write allowed</li>
-                      <li>Data lifecycle management for automated retention and deletion</li>
-                      <li>Comprehensive object-level auditing and access tracking</li>
+                      <li>Encrypted at rest with AWS KMS or S3-managed encryption keys</li>
+                      <li>Encrypted in transit using TLS 1.3</li>
+                      <li>Access control via IAM policies and bucket policies</li>
+                      <li>Versioning support for data integrity</li>
+                      <li>CloudTrail audit logging for all access and modifications</li>
                     </ul>
                   </div>
                 </section>
@@ -135,9 +137,9 @@ export default function Security() {
                     All sensitive credentials (API keys, tokens, secrets) are managed using industry best practices:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Kubernetes Secrets:</strong> Production secrets are managed via K8s Secret resources and external secret managers (Google Secret Manager / AWS Secrets Manager)</li>
+                    <li><strong>AWS Secrets Manager:</strong> Centralized secrets storage with encryption, rotation, and audit logging</li>
                     <li><strong>GitHub Secrets:</strong> CI/CD pipeline secrets stored securely in GitHub's encrypted secrets storage</li>
-                    <li><strong>Environment Variables:</strong> Runtime configurations injected securely into containerized environments</li>
+                    <li><strong>Kubernetes Secrets:</strong> Runtime secrets injected as environment variables into pod containers</li>
                     <li><strong>No Hardcoding:</strong> Zero tolerance policy for hardcoded credentials in source code</li>
                     <li><strong>Secret Rotation:</strong> Regular rotation schedule for all API keys and access tokens</li>
                   </ul>
@@ -148,9 +150,9 @@ export default function Security() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Role-Based Access:</strong> Team members have access only to resources required for their role</li>
-                    <li><strong>Multi-Factor Authentication:</strong> MFA required for all cloud provider and version control accounts</li>
+                    <li><strong>Multi-Factor Authentication:</strong> MFA required for all AWS and GitHub accounts</li>
                     <li><strong>API Scoping:</strong> Third-party API keys are scoped to minimum required permissions</li>
-                    <li><strong>Audit Trails:</strong> All access to production secrets is logged and monitored</li>
+                    <li><strong>Audit Trails:</strong> All access to production secrets is logged and monitored via CloudTrail</li>
                   </ul>
                 </section>
 
@@ -184,7 +186,7 @@ export default function Security() {
                     <li><strong>TLS 1.3:</strong> All data in transit is encrypted using the latest TLS protocol</li>
                     <li><strong>HTTPS Only:</strong> No support for insecure HTTP connections</li>
                     <li><strong>HSTS:</strong> HTTP Strict Transport Security headers enforce secure connections</li>
-                    <li><strong>Certificate Management:</strong> Automatic certificate provisioning and renewal using Cert-Manager and Cloud DNS / Route53</li>
+                    <li><strong>Certificate Management:</strong> Automatic certificate provisioning and renewal via Cloudflare</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">3.3 API Security</h3>
@@ -217,10 +219,10 @@ export default function Security() {
                   <h3 className="text-xl font-semibold mb-3 mt-6">4.2 Data Retention Policy</h3>
                   <div className="bg-secondary/20 p-4 rounded-lg">
                     <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 text-sm">
-                      <li><strong>KV Cache:</strong> Automatic expiration after 7 days of inactivity</li>
-                      <li><strong>R2 Storage:</strong> User-controlled retention; data deleted upon request</li>
+                      <li><strong>Database Records:</strong> User data retained as long as account is active; deletion upon account removal</li>
+                      <li><strong>S3 Storage:</strong> User-controlled retention; data deleted upon request</li>
                       <li><strong>Request Logs:</strong> 30-day retention for analytics and security, then purged</li>
-                      <li><strong>Third-Party Processing:</strong> Google Vertex AI and AWS Bedrock process queries in real-time with enterprise-grade privacy (see <Link to="/privacy" className="text-accent hover:underline">Privacy Policy</Link>)</li>
+                      <li><strong>Third-Party Processing:</strong> Google Vertex AI processes queries in real-time with minimal retention (see <Link to="/privacy" className="text-accent hover:underline">Privacy Policy</Link>)</li>
                     </ul>
                   </div>
 
@@ -245,24 +247,24 @@ export default function Security() {
                   </p>
 
                   <div className="bg-secondary/20 p-4 rounded-lg mb-4">
-                    <h4 className="font-semibold mb-2">Google Cloud (GCP)</h4>
+                    <h4 className="font-semibold mb-2">Amazon Web Services (AWS) (Infrastructure Provider)</h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>SOC 1, 2, and 3 compliant</li>
-                      <li>ISO/IEC 27001, 27017, 27018 certified</li>
-                      <li>PCI DSS and HIPAA compliant</li>
-                      <li>Enterprise-grade SLAs for uptime and security</li>
-                      <li>Advanced threat detection and identity management (IAM)</li>
+                      <li>SOC 2 Type II certified</li>
+                      <li>ISO 27001, ISO 27017, ISO 27018 certified</li>
+                      <li>PCI DSS Level 1 compliant</li>
+                      <li>GDPR and CCPA compliant</li>
+                      <li>Regular third-party security audits and penetration testing</li>
                     </ul>
                   </div>
 
                   <div className="bg-secondary/20 p-4 rounded-lg">
-                    <h4 className="font-semibold mb-2">Amazon Web Services (AWS)</h4>
+                    <h4 className="font-semibold mb-2">Google Cloud (Vertex AI Provider)</h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>SOC 1, 2, and 3 certified</li>
-                      <li>ISO/IEC 27001, 27017, 27018 certified</li>
-                      <li>FedRAMP High Authorization</li>
-                      <li>GDPR, HIPAA, and PCI DSS Level 1 compliant</li>
-                      <li>Data-at-rest and data-in-transit encryption by default</li>
+                      <li>SOC 1, SOC 2, SOC 3 certified</li>
+                      <li>ISO 27001, ISO 27017, ISO 27018 certified</li>
+                      <li>FedRAMP Authorized</li>
+                      <li>GDPR and HIPAA compliant</li>
+                      <li>Customer data not used for model training</li>
                     </ul>
                   </div>
 
@@ -288,8 +290,8 @@ export default function Security() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Real-Time Alerts:</strong> Automated alerting for anomalous behavior and potential threats</li>
-                    <li><strong>Log Analysis:</strong> Centralized logging with automated analysis for security events</li>
-                    <li><strong>Performance Monitoring:</strong> Real-time APM (Application Performance Monitoring) and distributed tracing</li>
+                    <li><strong>Log Analysis:</strong> Centralized logging via AWS CloudTrail with automated analysis for security events</li>
+                    <li><strong>Performance Monitoring:</strong> CloudWatch and Kubernetes monitoring track request patterns and cluster health</li>
                     <li><strong>Dependency Scanning:</strong> Automated scanning for vulnerable dependencies in our codebase</li>
                   </ul>
 
@@ -329,15 +331,14 @@ export default function Security() {
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>GDPR:</strong> General Data Protection Regulation (EU)</li>
                     <li><strong>CCPA:</strong> California Consumer Privacy Act (US)</li>
-                    <li><strong>SOC 2:</strong> Service Organization Control 2 (via Cloudflare infrastructure)</li>
+                    <li><strong>SOC 2:</strong> Service Organization Control 2 (via AWS infrastructure)</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">7.2 Security Audits</h3>
                   <p className="text-muted-foreground leading-relaxed">
                     We conduct regular security assessments and audits of our platform, including vulnerability scanning,
-                    penetration testing, and code security reviews. While LornuAI is an early-stage company, we leverage the
-                    security certifications and audits of our infrastructure providers (Google Cloud, AWS) to ensure
-                    enterprise-grade security.
+                    penetration testing, and code security reviews. We leverage the security certifications and audits of our
+                    infrastructure providers (AWS, Google Cloud) to ensure enterprise-grade security.
                   </p>
                 </section>
 
