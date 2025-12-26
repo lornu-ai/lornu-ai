@@ -37,7 +37,7 @@ jobs:
   deploy-aws:
     needs: detect-changes
     if: needs.detect-changes.outputs.aws-changed == 'true'
-    uses: ./.github/workflows/terraform-aws-prod.yml
+    uses: ./.github/workflows/terraform-aws.yml
     secrets: inherit
 
   deploy-gcp-infra:

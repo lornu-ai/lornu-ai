@@ -61,7 +61,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/aws/production init
+        run: terraform -chdir=terraform/aws init
 
       - name: Set extra domain aliases
         run: |
@@ -86,7 +86,7 @@ jobs:
           TF_VAR_create_route53_zone: "true"
           TF_VAR_existing_acm_certificate_arn: ${{ secrets.PROD_ACM_CERTIFICATE_ARN }}
         run: |
-          terraform -chdir=terraform/aws/production plan \
+          terraform -chdir=terraform/aws plan \
             -target=aws_cloudfront_distribution.api \
             -target=aws_route53_record.apex \
             -target=aws_route53_record.api_cloudfront
@@ -106,7 +106,7 @@ jobs:
           TF_VAR_create_route53_zone: "true"
           TF_VAR_existing_acm_certificate_arn: ${{ secrets.PROD_ACM_CERTIFICATE_ARN }}
         run: |
-          terraform -chdir=terraform/aws/production apply -auto-approve \
+          terraform -chdir=terraform/aws apply -auto-approve \
             -target=aws_cloudfront_distribution.api \
             -target=aws_route53_record.apex \
             -target=aws_route53_record.api_cloudfront
