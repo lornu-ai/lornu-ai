@@ -1,4 +1,5 @@
 import os
+import logging
 import uvicorn
 from .src.main import app
 
@@ -9,5 +10,4 @@ def main():
     uvicorn.run(app, host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
-    import logging
     main()
