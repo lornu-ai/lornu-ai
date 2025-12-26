@@ -56,6 +56,6 @@ jobs:
         run: bun run playwright install --with-deps
 
       - name: Run Playwright Tests
-        run: bun run playwright test --ignore-snapshots '**/betterstack-monitoring.spec.ts'
+        run: bun run playwright test --grep-invert "betterstack-monitoring"
         env:
           CI: true
