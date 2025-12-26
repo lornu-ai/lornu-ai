@@ -140,7 +140,7 @@ jobs:
 
       - name: Deploy to EKS with Kustomize
         run: |
-          kustomize build k8s/overlays/production | \
+          kustomize build kubernetes/overlays/lornu-prod | \
           kubectl set image deployment/production-lornu-ai \
             lornu-ai=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
             --filename - | \
