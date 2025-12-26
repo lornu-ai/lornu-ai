@@ -146,6 +146,11 @@ jobs:
 
       - name: Export ACM ARN
         id: acm_arn
+        if: inputs.action == 'apply'
         run: |
-          arn="$(terraform -chdir=terraform/aws output -raw cloudfront_certificate_arn 2>/dev/null || true)"
-          echo "value=$arn" >> "$GITHUB_OUTPUT"
+          arn="$(terraform -chdir=terraform/aws output -raw cloudfront_certificate_arn 2>/dev/null || echo '')"
+          if [ -n "$arn" ]; then
+            echo "value=$arn" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=" >> "$GITHUB_OUTPUT"
+          fi
