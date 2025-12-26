@@ -1,0 +1,94 @@
+name: Synthetic Monitoring - BetterStack Heartbeat
+
+on:
+  schedule:
+    # Run every 10 minutes for production health checks
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allow manual trigger for testing
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  synthetic-monitoring:
+    name: Run Synthetic Health Checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main # Always test against main branch
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Install Playwright Browsers
+        run: bun run playwright install --with-deps
+
+      - name: Run Synthetic Monitoring Tests
+        run: bun run playwright test tests/e2e/betterstack-monitoring.spec.ts --reporter=html
+        env:
+          CI: true
+          PRODUCTION_URL: https://lornu.ai
+
+      - name: Send Heartbeat to BetterStack on Success
+        if: success()
+        run: |
+          curl -X POST "${{ secrets.BETTERSTACK_HEARTBEAT_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "status": "success",
+              "message": "Synthetic monitoring tests passed",
+              "timestamp": "'$(date -u +'%Y-%m-%dT%H:%M:%SZ')'",
+              "commit": "${{ github.sha }}"
+            }' \
+            --fail-with-body
+
+      - name: Report Test Failure
+        if: failure()
+        run: |
+          echo "❌ Synthetic monitoring tests failed!"
+          echo "GitHub Actions will not send heartbeat - BetterStack will alert after timeout."
+          exit 1
+
+      # Publish HTML report to GitHub Pages for live dashboard
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 90
+
+      - name: Deploy Report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apps/web/playwright-report
+          destination_dir: reports/${{ github.run_number }}
+          cname: lornu-ai.github.io
+
+  notify:
+    name: Notification Summary
+    runs-on: ubuntu-latest
+    needs: synthetic-monitoring
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          if [ "${{ needs.synthetic-monitoring.result }}" = "success" ]; then
+            echo "✅ Synthetic monitoring passed - heartbeat sent to BetterStack"
+          else
+            echo "❌ Synthetic monitoring failed - check GitHub Pages dashboard"
+          fi
