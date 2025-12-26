@@ -5,7 +5,7 @@ resource "aws_dynamodb_table" "rate_limit_kv" {
   billing_mode     = "PAY_PER_REQUEST"
   hash_key         = "key"
   stream_enabled   = false
-  deletion_protection = true
+  deletion_protection_enabled = true
 
   attribute {
     name = "key"
@@ -31,7 +31,7 @@ resource "aws_dynamodb_table" "general_kv" {
   billing_mode     = "PAY_PER_REQUEST"
   hash_key         = "key"
   stream_enabled   = false
-  deletion_protection = true
+  deletion_protection_enabled = true
 
   attribute {
     name = "key"
@@ -61,12 +61,12 @@ resource "aws_iam_role" "app_dynamodb" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(var.oidc_provider_arn, "/^(.*provider/)/", "")}"
+          Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(module.lornu_cluster.oidc_provider_arn, "/^(.*provider/)/", "")}"
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
           StringEquals = {
-            "${replace(var.oidc_provider_arn, "/^(.*provider/)/", "")}:sub" = "system:serviceaccount:lornu-prod:lornu-ai"
+            "${replace(module.lornu_cluster.oidc_provider_arn, "/^(.*provider/)/", "")}:sub" = "system:serviceaccount:lornu-prod:lornu-ai"
           }
         }
       }

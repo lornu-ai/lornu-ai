@@ -106,7 +106,7 @@ data "kubernetes_ingress_v1" "app" {
     namespace = "lornu-prod"
   }
 
-  depends_on = [module.eks]
+  depends_on = [module.lornu_cluster]
 }
 
 locals {
