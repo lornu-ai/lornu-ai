@@ -18,7 +18,7 @@ We have pivoted the entire infrastructure strategy from **AWS ECS Fargate** to *
 
 ### Kubernetes Manifests (#80, #102, #103, #104)
 - **Status**: ✅ COMPLETE
-- **Location**: `kubernetes/base/` (core) + `kubernetes/overlays/{dev,staging,production}` (patches)
+- **Location**: `kubernetes/base/` (core) + `kubernetes/overlays/{lornu-dev,lornu-staging,lornu-prod}` (patches)
 - **Features**:
   - Security context (non-root, read-only FS)
   - IRSA (IAM Roles for Service Accounts)

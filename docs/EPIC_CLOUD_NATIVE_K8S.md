@@ -17,15 +17,15 @@
     *   **Description:** Refactor existing Deployment, Service, and ConfigMap YAMLs into `kubernetes/base/`. Ensure they are environment-agnostic.
     *   **Acceptance Criteria:** `deployment.yaml`, `service.yaml` in `kubernetes/base`. `kustomization.yaml` created in `base`.
 *   **Story 1.3: Local Development Overlay**
-    *   **Description:** Create `kubernetes/overlays/dev` specific for local testing (Podman/Kind).
-    *   **Acceptance Criteria:** Functional `kustomize build kubernetes/overlays/dev` command. Includes dev-specific config (e.g., debug logging).
+    *   **Description:** Create `kubernetes/overlays/lornu-dev` specific for local testing (Podman/Kind).
+    *   **Acceptance Criteria:** Functional `kustomize build kubernetes/overlays/lornu-dev` command. Includes dev-specific config (e.g., debug logging).
     *   **Task:** Update `package.json` script `dev:k8s` to use Kustomize.
 
 ### Epic 2: Staging Environment Configuration
 **Goal:** Define the Staging environment configuration using Kustomize overlays.
 
 *   **Story 2.1: Staging Overlay Implementation**
-    *   **Description:** Create `kubernetes/overlays/staging`.
+    *   **Description:** Create `kubernetes/overlays/lornu-staging`.
     *   **Acceptance Criteria:** Staging specific `kustomization.yaml` properly patches image tags, replicas (if different), and resource limits.
 *   **Story 2.2: Secret Management Strategy**
     *   **Description:** Define how secrets (API keys) are injected in Staging (e.g., SealedSecrets or external secret store reference).
@@ -64,7 +64,7 @@
 
 ## 3. Checklist
 - [ ] Base Kustomization (`kubernetes/base`)
-- [ ] Dev Overlay (`kubernetes/overlays/dev`)
-- [ ] Staging Overlay (`kubernetes/overlays/staging`)
+- [ ] Dev Overlay (`kubernetes/overlays/lornu-dev`)
+- [ ] Staging Overlay (`kubernetes/overlays/lornu-staging`)
 - [ ] CI/CD Pipeline Update
 - [ ] Documentation Updated (README.md)
