@@ -62,9 +62,19 @@ kustomize build kubernetes/overlays/prod | kubectl apply -f -
 - Brand asset: `apps/web/src/assets/brand/lornu-ai-final-clear-bg.png`
 
 ## Avoid
-- AWS ECS and Cloudflare Workers references.
+- AWS ECS (use EKS instead).
+- **Cloudflare Workers and Wrangler** (DEPRECATED. This project is 100% Kubernetes via Kustomize).
+  - DO NOT suggest `wrangler.toml`, `worker.ts`, or `bunx wrangler` commands.
+  - DO NOT reference Cloudflare Pages, AI Gateway, or Workers runtime.
+  - DO NOT use `cloudflare/wrangler-action` in GitHub Actions.
 - Non-DRY manifests (no copy-paste across overlays).
 - Helm charts, templates, or values files (Helm is deprecated).
+
+## Asset Serving & API Routes (Plan A Standard)
+- **Asset serving**: Handled by Kubernetes Ingress (AWS ALB or GCP GCE Load Balancer).
+- **API routes** (e.g., `/api/contact`): Handled by FastAPI backend in `packages/api/`.
+- All requests route through `kubernetes/overlays/{dev,staging,prod}/` Ingress definitions with TLS termination.
+- No Worker scripts or edge computing; all logic runs in containers on the cluster.
 
 ## PR Labeling (Required)
 - Apply a label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) to every PR. If the label doesn't exist, create it first.

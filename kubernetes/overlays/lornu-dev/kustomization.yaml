@@ -7,6 +7,13 @@ resources:
   - ../../base
   - namespace.yaml
 
+labels:
+  - pairs:
+      lornu.ai/environment: development
+      lornu.ai/managed-by: terraform-cloud
+      lornu.ai/asset-id: lornu-ai-final-clear-bg
+    includeSelectors: true
+
 images:
   - name: lornu-ai
     newName: us-central1-docker.pkg.dev/gcp-lornu-ai/lornu-ai/lornu-ai

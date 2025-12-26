@@ -63,17 +63,30 @@ jobs:
           cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/aws/production init
+        run: terraform -chdir=terraform/aws init
 
-      - name: Set extra domain aliases
+      - name: Set extra domain aliases for SAN certificate
         run: |
+          domains=()
           if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
-            echo "TF_VAR_extra_domain_names=[\"${{ secrets.STAGE_DOMAIN }}\"]" >> "$GITHUB_ENV"
+            domains+=("${{ secrets.STAGE_DOMAIN }}")
+          fi
+          if [ -n "${{ secrets.PROD_DOMAIN }}" ]; then
+            # Add PROD_DOMAIN if not already present
+            if [[ ! " ${domains[@]} " =~ "${{ secrets.PROD_DOMAIN }}" ]]; then
+              domains+=("${{ secrets.PROD_DOMAIN }}")
+            fi
+          fi
+          
+          # Convert array to JSON string
+          if [ ${#domains[@]} -gt 0 ]; then
+            json_domains=$(printf '%s\n' "${domains[@]}" | jq -R . | jq -s .)
+            echo "TF_VAR_extra_domain_names=$json_domains" >> "$GITHUB_ENV"
           else
             echo "TF_VAR_extra_domain_names=[]" >> "$GITHUB_ENV"
           fi
 
-      - name: Terraform Plan (ACM)
+      - name: Terraform Plan (ACM with SAN)
         if: inputs.action == 'plan'
         env:
           TF_VAR_docker_image: "placeholder"
@@ -86,12 +99,12 @@ jobs:
           TF_VAR_create_route53_zone: "true"
           TF_VAR_existing_acm_certificate_arn: ${{ secrets.PROD_ACM_CERTIFICATE_ARN }}
         run: |
-          terraform -chdir=terraform/aws/production plan \
+          terraform -chdir=terraform/aws plan \
             -target=aws_acm_certificate.cloudfront \
             -target=aws_route53_record.cloudfront_cert_validation \
             -target=aws_acm_certificate_validation.cloudfront
 
-      - name: Terraform Apply (ACM)
+      - name: Terraform Apply (ACM with SAN)
         if: inputs.action == 'apply'
         env:
           TF_VAR_docker_image: "placeholder"
@@ -104,7 +117,7 @@ jobs:
           TF_VAR_create_route53_zone: "true"
           TF_VAR_existing_acm_certificate_arn: ${{ secrets.PROD_ACM_CERTIFICATE_ARN }}
         run: |
-          terraform -chdir=terraform/aws/production apply -auto-approve \
+          terraform -chdir=terraform/aws apply -auto-approve \
             -target=aws_acm_certificate.cloudfront \
             -target=aws_route53_record.cloudfront_cert_validation \
             -target=aws_acm_certificate_validation.cloudfront
@@ -112,5 +125,5 @@ jobs:
       - name: Export ACM ARN
         id: acm_arn
         run: |
-          arn="$(terraform -chdir=terraform/aws/production output -raw cloudfront_certificate_arn 2>/dev/null || true)"
+          arn="$(terraform -chdir=terraform/aws output -raw cloudfront_certificate_arn 2>/dev/null || true)"
           echo "value=$arn" >> "$GITHUB_OUTPUT"

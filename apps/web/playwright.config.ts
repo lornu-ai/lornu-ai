@@ -40,5 +40,8 @@ export default defineConfig({
     url: 'http://localhost:5174',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    // Start backend API in parallel using a shell script
+    // The backend will be started by the test setup or CI workflow
+    // For local dev, ensure backend is running on port 8080
   },
 });

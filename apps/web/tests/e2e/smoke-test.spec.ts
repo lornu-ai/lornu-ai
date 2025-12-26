@@ -27,9 +27,16 @@ test.describe('Smoke Tests', () => {
   });
 
   test('Contact form is accessible and functional', async ({ page }) => {
-    // Mock the API endpoint
+    // Mock the API endpoint - match actual API response format
     await page.route('/api/contact', async route => {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true }) });
+      await route.fulfill({ 
+        status: 200, 
+        contentType: 'application/json', 
+        body: JSON.stringify({ 
+          status: 'success', 
+          message: 'Thank you for your message. We will get back to you soon.' 
+        }) 
+      });
     });
 
     // Navigate to the home page
@@ -66,8 +73,8 @@ test.describe('Smoke Tests', () => {
 
   test.skip('Health endpoint is accessible', async ({ request }) => {
     // Test the health endpoint directly
-    // Note: This only works when running through Cloudflare Worker (wrangler dev),
-    // not through Vite dev server. In CI, we test with the built worker.
+    // Note: This only works when the backend serves /api/health,
+    // not through the Vite dev server.
     const response = await request.get('/api/health');
 
     expect(response.status()).toBe(200);

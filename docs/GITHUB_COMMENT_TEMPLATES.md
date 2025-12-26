@@ -84,7 +84,7 @@ Following the Kubernetes pivot, here's the revised gaps list:
 - ❌ No `terraform/aws/production/cdn.tf` (CloudFront, WAF, Route53) — Needed
 - ❌ No ALB Ingress Controller deployed (for Kubernetes Ingress resources) — Needed
 - ❌ No cluster autoscaler configured — Needed
-- ❌ No production Terraform Cloud workspace (`lornu-ai-prod-aws`) linked — Needed
+- ❌ No production Terraform Cloud workspace (`aws-kustomize`) linked — Needed
 
 #### Kubernetes/Kustomize Gaps (Updated)
 - ✅ `kubernetes/overlays/lornu-prod/` exists with 3 replicas, pod anti-affinity
@@ -133,7 +133,7 @@ Following the Kubernetes pivot, here's the revised gaps list:
 - [ ] Should we add pod disruption budgets (PDBs) for graceful drains?
 - [ ] Any specific SLA/uptime targets that inform autoscaling policies?
 
-**Reference**: See `docs/EKS_PIVOT_SUMMARY.md` for a full breakdown of what's changed and current status.
+**Reference**: See `kubernetes/README.md` and `kubernetes/K8S_GUIDE.md` for Kubernetes deployment details.
 
 ---
 
@@ -237,7 +237,7 @@ Post this on infra PRs after running a plan.
 
 Plan Summary:
 - Directory: `terraform/aws/<env>`
-- Backend: Terraform Cloud (`lornu-ai` / `lornu-ai-<env>-aws`)
+- Backend: Terraform Cloud (`aws-kustomize` / `gcp-lornu-ai`)
 
 Changes:
 - Adds: <count>

@@ -30,3 +30,15 @@ variable "github_repo" {
   type        = string
   default     = "lornu-ai"
 }
+
+variable "stage_domain" {
+  description = "The domain name for staging (e.g., staging.lornu.ai or s1.lornu.ai)"
+  type        = string
+  default     = ""
+}
+
+variable "route53_zone_name" {
+  description = "The Route53 hosted zone name"
+  type        = string
+  default     = "lornu.ai"
+}

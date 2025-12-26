@@ -62,5 +62,17 @@ uv run python -m packages.api.main
 - Brand asset: `apps/web/src/assets/brand/lornu-ai-final-clear-bg.png`
 
 ## Do Not Reference
-- AWS ECS or Cloudflare Workers (deprecated for Plan A).
+- AWS ECS (use EKS instead).
+- **Cloudflare Workers** or Wrangler (DEPRECATED. This project is 100% Kubernetes-based via Kustomize).
 - Helm charts, templates, or values files (Helm is deprecated).
+
+## Cloudflare Decommissioning (CRITICAL)
+- **NEVER** suggest or reference:
+  - `wrangler.toml`
+  - `worker.ts`
+  - `bunx wrangler` commands
+  - Cloudflare Workers, Pages, or AI Gateway
+  - `cloudflare/wrangler-action` GitHub Actions
+- All asset serving is handled by Kubernetes Ingress (ALB on AWS, GCE on GCP).
+- All API routes are handled by the FastAPI backend in `packages/api/`.
+- If you see any Cloudflare references in code, flag them for removal as technical debt.

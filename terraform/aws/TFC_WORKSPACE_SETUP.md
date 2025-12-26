@@ -1,4 +1,4 @@
-# Terraform Cloud Variables for lornu-ai-kustomize workspace
+# Terraform Cloud Variables for aws-kustomize workspace
 # Add these environment variables to the TFC workspace:
 # 
 # Required (from GitHub Secrets):

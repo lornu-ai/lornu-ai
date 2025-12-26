@@ -1,20 +1,13 @@
-name: "Terraform AWS"
+name: Terraform AWS
 
 on:
-  pull_request:
-    branches: [ develop ]
+  workflow_call:
+  push:
+    branches:
+      - main
     paths:
-      - "terraform/aws/staging/**"
-      - "terraform/aws/production/**"
-      - "apps/web/src/**"
-      - "apps/web/package.json"
-      - "apps/web/bun.lock"
-      - "apps/web/vite.config.*"
-      - "apps/web/tsconfig.json"
-      - "packages/api/main.py"
-      - "packages/api/pyproject.toml"
-      - "packages/api/uv.lock"
-      - "Dockerfile"
+      - 'terraform/aws/**'
+      - '.github/workflows/terraform-aws.yml'
   workflow_dispatch:
 
 permissions:
@@ -23,252 +16,168 @@ permissions:
 
 env:
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-  ECR_REPOSITORY: "lornu-ai-staging"
+  ECR_REPOSITORY: lornu-ai-staging
+  TFSEC_ENABLED: false
 
 jobs:
-  build:
-    name: "Build and Push Docker Image"
+  plan:
+    name: Terraform Plan
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    # Skip AWS steps on forked pull requests where secrets/role aren't available
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-    outputs:
-      image-uri: ${{ steps.build-image.outputs.image-uri }}
-
     steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-
-      - name: "Configure AWS Credentials"
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: "Login to Amazon ECR"
+      - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: "Set up Docker Buildx"
-        uses: docker/setup-buildx-action@v3
-
-      - name: "Build, Tag, and Push Docker Image"
-        id: build-image
+      - name: Build Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker buildx build \
-            --platform linux/amd64 \
-            --cache-from type=registry,ref=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:cache \
-            --cache-to type=registry,ref=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:cache,mode=max \
-            --tag $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG \
-            --tag $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest \
-            --push \
-            .
-          echo "image-uri=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
 
-  plan:
-    name: "Terraform Plan"
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: read
-      id-token: write
-    # Skip AWS steps on forked pull requests where secrets/role aren't available
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+      - name: Push Docker Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
 
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Configure AWS Credentials"
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: "Setup Terraform"
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
           cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
-      - name: "Terraform Init (no backend for PR validation)"
-        run: terraform -chdir=terraform/aws/staging init -backend=false
+      - name: Terraform Init
+        run: terraform -chdir=terraform/aws init
 
-      - name: "Setup TFLint"
-        uses: terraform-linters/setup-tflint@v4
-        with:
-          tflint_version: latest
-
-      - name: "Run TFLint"
+      - name: Set extra domain aliases for SAN certificate
         run: |
-          cd terraform/aws/staging
-          tflint --init
-          tflint --format compact
+          domains=()
+          if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
+            domains+=("${{ secrets.STAGE_DOMAIN }}")
+          fi
 
-      - name: "Terraform Plan"
+          # Convert array to JSON string
+          if [ ${#domains[@]} -gt 0 ]; then
+            json_domains=$(printf '%s\n' "${domains[@]}" | jq -R . | jq -s .)
+            echo "TF_VAR_extra_domain_names=$json_domains" >> "$GITHUB_ENV"
+          else
+            echo "TF_VAR_extra_domain_names=[]" >> "$GITHUB_ENV"
+          fi
+
+      - name: Terraform Plan
         env:
-          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
-          TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
-        run: terraform -chdir=terraform/aws/staging plan
+          TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          TF_VAR_git_sha: ${{ github.sha }}
+          TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
+          TF_VAR_api_domain: ${{ secrets.PROD_API_DOMAIN }}
+          TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
+          TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
+          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
+          TF_VAR_route53_zone_name: ${{ secrets.ROUTE53_ZONE_NAME }}
+          TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
+          TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
+          TF_VAR_create_route53_zone: "true"
+        run: terraform -chdir=terraform/aws plan
 
-      - name: "Terraform Security Scan"
+      - name: Terraform Security Scan
+        if: env.TFSEC_ENABLED == 'true'
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
-          working_directory: terraform/aws/staging
+          working_directory: terraform/aws
 
   apply:
-    name: "Terraform Apply & Deploy"
+    name: Terraform Apply & Deploy
     runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: read
-      id-token: write
-    # Temporarily disabling staging deployment for safety
-    if: false
-
+    needs: plan
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: "Configure AWS Credentials"
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: "Setup Terraform"
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
           cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
-      - name: "Terraform Init"
-        run: terraform -chdir=terraform/aws/staging init
+      - name: Terraform Init
+        run: terraform -chdir=terraform/aws init
 
-      - name: "Terraform Apply"
+      - name: Set extra domain aliases for SAN certificate
+        run: |
+          domains=()
+          if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
+            domains+=("${{ secrets.STAGE_DOMAIN }}")
+          fi
+
+          # Convert array to JSON string
+          if [ ${#domains[@]} -gt 0 ]; then
+            json_domains=$(printf '%s\n' "${domains[@]}" | jq -R . | jq -s .)
+            echo "TF_VAR_extra_domain_names=$json_domains" >> "$GITHUB_ENV"
+          else
+            echo "TF_VAR_extra_domain_names=[]" >> "$GITHUB_ENV"
+          fi
+
+      - name: Terraform Apply
         env:
-          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
-          TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
-        run: terraform -chdir=terraform/aws/staging apply -auto-approve
+          TF_VAR_docker_image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          TF_VAR_git_sha: ${{ github.sha }}
+          TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
+          TF_VAR_api_domain: ${{ secrets.PROD_API_DOMAIN }}
+          TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
+          TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
+          TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
+          TF_VAR_route53_zone_name: ${{ secrets.ROUTE53_ZONE_NAME }}
+          TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
+          TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
+          TF_VAR_create_route53_zone: "true"
+        run: terraform -chdir=terraform/aws apply -auto-approve
 
-      - name: "Update kubeconfig"
+      - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
-            --name lornu-ai-staging \
+            --name lornu-ai-production-cluster \
             --region ${{ env.AWS_REGION }}
 
-      - name: "Deploy to EKS with Kustomize"
+      - name: Install Kustomize
         run: |
-          kustomize build kubernetes/overlays/lornu-staging | \
-          kubectl set image deployment/staging-lornu-ai \
-            lornu-ai=${{ needs.build.outputs.image-uri }} \
-            --filename - | \
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Deploy to EKS with Kustomize
+        env:
+          ACM_CERTIFICATE_ARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
+        run: |
+          kustomize build kubernetes/overlays/aws-prod | \
+          envsubst | \
+          kubectl set image deployment/lornu-ai \
+            lornu-ai=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
+            --local -f - -o yaml | \
           kubectl apply -f -
 
-      - name: "Wait for Deployment"
+      - name: Wait for Deployment
         run: |
-          kubectl rollout status deployment/staging-lornu-ai -n default --timeout=5m
-
-  prod-plan:
-    name: "Production Plan"
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: read
-      id-token: write
-    if: github.event_name == 'pull_request'
-    env:
-      TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
-      TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
-      TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
-      TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
-      TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
-      TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
-      TF_VAR_resource_prefix: ${{ secrets.PROD_RESOURCE_PREFIX }}
-      TF_VAR_github_repo: ${{ secrets.PROD_GITHUB_REPO }}
-
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Configure AWS Credentials"
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: "Setup Terraform"
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
-
-      - name: "Terraform Init"
-        run: terraform -chdir=terraform/aws/production init
-
-      - name: "Setup TFLint"
-        uses: terraform-linters/setup-tflint@v4
-        with:
-          tflint_version: latest
-
-      - name: "Run TFLint"
-        run: |
-          cd terraform/aws/production
-          tflint --init
-          tflint --format compact
-
-      - name: "Terraform Plan"
-        run: terraform -chdir=terraform/aws/production plan
-
-      - name: "Terraform Security Scan"
-        uses: aquasecurity/tfsec-action@v1.0.0
-        with:
-          working_directory: terraform/aws/production
-
-  prod-apply:
-    name: "Production Apply"
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: read
-      id-token: write
-    if: github.event_name == 'workflow_dispatch'
-    env:
-      TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
-      TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
-      TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
-      TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
-      TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
-      TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
-      TF_VAR_resource_prefix: ${{ secrets.PROD_RESOURCE_PREFIX }}
-      TF_VAR_github_repo: ${{ secrets.PROD_GITHUB_REPO }}
-
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
-
-      - name: "Configure AWS Credentials"
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: "Setup Terraform"
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
-
-      - name: "Terraform Init"
-        run: terraform -chdir=terraform/aws/production init
-
-      - name: "Terraform Apply"
-        run: terraform -chdir=terraform/aws/production apply -auto-approve
+          kubectl rollout status deployment/lornu-ai -n lornu-prod --timeout=5m

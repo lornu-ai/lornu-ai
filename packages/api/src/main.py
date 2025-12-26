@@ -1,7 +1,7 @@
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from .router.message_router import router as api_router
 
 app = FastAPI(title="Lornu API", description="Backend API for Lornu Agents")
@@ -30,3 +30,11 @@ else:
     @app.get("/")
     def root():
         return {"status": "ok", "service": "api", "frontend": "not_available"}
+
+@app.post("/_spark/loaded")
+def spark_loaded():
+    """
+    Endpoint to handle Spark library lifecycle notification.
+    Spark signals when the library is ready via this POST endpoint.
+    """
+    return JSONResponse(status_code=200, content={"status": "loaded"})
