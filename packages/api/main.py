@@ -11,7 +11,7 @@ def main():
         port = int(os.getenv("PORT", "8080"))
     except ValueError:
         port = 8080
-        logger.warning(f"Invalid PORT environment variable, defaulting to 8080")
+        logger.warning("Invalid PORT environment variable, defaulting to 8080")
 
     # Reload logic (optional, string import required for reload)
     reload_enabled = os.getenv("RELOAD_ENABLED", "false").lower() == "true"
