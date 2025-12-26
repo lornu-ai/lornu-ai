@@ -20,11 +20,6 @@ permissions:
   contents: write
   issues: write
 
-env:
-  PRODUCTION_URL: https://lornu.ai
-  STAGING_URL: https://staging.lornu.ai
-  DEV_URL: https://d2.lornu.ai
-
 jobs:
   monitor:
     name: Health Check - ${{ github.event.inputs.environment || 'production' }}
@@ -52,10 +47,13 @@ jobs:
         id: set-url
         run: |
           ENV="${{ github.event.inputs.environment || 'production' }}"
+          PROD_DOMAIN="${{ secrets.PROD_DOMAIN }}"
+          STAGE_DOMAIN="${{ secrets.STAGE_DOMAIN }}"
+          DEV_DOMAIN="${{ secrets.DEV_DOMAIN }}"
           case $ENV in
-            production) echo "url=${{ env.PRODUCTION_URL }}" >> $GITHUB_OUTPUT ;;
-            staging) echo "url=${{ env.STAGING_URL }}" >> $GITHUB_OUTPUT ;;
-            development) echo "url=${{ env.DEV_URL }}" >> $GITHUB_OUTPUT ;;
+            production) echo "url=https://${PROD_DOMAIN:-lornu.ai}" >> $GITHUB_OUTPUT ;;
+            staging) echo "url=https://${STAGE_DOMAIN:-s1.lornu.ai}" >> $GITHUB_OUTPUT ;;
+            development) echo "url=https://${DEV_DOMAIN:-d2.lornu.ai}" >> $GITHUB_OUTPUT ;;
           esac
           echo "env=$ENV" >> $GITHUB_OUTPUT
 
