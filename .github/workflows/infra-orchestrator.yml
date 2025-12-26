@@ -1,0 +1,42 @@
+name: "Plan A Infra Orchestrator"
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Terraform action (plan or apply)
+        required: false
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  stage1-acm:
+    name: "Stage 1 - ACM"
+    uses: ./.github/workflows/terraform-aws-stage1-acm.yml
+    with:
+      environment: prod
+      action: ${{ inputs.action }}
+    secrets: inherit
+
+  stage2-cdn:
+    name: "Stage 2 - CDN"
+    needs: stage1-acm
+    uses: ./.github/workflows/terraform-aws-stage2-cdn.yml
+    with:
+      environment: prod
+      action: ${{ inputs.action }}
+      acm_certificate_arn: ${{ needs.stage1-acm.outputs.acm_certificate_arn }}
+    secrets: inherit
+
+  deploy:
+    name: "Deploy Kustomize"
+    needs: stage2-cdn
+    uses: ./.github/workflows/kustomize-deploy.yml
+    secrets: inherit

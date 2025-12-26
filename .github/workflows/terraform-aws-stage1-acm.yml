@@ -1,41 +1,52 @@
-name: "Stage 1: ACM Certificate + Route53 Zone"
-
-# =============================================================================
-# STAGE 1: Create ACM certificate with DNS validation
-# =============================================================================
-# This workflow creates:
-#   - Route53 hosted zone (if create_route53_zone = true)
-#   - ACM certificate with DNS validation
-#   - DNS CNAME records for certificate validation
-#   - Waits for certificate to be issued (~5-15 minutes)
-#
-# Run this FIRST before Stage 2. After this completes successfully,
-# the ACM certificate will be in ISSUED state and ready for CloudFront.
-# =============================================================================
+name: Terraform AWS Stage 1 (ACM)
 
 on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Target environment (staging or prod)
+        required: true
+        type: string
+      action:
+        description: Terraform action (plan or apply)
+        required: false
+        default: plan
+        type: string
+    outputs:
+      acm_certificate_arn:
+        description: ACM certificate ARN for CloudFront
+        value: ${{ jobs.acm.outputs.acm_certificate_arn }}
   workflow_dispatch:
     inputs:
-      apply:
-        description: 'Apply changes (true) or just plan (false)'
+      environment:
+        description: Target environment (staging or prod)
         required: true
-        default: 'false'
         type: choice
         options:
-          - 'false'
-          - 'true'
+          - staging
+          - prod
+      action:
+        description: Terraform action (plan or apply)
+        required: false
+        type: choice
+        options:
+          - plan
+          - apply
+        default: plan
 
 permissions:
-  id-token: write
   contents: read
+  id-token: write
 
 env:
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
 jobs:
-  stage1-acm:
-    name: ACM Certificate Setup
+  acm:
+    name: Stage 1 - ACM
     runs-on: ubuntu-latest
+    outputs:
+      acm_certificate_arn: ${{ steps.acm_arn.outputs.value }}
     steps:
       - uses: actions/checkout@v4
 
@@ -54,11 +65,11 @@ jobs:
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
 
-      - name: Terraform Plan (Stage 1)
+      - name: Terraform Plan (ACM)
+        if: inputs.action == 'plan'
         env:
-          TF_VAR_deploy_stage: "1"
+          TF_VAR_docker_image: "placeholder"
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
-          TF_VAR_docker_image: "placeholder:latest"
           TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
           TF_VAR_api_domain: ${{ secrets.PROD_API_DOMAIN }}
           TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
@@ -67,20 +78,16 @@ jobs:
           TF_VAR_create_route53_zone: "true"
           TF_VAR_existing_acm_certificate_arn: ${{ secrets.PROD_ACM_CERTIFICATE_ARN }}
         run: |
-          echo "🔐 Stage 1: Creating ACM certificate with DNS validation"
-          echo "   This will create:"
-          echo "   - Route53 hosted zone"
-          echo "   - ACM certificate"
-          echo "   - DNS validation records"
-          echo ""
-          terraform -chdir=terraform/aws/production plan -out=tfplan
+          terraform -chdir=terraform/aws/production plan \
+            -target=aws_acm_certificate.cloudfront \
+            -target=aws_route53_record.cloudfront_cert_validation \
+            -target=aws_acm_certificate_validation.cloudfront
 
-      - name: Terraform Apply (Stage 1)
-        if: inputs.apply == 'true'
+      - name: Terraform Apply (ACM)
+        if: inputs.action == 'apply'
         env:
-          TF_VAR_deploy_stage: "1"
+          TF_VAR_docker_image: "placeholder"
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
-          TF_VAR_docker_image: "placeholder:latest"
           TF_VAR_domain_name: ${{ secrets.PROD_DOMAIN }}
           TF_VAR_api_domain: ${{ secrets.PROD_API_DOMAIN }}
           TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
@@ -89,18 +96,13 @@ jobs:
           TF_VAR_create_route53_zone: "true"
           TF_VAR_existing_acm_certificate_arn: ${{ secrets.PROD_ACM_CERTIFICATE_ARN }}
         run: |
-          echo "🚀 Applying Stage 1..."
-          echo "   Certificate validation typically takes 5-15 minutes."
-          terraform -chdir=terraform/aws/production apply -auto-approve tfplan
+          terraform -chdir=terraform/aws/production apply -auto-approve \
+            -target=aws_acm_certificate.cloudfront \
+            -target=aws_route53_record.cloudfront_cert_validation \
+            -target=aws_acm_certificate_validation.cloudfront
 
-      - name: Verify Certificate Status
-        if: inputs.apply == 'true'
+      - name: Export ACM ARN
+        id: acm_arn
         run: |
-          echo "✅ Stage 1 complete!"
-          echo ""
-          echo "📋 Next steps:"
-          echo "   1. Verify the ACM certificate is in ISSUED state in AWS Console"
-          echo "   2. Run Stage 2 workflow to create CloudFront distribution"
-          echo ""
-          echo "🔗 Check certificate status:"
-          echo "   aws acm list-certificates --region us-east-1"
+          arn="$(terraform -chdir=terraform/aws/production output -raw cloudfront_certificate_arn 2>/dev/null || true)"
+          echo "value=$arn" >> "$GITHUB_OUTPUT"
