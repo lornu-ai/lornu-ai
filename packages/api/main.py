@@ -1,7 +1,7 @@
 import os
 import logging
 import uvicorn
-from .src.main import app
+from packages.api.src.main import app
 
 def main():
     port = int(os.getenv("PORT", 8080))

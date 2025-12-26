@@ -7,7 +7,7 @@ on:
     paths:
       - 'apps/web/**'
       - 'packages/api/**'
-      - 'k8s/**'
+      - 'kubernetes/**'
       - 'Dockerfile'
       - '.github/workflows/deploy-gke.yml'
   workflow_dispatch:
@@ -19,7 +19,7 @@ on:
         type: choice
         options:
           - lornu-dev
-          - lornu-stage
+          - lornu-staging
           - lornu-prod
 
 permissions:
@@ -97,10 +97,11 @@ jobs:
           ENV: ${{ github.event.inputs.environment || 'lornu-dev' }}
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
         run: |
-          cd k8s/overlays/$ENV
+          cd kubernetes/overlays/$ENV
           kustomize edit set image lornu-ai=us-central1-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.IMAGE }}:$IMAGE_TAG
           # Inject secrets from GitHub Actions into the kustomization
           # Note: We use a generator or replace the placeholder
+          mkdir -p patches
           cat <<EOF > patches/secret-generator.yaml
           apiVersion: v1
           kind: Secret
