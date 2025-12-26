@@ -18,6 +18,15 @@ import {
   id = "projects/gcp-lornu-ai/managedZones/lornu-ai-zone"
 }
 
+# Dev Environment d2.lornu.ai
+resource "google_dns_record_set" "dev_d2" {
+  name         = "d2.${google_dns_managed_zone.public_zone.dns_name}"
+  type         = "A"
+  ttl          = 300
+  managed_zone = google_dns_managed_zone.public_zone.name
+  rrdatas      = [google_compute_global_address.ingress_ip.address]
+}
+
 # Output nameservers for domain registrar configuration
 output "name_servers" {
   description = "Cloud DNS nameservers. Configure these at your domain registrar."

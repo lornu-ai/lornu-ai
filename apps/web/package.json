@@ -16,7 +16,6 @@
         "test:coverage": "vitest run --coverage",
         "test:integration": "vitest run src/**/*.integration.test.tsx",
         "test:ci": "vitest run --coverage",
-        "test:contact": "bun run scripts/test-contact-form.ts",
         "test:e2e": "playwright test",
         "test:e2e:ui": "playwright test --ui",
         "test:e2e:smoke": "playwright test tests/e2e/smoke-test.spec.ts --project=chromium",
