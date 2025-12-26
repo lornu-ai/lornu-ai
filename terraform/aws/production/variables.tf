@@ -21,6 +21,12 @@ variable "api_domain" {
   default     = "api.lornu.ai"
 }
 
+variable "extra_domain_names" {
+  description = "Additional CloudFront aliases to include (e.g. staging domains)"
+  type        = list(string)
+  default     = []
+}
+
 variable "route53_zone_name" {
   description = "The Route53 hosted zone name"
   type        = string

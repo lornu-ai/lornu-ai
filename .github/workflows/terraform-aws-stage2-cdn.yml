@@ -63,6 +63,14 @@ jobs:
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
 
+      - name: Set extra domain aliases
+        run: |
+          if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
+            echo "TF_VAR_extra_domain_names=[\"${{ secrets.STAGE_DOMAIN }}\"]" >> "$GITHUB_ENV"
+          else
+            echo "TF_VAR_extra_domain_names=[]" >> "$GITHUB_ENV"
+          fi
+
       - name: Terraform Plan (CDN)
         if: inputs.action == 'plan'
         env:
