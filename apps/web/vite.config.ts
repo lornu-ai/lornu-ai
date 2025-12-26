@@ -54,7 +54,10 @@ export default defineConfig({
               id.includes('vaul') ||
               id.includes('cmdk') ||
               id.includes('embla-carousel-react') ||
-              id.includes('@radix-ui')
+              id.includes('@radix-ui') ||
+              id.includes('react-day-picker') ||
+              id.includes('react-resizable-panels') ||
+              id.includes('input-otp')
             ) {
               return 'vendor-react';
             }
