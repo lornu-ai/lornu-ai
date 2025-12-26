@@ -12,14 +12,16 @@ const themeOptions: Theme[] = ['system', 'light', 'dark', 'open-source-pro'];
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>('system');
-
-  useEffect(() => {
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === 'undefined') {
+      return 'system';
+    }
     const storedTheme = localStorage.getItem('theme') as Theme | null;
     if (storedTheme && themeOptions.includes(storedTheme)) {
-      setTheme(storedTheme);
+      return storedTheme;
     }
-  }, []);
+    return 'system';
+  });
 
   useEffect(() => {
     const getSystemTheme = () => {

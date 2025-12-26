@@ -9,20 +9,6 @@ const GA_TRACKING_ID = import.meta.env.VITE_GA_TRACKING_ID || 'G-S71XEXELEN'
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false)
 
-  useEffect(() => {
-    // Check if user has already made a choice
-    const consent = localStorage.getItem('cookie-consent')
-
-    if (consent === null) {
-      // Show banner if no choice made yet
-      const timer = setTimeout(() => setIsVisible(true), 1000)
-      return () => clearTimeout(timer)
-    } else if (consent === 'true') {
-      // Initialize GA if previously accepted
-      initializeGA()
-    }
-  }, [])
-
   const initializeGA = () => {
     // Avoid double initialization
     if (window.dataLayer) return
@@ -42,6 +28,20 @@ export function CookieConsent() {
     document.head.appendChild(script1)
     document.head.appendChild(script2)
   }
+
+  useEffect(() => {
+    // Check if user has already made a choice
+    const consent = localStorage.getItem('cookie-consent')
+
+    if (consent === null) {
+      // Show banner if no choice made yet
+      const timer = setTimeout(() => setIsVisible(true), 1000)
+      return () => clearTimeout(timer)
+    } else if (consent === 'true') {
+      // Initialize GA if previously accepted
+      initializeGA()
+    }
+  }, [])
 
   const handleAccept = () => {
     localStorage.setItem('cookie-consent', 'true')
