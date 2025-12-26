@@ -16,12 +16,8 @@ locals {
           rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/eks.amazonaws.com/AWSServiceRoleForAmazonEKS"
           username = "system:bootstrap"
           groups   = ["system:bootstrappers", "system:nodes"]
-        },
-        {
-          rolearn  = module.lornu_cluster.worker_iam_role_arn
-          username = "system:node:{{EC2PrivateDNSName}}"
-          groups   = ["system:bootstrappers", "system:nodes"]
         }
+        # Note: Worker node role mapping removed - cluster uses Fargate (no EC2 worker nodes)
         # GitHub Actions access is managed via access_entries in eks.tf
       ])
       mapUsers = yamlencode([
@@ -47,12 +43,8 @@ resource "kubernetes_config_map" "aws_auth" {
         rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/eks.amazonaws.com/AWSServiceRoleForAmazonEKS"
         username = "system:bootstrap"
         groups   = ["system:bootstrappers", "system:nodes"]
-      },
-      {
-        rolearn  = module.lornu_cluster.worker_iam_role_arn
-        username = "system:node:{{EC2PrivateDNSName}}"
-        groups   = ["system:bootstrappers", "system:nodes"]
       }
+      # Note: Worker node role mapping removed - cluster uses Fargate (no EC2 worker nodes)
       # GitHub Actions access is managed via access_entries in eks.tf
     ])
   }
