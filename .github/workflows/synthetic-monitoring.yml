@@ -17,7 +17,7 @@ on:
           - development
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 env:
@@ -71,9 +71,9 @@ jobs:
         id: parse-results
         run: |
           if [ -f test-results.json ]; then
-            # Extract pass/fail counts
-            PASSED=$(jq '[.suites[].specs[].tests[] | select(.status == "passed")] | length' test-results.json || echo 0)
-            FAILED=$(jq '[.suites[].specs[].tests[] | select(.status == "failed")] | length' test-results.json || echo 0)
+                        # Extract pass/fail counts using Playwright's actual status values
+            PASSED=$(jq '[.suites[] | recurse(.suites[]?) | .specs[]? | .tests[]? | select(.status == "expected")] | length' test-results.json || echo 0)
+            FAILED=$(jq '[.suites[] | recurse(.suites[]?) | .specs[]? | .tests[]? | select(.status == "unexpected")] | length' test-results.json || echo 0)
             TOTAL=$((PASSED + FAILED))
 
             echo "passed=$PASSED" >> $GITHUB_OUTPUT
