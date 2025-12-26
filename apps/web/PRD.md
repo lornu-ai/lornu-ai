@@ -2,7 +2,7 @@
 
 A modern, tech-forward web application that showcases innovation through elegant design, inspired by flowing circuit board aesthetics and digital transformation.
 
-**Experience Qualities**: 
+**Experience Qualities**:
 1. **Fluid & Dynamic** - Smooth transitions and flowing animations mirror the logo's swirling data streams
 2. **Technical & Professional** - Clean, precise layouts convey expertise and reliability
 3. **Futuristic & Approachable** - Advanced design that remains welcoming and easy to navigate
@@ -56,11 +56,11 @@ The design should feel cutting-edge yet trustworthy—like a tech company that's
 Custom palette derived from the logo's technology aesthetic
 
 - **Primary Color**: Deep Navy Blue (oklch(0.25 0.08 240)) - Represents stability, trust, and technical depth; used for headers, primary text, and key structural elements
-- **Secondary Colors**: 
+- **Secondary Colors**:
   - Teal/Cyan (oklch(0.70 0.12 195)) - Dynamic energy and innovation; used for interactive elements and accents
   - Dark Teal (oklch(0.45 0.10 200)) - Supporting color for cards and secondary elements
 - **Accent Color**: Lime/Chartreuse (oklch(0.85 0.15 130)) - High-tech highlight for CTAs and important interactive elements
-- **Foreground/Background Pairings**: 
+- **Foreground/Background Pairings**:
   - Background (Light Gray oklch(0.97 0 0)): Navy Blue text (oklch(0.25 0.08 240)) - Ratio 8.9:1 ✓
   - Card (White oklch(1 0 0)): Navy Blue text (oklch(0.25 0.08 240)) - Ratio 10.5:1 ✓
   - Primary Navy (oklch(0.25 0.08 240)): White text (oklch(1 0 0)) - Ratio 10.5:1 ✓
@@ -74,9 +74,9 @@ Typography should feel modern and technical yet highly readable, conveying preci
 - **Primary Font**: Inter - Clean geometric sans-serif perfect for tech brands
 - **Accent Font**: JetBrains Mono (for code snippets or technical details) - Reinforces technical credibility
 
-- **Typographic Hierarchy**: 
+- **Typographic Hierarchy**:
   - H1 (Hero Title): Inter Bold/56px/tight letter-spacing/-1px
-  - H2 (Section Headers): Inter Semibold/36px/tight letter-spacing/-0.5px  
+  - H2 (Section Headers): Inter Semibold/36px/tight letter-spacing/-0.5px
   - H3 (Card Titles): Inter Semibold/24px/normal letter-spacing
   - Body (Primary): Inter Regular/16px/relaxed line-height/1.6
   - Body (Secondary): Inter Regular/14px/muted color
@@ -91,32 +91,32 @@ Motion should feel purposeful and physics-based—like data flowing through circ
 
 ## Component Selection
 
-- **Components**: 
+- **Components**:
   - Button (Primary CTAs with gradient hover states)
   - Card (Service/feature displays with hover lift effect)
   - Input, Textarea, Label (Contact form with floating labels)
   - Toast (sonner for form submission feedback)
   - Separator (Section dividers)
-  
-- **Customizations**: 
+
+- **Customizations**:
   - Custom gradient backgrounds for hero section
   - Custom card hover effects with shadow and transform
   - Custom navigation with blur backdrop
-  
-- **States**: 
+
+- **States**:
   - Buttons: rest → hover (gradient shift + lift) → active (slight scale down)
   - Cards: rest → hover (lift + glow) → click (navigate or expand)
   - Inputs: empty → focused (border glow) → filled (success state) → error (red border + message)
-  
-- **Icon Selection**: 
+
+- **Icon Selection**:
   - @phosphor-icons/react: Lightning for speed, Code for development, Rocket for launch, ChartLine for growth, Users for team, Envelope for contact
-  
-- **Spacing**: 
+
+- **Spacing**:
   - Section padding: py-20 (lg:py-32)
   - Card gaps: gap-8 (lg:gap-12)
   - Element spacing: space-y-6 for text blocks, space-y-4 for form fields
-  
-- **Mobile**: 
+
+- **Mobile**:
   - Hero text scales down (text-4xl → text-5xl → text-6xl)
   - Three-column grid becomes single column (grid-cols-1 md:grid-cols-2 lg:grid-cols-3)
   - Fixed nav becomes bottom nav or hamburger menu

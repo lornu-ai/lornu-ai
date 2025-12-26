@@ -61,15 +61,15 @@ jobs:
         with:
           script: |
             const output = `#### Terraform Cloud Plan 📖\`${{ steps.plan-run.outputs.run_status }}\`
-            
+
             <details><summary>Show Plan</summary>
-            
+
             \`\`\`\n
             ${process.env.PLAN}
             \`\`\`
-            
+
             </details>`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

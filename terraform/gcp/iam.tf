@@ -19,7 +19,7 @@ resource "google_project_iam_member" "storage_viewer" {
   member  = "serviceAccount:${google_service_account.backend.email}"
 }
 
-# Access to Artifact Registry (for pulling images - actually GKE creates its own SA for nodes, 
+# Access to Artifact Registry (for pulling images - actually GKE creates its own SA for nodes,
 # but if we used this for something else it would be needed. Nodes use the compute SA by default.)
 
 # Workload Identity Binding

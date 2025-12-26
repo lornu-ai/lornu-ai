@@ -20,7 +20,7 @@ on:
         options:
           - lornu-dev
           - lornu-staging
-          - lornu-prod
+          - gcp-prod
 
 permissions:
   contents: read
