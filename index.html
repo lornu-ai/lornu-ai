@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LornuAI Monitoring Status</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+    }
+    h1 {
+      color: #1a202c;
+      margin-bottom: 8px;
+      font-size: 32px;
+    }
+    .subtitle {
+      color: #718096;
+      margin-bottom: 32px;
+      font-size: 16px;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px;
+      background: #f7fafc;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    .status-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    .status-icon.green { background: #48bb78; }
+    .status-icon.red { background: #f56565; }
+    .status-info h2 {
+      font-size: 18px;
+      color: #2d3748;
+      margin-bottom: 4px;
+    }
+    .status-info p {
+      font-size: 14px;
+      color: #718096;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.2s;
+      margin: 8px 8px 8px 0;
+    }
+    .btn:hover {
+      background: #5a67d8;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    .btn.secondary {
+      background: #e2e8f0;
+      color: #2d3748;
+    }
+    .btn.secondary:hover {
+      background: #cbd5e0;
+    }
+    .footer {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      color: #a0aec0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 LornuAI Monitoring</h1>
+    <p class="subtitle">Real-time health check results</p>
+
+    <div class="status">
+      <div class="status-icon green">✓</div>
+      <div class="status-info">
+        <h2>System Operational</h2>
+        <p>Last checked: <span id="timestamp">Loading...</span></p>
+      </div>
+    </div>
+
+    <div>
+      <a href="./latest/index.html" class="btn">View Latest Test Report</a>
+      <a href="https://github.com/lornu-ai/lornu-ai/actions/workflows/synthetic-monitoring.yml" class="btn secondary">View All Runs</a>
+    </div>
+
+    <div class="footer">
+      Powered by GitHub Actions • Updates every 5 minutes<br>
+      <a href="https://lornu.ai" style="color: #667eea; text-decoration: none;">lornu.ai</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('timestamp').textContent = new Date().toLocaleString();
+  </script>
+</body>
+</html>
