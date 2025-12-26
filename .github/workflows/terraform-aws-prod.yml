@@ -74,6 +74,7 @@ jobs:
           TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
           TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
           TF_VAR_create_route53_zone: "true"
+          TF_VAR_github_actions_role_arn: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
         run: terraform -chdir=terraform/aws/production plan
 
       - name: Terraform Security Scan
@@ -123,6 +124,7 @@ jobs:
           TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
           TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
           TF_VAR_create_route53_zone: "true"
+          TF_VAR_github_actions_role_arn: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
         run: terraform -chdir=terraform/aws/production apply -auto-approve
 
       - name: Update kubeconfig
