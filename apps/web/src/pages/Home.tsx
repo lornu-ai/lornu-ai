@@ -102,7 +102,9 @@ export default function Home() {
       // Reset the form after successful submission
       form.reset()
     } catch (error) {
-      console.error('Error submitting form:', error)
+      if (import.meta.env.MODE !== 'test') {
+        console.error('Error submitting form:', error)
+      }
       toast.error(error instanceof Error ? error.message : 'Failed to send message. Please try again.')
     } finally {
       setIsSubmitting(false)
