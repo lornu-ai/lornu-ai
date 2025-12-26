@@ -146,7 +146,7 @@ resource "null_resource" "validate_alb_origin" {
 # STAGE 2: S3 Bucket for CloudFront Logs
 # -----------------------------------------------------------------------------
 
-data "aws_caller_identity" "current" {}
+# Note: aws_caller_identity.current is defined in eks-auth.tf
 
 resource "aws_s3_bucket" "cloudfront_logs" {
   count         = var.deploy_stage >= 2 ? 1 : 0
