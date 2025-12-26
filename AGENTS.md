@@ -33,11 +33,12 @@ If there is any conflict between docs, follow `.ai/RULES.md`.
 - Python package manager: **uv** only (`uv sync`, `uv run`, `uv pip install`).
 
 ## Git Workflow
-- `main`: Production
-- `develop`: Staging/Integration
+- `main`: Production-ready code
+- `develop`: Staging/Integration branch
 - Feature branches: `feat/` or `feature/`
 - Always use PRs; never push directly to `main` or `develop`.
-- Always open PRs against `develop`. For kustomize docs updates, use base `kustomize-develop`.
+- Always open PRs against `develop`. Kustomize is in our DNA—all deployment changes are integrated into feature branches, not isolated to a separate branch.
+
 ## PR Labeling (Required)
 - Apply a label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) to every PR. If the label doesn't exist, create it first.
 - Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.

@@ -71,7 +71,15 @@ kustomize build kubernetes/overlays/prod | kubectl apply -f -
 - Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.
 
 ## PR Base Branch (Required)
-- Always open PRs against `develop`. For kustomize docs updates, use base `kustomize-develop`.
+- Always open PRs against `develop`. Kustomize is in our DNA—all deployment changes are integrated into feature branches, not isolated to a separate branch.
+
+## Git Workflow (Plan A Branch Model)
+- **Primary Branches** (only):
+  - `main`: Production-ready code
+  - `develop`: Staging/integration branch
+- **Feature Branches**: Create from `develop`, target `develop` in PRs
+- **No Separate Kustomize Branch**: Kubernetes/Kustomize changes are integrated into feature branches alongside code changes
+- Deprecated branches deleted: `kustomize`, `gcp-develop`
 
 ## Terraform Hygiene (Required)
 - Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
