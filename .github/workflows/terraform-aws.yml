@@ -67,10 +67,20 @@ jobs:
           # Add DEV_DOMAIN if provided (d2.<domain>)
           if [ -n "${{ secrets.DEV_DOMAIN }}" ]; then
             domains+=("${{ secrets.DEV_DOMAIN }}")
+            # Add www.DEV_DOMAIN (www.d2.<domain>)
+            www_dev_domain="www.${{ secrets.DEV_DOMAIN }}"
+            if [[ ! " ${domains[@]} " =~ "$www_dev_domain" ]]; then
+              domains+=("$www_dev_domain")
+            fi
           fi
           # Add STAGE_DOMAIN if provided (s1.<domain>)
           if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
             domains+=("${{ secrets.STAGE_DOMAIN }}")
+            # Add www.STAGE_DOMAIN (www.s1.<domain>)
+            www_stage_domain="www.${{ secrets.STAGE_DOMAIN }}"
+            if [[ ! " ${domains[@]} " =~ "$www_stage_domain" ]]; then
+              domains+=("$www_stage_domain")
+            fi
           fi
           # Add PROD_DOMAIN if provided (for SAN cert)
           if [ -n "${{ secrets.PROD_DOMAIN }}" ]; then
@@ -147,10 +157,20 @@ jobs:
           # Add DEV_DOMAIN if provided (d2.<domain>)
           if [ -n "${{ secrets.DEV_DOMAIN }}" ]; then
             domains+=("${{ secrets.DEV_DOMAIN }}")
+            # Add www.DEV_DOMAIN (www.d2.<domain>)
+            www_dev_domain="www.${{ secrets.DEV_DOMAIN }}"
+            if [[ ! " ${domains[@]} " =~ "$www_dev_domain" ]]; then
+              domains+=("$www_dev_domain")
+            fi
           fi
           # Add STAGE_DOMAIN if provided (s1.<domain>)
           if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
             domains+=("${{ secrets.STAGE_DOMAIN }}")
+            # Add www.STAGE_DOMAIN (www.s1.<domain>)
+            www_stage_domain="www.${{ secrets.STAGE_DOMAIN }}"
+            if [[ ! " ${domains[@]} " =~ "$www_stage_domain" ]]; then
+              domains+=("$www_stage_domain")
+            fi
           fi
           # Add PROD_DOMAIN if provided (for SAN cert)
           if [ -n "${{ secrets.PROD_DOMAIN }}" ]; then

@@ -68,21 +68,30 @@ jobs:
       - name: Set extra domain aliases for SAN certificate
         run: |
           domains=()
-          # Add DEV_DOMAIN if provided (d2.<domain>)
+          # Add DEV_DOMAIN if provided
           if [ -n "${{ secrets.DEV_DOMAIN }}" ]; then
             domains+=("${{ secrets.DEV_DOMAIN }}")
+            # Add www version of DEV_DOMAIN
+            www_dev="www.${{ secrets.DEV_DOMAIN }}"
+            if [[ ! " ${domains[@]} " =~ "$www_dev" ]]; then
+              domains+=("$www_dev")
+            fi
           fi
-          # Add STAGE_DOMAIN if provided (s1.<domain>)
+          # Add STAGE_DOMAIN if provided
           if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
             domains+=("${{ secrets.STAGE_DOMAIN }}")
+            # Add www version of STAGE_DOMAIN
+            www_stage="www.${{ secrets.STAGE_DOMAIN }}"
+            if [[ ! " ${domains[@]} " =~ "$www_stage" ]]; then
+              domains+=("$www_stage")
+            fi
           fi
-          # Add PROD_DOMAIN if provided (for SAN cert, even though it's the primary domain)
+          # Add PROD_DOMAIN if provided
           if [ -n "${{ secrets.PROD_DOMAIN }}" ]; then
-            # Add PROD_DOMAIN if not already present
             if [[ ! " ${domains[@]} " =~ "${{ secrets.PROD_DOMAIN }}" ]]; then
               domains+=("${{ secrets.PROD_DOMAIN }}")
             fi
-            # Add www.PROD_DOMAIN (www.<domain>)
+            # Add www.PROD_DOMAIN
             www_domain="www.${{ secrets.PROD_DOMAIN }}"
             if [[ ! " ${domains[@]} " =~ "$www_domain" ]]; then
               domains+=("$www_domain")
