@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acm-certificates
+  namespace: lornu-dev
+  labels:
+    lornu.ai/environment: development
+    lornu.ai/managed-by: plan-a-orchestration
+    lornu.ai/asset-id: lornu-ai-final-clear-bg
+data:
+  # ALB listener certificate ARN for HTTPS.
+  # PLACEHOLDER: this value is populated by Terraform with the actual ACM
+  # certificate ARN at deployment time (for example via a templated ConfigMap).
+  # Do not apply this manifest as-is without providing ACM_CERTIFICATE_ARN.
+  certificate-arn: "${ACM_CERTIFICATE_ARN}"

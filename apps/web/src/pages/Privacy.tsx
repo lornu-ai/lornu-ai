@@ -82,7 +82,7 @@ export default function Privacy() {
                     When you access the Service, we automatically collect certain technical information:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>IP Address:</strong> Your device's Internet Protocol (IP) address</li>
+                    <li><strong>IP Address:</strong> Your device's Internet Protocol (IP) address (collected by Cloudflare AI Gateway)</li>
                     <li><strong>Timestamps:</strong> Date and time of your requests and interactions</li>
                     <li><strong>Browser Information:</strong> Browser type, version, and user agent string</li>
                     <li><strong>Device Information:</strong> Device type, operating system, and screen resolution</li>
@@ -93,7 +93,7 @@ export default function Privacy() {
                   <h3 className="text-xl font-semibold mb-3 mt-6">2.3 Cookies and Tracking Technologies</h3>
                   <p className="text-muted-foreground leading-relaxed">
                     We use minimal cookies and tracking technologies for essential Service functionality. These are primarily
-                    session cookies required for authentication and routing through our cloud infrastructure. We do not use
+                    session cookies required for authentication and routing through Cloudflare's infrastructure. We do not use
                     third-party advertising cookies or cross-site tracking.
                   </p>
                 </section>
@@ -107,8 +107,8 @@ export default function Privacy() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Service Delivery:</strong> To process your queries through AI models and return generated responses</li>
-                    <li><strong>Performance Optimization:</strong> To cache frequently requested content in high-speed storage (Google Firestore/Cloud Storage) for faster response times</li>
-                    <li><strong>Analytics:</strong> To understand usage patterns and improve Service performance through integrated monitoring and telemetry</li>
+                    <li><strong>Performance Optimization:</strong> To cache frequently requested content in Cloudflare KV/R2 for faster response times</li>
+                    <li><strong>Analytics:</strong> To understand usage patterns and improve Service performance through Cloudflare AI Gateway analytics</li>
                     <li><strong>Security:</strong> To detect, prevent, and respond to security incidents, abuse, and fraudulent activity</li>
                     <li><strong>Service Improvement:</strong> To develop new features and improve existing functionality</li>
                     <li><strong>Communication:</strong> To respond to your inquiries and provide customer support</li>
@@ -121,33 +121,32 @@ export default function Privacy() {
                 <section>
                   <h2 className="text-2xl font-semibold mb-4">4. Data Storage and Retention</h2>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-4">4.1 Distributed Caching (Firestore / Redis)</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-4">4.1 Cloudflare KV (Key-Value Storage)</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    We use distributed caching to optimize AI responses:
+                    We use Cloudflare KV to cache AI responses for performance optimization:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>What is Stored:</strong> Query hashes (not full query text) and associated AI-generated responses</li>
                     <li><strong>Purpose:</strong> To serve repeated queries faster without re-invoking AI models</li>
                     <li><strong>Retention:</strong> Cached data expires automatically after 7 days of inactivity</li>
-                    <li><strong>Location:</strong> Google Cloud (US) and AWS regions</li>
+                    <li><strong>Location:</strong> Distributed globally across Cloudflare's edge network</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-6">4.2 Secure Object Storage (GCS / S3)</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-6">4.2 Cloudflare R2 (Object Storage)</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    We use secure object storage for data related to RAG functionality:
+                    We may use Cloudflare R2 for longer-term data storage related to RAG functionality:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>What is Stored:</strong> Indexed document embeddings and metadata (if you upload documents for RAG)</li>
                     <li><strong>Purpose:</strong> To enable retrieval-augmented generation with your custom knowledge base</li>
                     <li><strong>Retention:</strong> Data is retained until you explicitly delete it or terminate your account</li>
-                    <li><strong>Location:</strong> US-based cloud regions</li>
+                    <li><strong>Location:</strong> Cloudflare's global object storage infrastructure</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">4.3 Logs and Analytics</h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    Request logs (IP address, timestamp, query metadata) are retained for up to 30 days
-                    for analytics and security purposes in accordance with our cloud infrastructure providers.
-                    These logs do not contain full query content, only metadata such as
+                    Request logs (IP address, timestamp, query metadata) are retained in Cloudflare AI Gateway for up to 30 days
+                    for analytics and security purposes. These logs do not contain full query content, only metadata such as
                     request size, model used, and response time.
                   </p>
                 </section>
@@ -163,12 +162,12 @@ export default function Privacy() {
                   </p>
 
                   <div className="bg-secondary/20 p-4 rounded-lg mb-4">
-                    <h4 className="font-semibold mb-2">AWS Bedrock / AWS Sagemaker</h4>
+                    <h4 className="font-semibold mb-2">Cloudflare Workers AI</h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
                       <li><strong>Data Shared:</strong> Your query text and selected model parameters</li>
-                      <li><strong>Purpose:</strong> AI inference using Llama, Titan, and other models</li>
-                      <li><strong>Retention:</strong> AWS does not use customer data to train models and data is processed in accordance with AWS security standards</li>
-                      <li><strong>Privacy Policy:</strong> <a href="https://aws.amazon.com/privacy/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">AWS Privacy Notice</a></li>
+                      <li><strong>Purpose:</strong> AI inference using Llama 2 and other models hosted on Cloudflare's network</li>
+                      <li><strong>Retention by Provider:</strong> Cloudflare does not retain query content after processing (per their <a href="https://www.cloudflare.com/trust-hub/privacy-and-data-protection/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">AI Privacy Policy</a>)</li>
+                      <li><strong>Privacy Policy:</strong> <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Cloudflare Privacy Policy</a></li>
                     </ul>
                   </div>
 
@@ -185,14 +184,16 @@ export default function Privacy() {
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">5.2 Infrastructure Providers</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    Our Service is hosted on the following enterprise infrastructure:
+                    Our Service is hosted entirely on Cloudflare's infrastructure:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Google Cloud (GCP):</strong> Managed Kubernetes (GKE), Vertex AI, Firestore, and Cloud Storage</li>
-                    <li><strong>Amazon Web Services (AWS):</strong> Managed Kubernetes (EKS), Bedrock, DynamoDB, and S3</li>
+                    <li><strong>Cloudflare Workers:</strong> Serverless compute platform executing all Service logic</li>
+                    <li><strong>Cloudflare AI Gateway:</strong> Unified routing, analytics, and caching layer for AI requests</li>
+                    <li><strong>Cloudflare KV & R2:</strong> Data storage for caching and RAG functionality</li>
                   </ul>
                   <p className="text-muted-foreground leading-relaxed mt-4">
-                    These providers act as data processors on our behalf and maintain strict security and compliance standards.
+                    Cloudflare acts as a data processor on our behalf. Their security and privacy practices are detailed in their
+                    <a href="https://www.cloudflare.com/trust-hub/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline ml-1">Trust Hub</a>.
                   </p>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">5.3 Analytics Services</h3>
@@ -207,7 +208,7 @@ export default function Privacy() {
                     <li><strong>Privacy Policy:</strong> <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Google Privacy & Terms</a></li>
                   </ul>
                   <p className="text-muted-foreground leading-relaxed mt-4">
-                    We also use internal analytics and observability tools (GitHub Actions, internal telemetry) that do not rely on tracking cookies.
+                    We also use internal analytics metrics provided by Cloudflare AI Gateway, which do not rely on tracking cookies.
                   </p>
                 </section>
 
@@ -220,11 +221,11 @@ export default function Privacy() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Encryption in Transit:</strong> All data transmission uses TLS 1.3 encryption</li>
-                    <li><strong>Encryption at Rest:</strong> Data stored in Firestore, GCS, and S3 is encrypted using AES-256</li>
-                    <li><strong>Access Controls:</strong> Strict authentication and authorization via enterprise-grade IAM</li>
-                    <li><strong>Secret Management:</strong> API keys and secrets are stored securely using Kubernetes Secrets and Vault systems</li>
-                    <li><strong>Container Security:</strong> All services run in secure, isolated containerized environments (GKE/EKS)</li>
-                    <li><strong>DDoS Protection:</strong> Global cloud network provides protection against distributed denial-of-service attacks</li>
+                    <li><strong>Encryption at Rest:</strong> Data stored in AWS S3 and RDS is encrypted using AWS KMS</li>
+                    <li><strong>Access Controls:</strong> Strict authentication and authorization for all Service components via IAM and RBAC</li>
+                    <li><strong>Secret Management:</strong> API keys and secrets are stored securely using AWS Secrets Manager</li>
+                    <li><strong>Kubernetes Security:</strong> Containerized workloads run in isolated pods with network policies</li>
+                    <li><strong>DDoS Protection:</strong> AWS Shield provides protection against distributed denial-of-service attacks</li>
                   </ul>
                   <p className="text-muted-foreground leading-relaxed mt-4">
                     However, no method of transmission over the Internet or electronic storage is 100% secure. While we strive to
@@ -272,8 +273,9 @@ export default function Privacy() {
                   <p className="text-muted-foreground leading-relaxed">
                     Your information may be processed in countries other than your country of residence. These countries may have
                     data protection laws that are different from the laws of your country. By using the Service, you consent to
-                    the transfer of information to the United States and other countries where our infrastructure providers operate data centers.
-                    Google Cloud and AWS maintain appropriate safeguards for international data transfers in accordance with GDPR and other regulations.
+                    the transfer of information to the United States and other countries where Cloudflare operates data centers.
+                    Cloudflare maintains appropriate safeguards for international data transfers as detailed in their
+                    <a href="https://www.cloudflare.com/trust-hub/gdpr/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline ml-1">GDPR compliance documentation</a>.
                   </p>
                 </section>
 

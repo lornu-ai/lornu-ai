@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: acm-certificates
+  namespace: lornu-prod
+  labels:
+    lornu.ai/environment: production
+    lornu.ai/managed-by: plan-a-orchestration
+    lornu.ai/asset-id: lornu-ai-final-clear-bg
+data:
+  # ALB listener certificate ARN for HTTPS.
+  # Populated by Terraform/CI at deploy time with the actual ACM certificate ARN from AWS
+  certificate-arn: "${ACM_CERTIFICATE_ARN}"
