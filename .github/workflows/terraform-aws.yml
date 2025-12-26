@@ -22,8 +22,6 @@ permissions:
   contents: read
 
 env:
-  TF_CLOUD_ORG: ${{ secrets.TF_CLOUD_ORG }}
-  TF_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   ECR_REPOSITORY: "lornu-ai-staging"
 
@@ -97,7 +95,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: "Terraform Init (no backend for PR validation)"
         run: terraform -chdir=terraform/aws/staging init -backend=false
@@ -149,7 +147,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
@@ -211,7 +209,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/production init
@@ -267,7 +265,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/production init

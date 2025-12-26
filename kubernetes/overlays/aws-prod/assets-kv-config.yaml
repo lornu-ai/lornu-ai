@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lornu-ai-assets-config
+  namespace: lornu-prod
+  labels:
+    app.kubernetes.io/name: lornu-ai
+    lornu.ai/environment: production
+    lornu.ai/managed-by: terraform-cloud
+    lornu.ai/asset-id: lornu-ai-final-clear-bg
+data:
+  # S3 Assets bucket configuration
+  # NOTE: ACCOUNT_ID is substituted by CI/CD workflow using sed or envsubst
+  # Example: sed -i "s/ACCOUNT_ID/${AWS_ACCOUNT_ID}/g" assets-kv-config.yaml
+  S3_ASSETS_BUCKET: "lornu-ai-assets-ACCOUNT_ID"
+  S3_ASSETS_REGION: "us-east-1"
+  S3_ASSETS_PREFIX: "public/"
+  
+  # DynamoDB rate limiting configuration
+  DYNAMODB_RATE_LIMIT_TABLE: "lornu-ai-rate-limit-kv"
+  DYNAMODB_RATE_LIMIT_REGION: "us-east-1"
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "100"
+  RATE_LIMIT_REQUESTS_PER_HOUR: "1000"
+  
+  # DynamoDB general KV store configuration
+  DYNAMODB_GENERAL_KV_TABLE: "lornu-ai-general-kv"
+  DYNAMODB_GENERAL_KV_REGION: "us-east-1"
+  
+  # Cache configuration
+  CACHE_TTL_SECONDS: "3600"
+  CACHE_MAX_SIZE: "10000"

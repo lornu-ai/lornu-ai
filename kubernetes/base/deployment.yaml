@@ -34,9 +34,15 @@ spec:
           value: "0.0.0.0"
         - name: PYTHONPATH
           value: "/app"
+        - name: AWS_REGION
+          value: "us-east-1"
         envFrom:
         - configMapRef:
             name: lornu-ai-config
+        # AWS resource names (S3, DynamoDB) injected from assets-config in prod overlay
+        - configMapRef:
+            name: lornu-ai-assets-config
+            optional: true
         - secretRef:
             name: lornu-ai-secrets
             optional: true

@@ -2,6 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
+  - namespace.yaml
+  - assets-kv-config.yaml
+  # cert-manager deployed separately: kubectl apply -k kubernetes/overlays/aws-prod/cert-manager
 namespace: lornu-prod
 patches:
   - path: ingress-patch.yaml
