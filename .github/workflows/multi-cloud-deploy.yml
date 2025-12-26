@@ -40,8 +40,16 @@ jobs:
     uses: ./.github/workflows/terraform-aws-prod.yml
     secrets: inherit
 
-  deploy-gcp:
+  deploy-gcp-infra:
     needs: detect-changes
     if: needs.detect-changes.outputs.gcp-changed == 'true'
     uses: ./.github/workflows/terraform-gcp.yml
+    secrets: inherit
+
+  deploy-gcp-app:
+    needs: [detect-changes, deploy-gcp-infra]
+    if: needs.detect-changes.outputs.gcp-changed == 'true'
+    uses: ./.github/workflows/deploy-gke.yml
+    with:
+      environment: gcp-prod
     secrets: inherit
