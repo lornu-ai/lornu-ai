@@ -51,6 +51,12 @@ Plan A supports both AWS and GCP:
 - Feature branches: `feat/` or `feature/`
 - Always use PRs; never push directly to `main` or `develop`.
 - Always open PRs against `develop`.
+- **Always rebase from `main` before pushing to open a pull request:**
+  ```bash
+  git fetch origin main
+  git rebase origin/main
+  ```
+  This ensures your branch is up-to-date and reduces merge conflicts.
 ## PR Labeling (Required)
 
 - Apply a label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) to every PR. If the label doesn't exist, create it first.
