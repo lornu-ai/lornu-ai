@@ -64,8 +64,19 @@ jobs:
       - name: Set extra domain aliases for SAN certificate
         run: |
           domains=()
+          # Add DEV_DOMAIN if provided
+          if [ -n "${{ secrets.DEV_DOMAIN }}" ]; then
+            domains+=("${{ secrets.DEV_DOMAIN }}")
+          fi
+          # Add STAGE_DOMAIN if provided
           if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
             domains+=("${{ secrets.STAGE_DOMAIN }}")
+          fi
+          # Add PROD_DOMAIN if provided (for SAN cert)
+          if [ -n "${{ secrets.PROD_DOMAIN }}" ]; then
+            if [[ ! " ${domains[@]} " =~ "${{ secrets.PROD_DOMAIN }}" ]]; then
+              domains+=("${{ secrets.PROD_DOMAIN }}")
+            fi
           fi
 
           # Convert array to JSON string
@@ -128,8 +139,19 @@ jobs:
       - name: Set extra domain aliases for SAN certificate
         run: |
           domains=()
+          # Add DEV_DOMAIN if provided
+          if [ -n "${{ secrets.DEV_DOMAIN }}" ]; then
+            domains+=("${{ secrets.DEV_DOMAIN }}")
+          fi
+          # Add STAGE_DOMAIN if provided
           if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
             domains+=("${{ secrets.STAGE_DOMAIN }}")
+          fi
+          # Add PROD_DOMAIN if provided (for SAN cert)
+          if [ -n "${{ secrets.PROD_DOMAIN }}" ]; then
+            if [[ ! " ${domains[@]} " =~ "${{ secrets.PROD_DOMAIN }}" ]]; then
+              domains+=("${{ secrets.PROD_DOMAIN }}")
+            fi
           fi
 
           # Convert array to JSON string
