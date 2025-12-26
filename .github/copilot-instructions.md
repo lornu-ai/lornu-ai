@@ -81,7 +81,7 @@ kustomize build kubernetes/overlays/prod | kubectl apply -f -
 - Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.
 
 ## PR Base Branch (Required)
-- Always open PRs against `develop`. For kustomize docs updates, use base `kustomize-develop`.
+- Always open PRs against `main`.
 
 ## Terraform Hygiene (Required)
 - Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.

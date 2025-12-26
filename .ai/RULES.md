@@ -14,11 +14,11 @@
 - **Backend**: uv only (`uv sync`, `uv run`, `uv pip install`).
 
 ## Workflow Rules
-- `main`: Production
-- `develop`: Staging/Integration
+- `main`: Production (single source of truth)
+- `develop`: (deprecated) Staging/Integration
 - Feature branches: `feat/` or `feature/`
-- Always use PRs; never push directly to `main` or `develop`.
-- Always open PRs against `develop`.
+- Always use PRs; never push directly to `main`.
+- Always open PRs against `main`.
 ## PR Labeling (Required)
 - Apply a label for the **worker/agent** (e.g., `codex`, `vs-code-with-github-copilot`, `antigravity`, `claude`) to every PR. If the label doesn't exist, create it first.
 - Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.

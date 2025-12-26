@@ -70,7 +70,7 @@ See `docs/TFC_MANUAL_RUNS.md` for details on manual TFC UI runs.
 
 ## PR Base Branch (Required)
 
-- Always open PRs against `develop`. For kustomize docs updates, use base `kustomize-develop`.
+- Always open PRs against `main`.
 
 ## Terraform Hygiene (Required)
 
