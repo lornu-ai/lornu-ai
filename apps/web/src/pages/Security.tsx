@@ -70,21 +70,21 @@ export default function Security() {
                     <h2 className="text-2xl font-semibold">1. Infrastructure Security</h2>
                   </div>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-4">1.1 Cloudflare Workers Platform</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-4">1.1 Managed Kubernetes Platforms</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    Our Service runs entirely on Cloudflare Workers, a secure serverless execution environment:
+                    Our Service runs on managed Kubernetes clusters in AWS and Google Cloud with strong isolation controls:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Isolation:</strong> Each request runs in a V8 isolate sandbox, preventing cross-contamination between requests</li>
-                    <li><strong>Edge Security:</strong> Code executes at Cloudflare's edge locations, close to users for minimal attack surface</li>
-                    <li><strong>Zero Trust Architecture:</strong> No persistent server state; each execution is stateless and ephemeral</li>
-                    <li><strong>DDoS Protection:</strong> Automatic protection against distributed denial-of-service attacks via Cloudflare's network</li>
+                    <li><strong>Namespace Isolation:</strong> Workloads are separated by Kubernetes namespaces and policies</li>
+                    <li><strong>Node Security:</strong> Hardened nodes and managed control planes reduce operational risk</li>
+                    <li><strong>Zero Trust Posture:</strong> Service-to-service access is scoped and least-privileged</li>
+                    <li><strong>DDoS Protection:</strong> Cloud provider network protections mitigate volumetric attacks</li>
                     <li><strong>WAF (Web Application Firewall):</strong> Protection against common web vulnerabilities (SQL injection, XSS, etc.)</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-6">1.2 Cloudflare AI Gateway</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-6">1.2 API Gateway and Ingress Controls</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    All AI inference requests are routed through Cloudflare AI Gateway, which provides:
+                    AI inference requests are routed through our API gateway and ingress controls, which provide:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Unified Security Layer:</strong> Single point of control for all AI model interactions</li>
@@ -98,13 +98,13 @@ export default function Security() {
                   <div className="bg-secondary/20 p-4 rounded-lg mb-4">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <Lock size={20} weight="bold" className="text-accent" />
-                      Cloudflare KV (Key-Value Store)
+                      Managed Cache (Key-Value Store)
                     </h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
                       <li>Encrypted at rest using AES-256 encryption</li>
                       <li>Encrypted in transit using TLS 1.3</li>
-                      <li>Globally distributed with automatic replication</li>
-                      <li>Access controlled via Wrangler authentication</li>
+                      <li>Regionally replicated with automated backups</li>
+                      <li>Access controlled via cloud IAM policies</li>
                       <li>Automatic TTL (Time-To-Live) expiration for cached data</li>
                     </ul>
                   </div>
@@ -112,12 +112,12 @@ export default function Security() {
                   <div className="bg-secondary/20 p-4 rounded-lg">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <Lock size={20} weight="bold" className="text-accent" />
-                      Cloudflare R2 (Object Storage)
+                      Managed Object Storage
                     </h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>Encrypted at rest with customer-managed or Cloudflare-managed keys</li>
+                      <li>Encrypted at rest with customer-managed or provider-managed keys</li>
                       <li>Encrypted in transit using TLS 1.3</li>
-                      <li>Access control via presigned URLs and IAM-style policies</li>
+                      <li>Access control via presigned URLs and IAM policies</li>
                       <li>Versioning support for data integrity</li>
                       <li>Audit logging for all access and modifications</li>
                     </ul>
@@ -186,7 +186,7 @@ export default function Security() {
                     <li><strong>TLS 1.3:</strong> All data in transit is encrypted using the latest TLS protocol</li>
                     <li><strong>HTTPS Only:</strong> No support for insecure HTTP connections</li>
                     <li><strong>HSTS:</strong> HTTP Strict Transport Security headers enforce secure connections</li>
-                    <li><strong>Certificate Management:</strong> Automatic certificate provisioning and renewal via Cloudflare</li>
+                    <li><strong>Certificate Management:</strong> Automatic certificate provisioning and renewal via cert-manager and cloud provider integrations</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">3.3 API Security</h3>
@@ -219,10 +219,10 @@ export default function Security() {
                   <h3 className="text-xl font-semibold mb-3 mt-6">4.2 Data Retention Policy</h3>
                   <div className="bg-secondary/20 p-4 rounded-lg">
                     <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 text-sm">
-                      <li><strong>KV Cache:</strong> Automatic expiration after 7 days of inactivity</li>
-                      <li><strong>R2 Storage:</strong> User-controlled retention; data deleted upon request</li>
+                      <li><strong>Cache Layer:</strong> Automatic expiration after 7 days of inactivity</li>
+                      <li><strong>Object Storage:</strong> User-controlled retention; data deleted upon request</li>
                       <li><strong>Request Logs:</strong> 30-day retention for analytics and security, then purged</li>
-                      <li><strong>Third-Party Processing:</strong> Cloudflare AI and Google Vertex AI process queries in real-time with minimal retention (see <Link to="/privacy" className="text-accent hover:underline">Privacy Policy</Link>)</li>
+                      <li><strong>Third-Party Processing:</strong> Google Vertex AI processes queries in real-time with minimal retention (see <Link to="/privacy" className="text-accent hover:underline">Privacy Policy</Link>)</li>
                     </ul>
                   </div>
 
@@ -247,10 +247,10 @@ export default function Security() {
                   </p>
 
                   <div className="bg-secondary/20 p-4 rounded-lg mb-4">
-                    <h4 className="font-semibold mb-2">Cloudflare (Infrastructure Provider)</h4>
+                    <h4 className="font-semibold mb-2">AWS (Infrastructure Provider)</h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>SOC 2 Type II certified</li>
-                      <li>ISO 27001, ISO 27018 certified</li>
+                      <li>SOC 1, SOC 2, SOC 3 certified</li>
+                      <li>ISO 27001, ISO 27017, ISO 27018 certified</li>
                       <li>PCI DSS compliant</li>
                       <li>GDPR and CCPA compliant</li>
                       <li>Regular third-party security audits</li>
@@ -291,7 +291,7 @@ export default function Security() {
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Real-Time Alerts:</strong> Automated alerting for anomalous behavior and potential threats</li>
                     <li><strong>Log Analysis:</strong> Centralized logging with automated analysis for security events</li>
-                    <li><strong>Performance Monitoring:</strong> Cloudflare AI Gateway analytics track request patterns</li>
+                    <li><strong>Performance Monitoring:</strong> Application and infrastructure metrics track request patterns</li>
                     <li><strong>Dependency Scanning:</strong> Automated scanning for vulnerable dependencies in our codebase</li>
                   </ul>
 
@@ -331,14 +331,14 @@ export default function Security() {
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>GDPR:</strong> General Data Protection Regulation (EU)</li>
                     <li><strong>CCPA:</strong> California Consumer Privacy Act (US)</li>
-                    <li><strong>SOC 2:</strong> Service Organization Control 2 (via Cloudflare infrastructure)</li>
+                    <li><strong>SOC 2:</strong> Service Organization Control 2 (via cloud provider infrastructure)</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">7.2 Security Audits</h3>
                   <p className="text-muted-foreground leading-relaxed">
                     We conduct regular security assessments and audits of our platform, including vulnerability scanning,
                     penetration testing, and code security reviews. While LornuAI is an early-stage company, we leverage the
-                    security certifications and audits of our infrastructure providers (Cloudflare, Google Cloud) to ensure
+                    security certifications and audits of our infrastructure providers (AWS, Google Cloud) to ensure
                     enterprise-grade security.
                   </p>
                 </section>

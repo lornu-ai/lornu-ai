@@ -68,11 +68,11 @@ export default function Terms() {
                     Our Service utilizes multiple AI providers including:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li>Cloudflare Workers AI (Llama models)</li>
                     <li>Google Vertex AI (Gemini models)</li>
+                    <li>Additional approved model providers as configured</li>
                   </ul>
                   <p className="text-muted-foreground leading-relaxed mt-4">
-                    All AI inference requests are routed through Cloudflare AI Gateway for analytics, caching, and optimization.
+                    AI inference requests are routed through our API gateway for analytics, caching, and optimization.
                   </p>
                 </section>
 
@@ -111,7 +111,7 @@ export default function Terms() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li>You retain ownership of your input prompts and queries</li>
-                    <li>AI Outputs are provided "as-is" and may be subject to the terms of the underlying AI model providers (Cloudflare, Google)</li>
+                    <li>AI Outputs are provided "as-is" and may be subject to the terms of the underlying AI model providers (Google and other providers)</li>
                     <li>You are responsible for reviewing and verifying the accuracy of AI Outputs before use</li>
                     <li>LornuAI makes no claim of ownership to AI Outputs but reserves the right to use anonymized interactions for service improvement</li>
                     <li>You grant LornuAI a license to process and cache AI Outputs as necessary to provide the Service</li>
@@ -136,8 +136,8 @@ export default function Terms() {
                   </p>
                   <p className="text-muted-foreground leading-relaxed">
                     From time to time, we may restrict access to some parts of the Service, or the entire Service, to users,
-                    including registered users. The Service is provided through third-party infrastructure (Cloudflare Workers,
-                    Google Vertex AI) and may be subject to downtime or performance issues beyond our control.
+                    including registered users. The Service is provided through third-party infrastructure (AWS and Google Cloud)
+                    and may be subject to downtime or performance issues beyond our control.
                   </p>
                 </section>
 
