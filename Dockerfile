@@ -32,7 +32,7 @@ FROM python:3.12-slim AS runtime
 WORKDIR /app
 
 # Create non-root user for security (best practice for EKS)
-# Use fixed UID 1000 to match k8s/base/deployment.yaml runAsUser context
+# Use fixed UID 1000 to match kubernetes/base/deployment.yaml runAsUser context
 RUN groupadd -r -g 1000 lornu && useradd -r -u 1000 -g lornu lornu
 
 # Copy Virtual Environment from builder (contains all installed deps)

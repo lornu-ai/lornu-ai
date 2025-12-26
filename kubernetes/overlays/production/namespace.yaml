@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: lornu-prod
-  labels:
-    app.kubernetes.io/name: lornu-ai
-    lornu.ai/environment: production
-    lornu.ai/managed-by: terraform-cloud
-    lornu.ai/asset-id: lornu-ai-final-clear-bg

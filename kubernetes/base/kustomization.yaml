@@ -4,6 +4,7 @@ resources:
 - serviceaccount.yaml
 - configmap.yaml
 - configmap-assets.yaml
+- secret.yaml
 - deployment.yaml
 - service.yaml
 - ingress.yaml
