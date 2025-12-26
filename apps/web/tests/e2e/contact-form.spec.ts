@@ -2,9 +2,16 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Contact Form', () => {
 	test('should allow the user to fill out the contact form and submit successfully', async ({ page }) => {
-		// Mock the API endpoint
+		// Mock the API endpoint - match actual API response format
 		await page.route('/api/contact', async route => {
-			await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true }) });
+			await route.fulfill({ 
+				status: 200, 
+				contentType: 'application/json', 
+				body: JSON.stringify({ 
+					status: 'success', 
+					message: 'Thank you for your message. We will get back to you soon.' 
+				}) 
+			});
 		});
 
 		// Listen for console events for debugging
