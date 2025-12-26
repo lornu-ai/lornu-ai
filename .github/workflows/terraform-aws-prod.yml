@@ -14,8 +14,6 @@ permissions:
   contents: read
 
 env:
-  TF_CLOUD_ORG: ${{ secrets.TF_CLOUD_ORG }}
-  TF_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   ECR_REPOSITORY: lornu-ai-staging
   TFSEC_ENABLED: false
@@ -57,7 +55,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
@@ -74,6 +72,8 @@ jobs:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_route53_zone_name: ${{ secrets.ROUTE53_ZONE_NAME }}
           TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
+          TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
+          TF_VAR_create_route53_zone: "true"
         run: terraform -chdir=terraform/aws/production plan
 
       - name: Terraform Security Scan
@@ -104,7 +104,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
@@ -121,6 +121,8 @@ jobs:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_route53_zone_name: ${{ secrets.ROUTE53_ZONE_NAME }}
           TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
+          TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
+          TF_VAR_create_route53_zone: "true"
         run: terraform -chdir=terraform/aws/production apply -auto-approve
 
       - name: Update kubeconfig

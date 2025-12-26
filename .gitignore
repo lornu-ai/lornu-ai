@@ -86,6 +86,11 @@ logs
 .env.production.local
 .env.*.local
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

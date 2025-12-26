@@ -1,27 +1,27 @@
 output "cluster_endpoint" {
   description = "Endpoint for EKS control plane"
-  value       = module.eks.cluster_endpoint
+  value       = module.lornu_cluster.cluster_endpoint
 }
 
 output "cluster_security_group_id" {
   description = "Security group ids attached to the cluster control plane"
-  value       = module.eks.cluster_security_group_id
+  value       = module.lornu_cluster.cluster_security_group_id
 }
 
 output "cluster_name" {
   description = "Kubernetes Cluster Name"
-  value       = module.eks.cluster_name
+  value       = module.lornu_cluster.cluster_name
 }
 
 
 output "cloudfront_distribution_id" {
   description = "ID of the CloudFront distribution for api.lornu.ai"
-  value       = aws_cloudfront_distribution.api.id
+  value       = var.deploy_stage >= 2 ? aws_cloudfront_distribution.api[0].id : null
 }
 
 output "cloudfront_domain_name" {
   description = "Domain name of the CloudFront distribution"
-  value       = aws_cloudfront_distribution.api.domain_name
+  value       = var.deploy_stage >= 2 ? aws_cloudfront_distribution.api[0].domain_name : null
 }
 
 output "cloudfront_certificate_arn" {

@@ -22,8 +22,6 @@ permissions:
   contents: read
 
 env:
-  TF_CLOUD_ORG: ${{ secrets.TF_CLOUD_ORG }}
-  TF_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   ECR_REPOSITORY: "lornu-ai-staging"
 
@@ -97,7 +95,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: "Terraform Init (no backend for PR validation)"
         run: terraform -chdir=terraform/aws/staging init -backend=false
@@ -118,8 +116,6 @@ jobs:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
           TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
-          TF_VAR_resource_prefix: ${{ secrets.PROD_RESOURCE_PREFIX }}
-          TF_VAR_github_repo: ${{ secrets.PROD_GITHUB_REPO }}
         run: terraform -chdir=terraform/aws/staging plan
 
       - name: "Terraform Security Scan"
@@ -151,7 +147,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/staging init
@@ -161,8 +157,6 @@ jobs:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
           TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
-          TF_VAR_resource_prefix: ${{ secrets.PROD_RESOURCE_PREFIX }}
-          TF_VAR_github_repo: ${{ secrets.PROD_GITHUB_REPO }}
         run: terraform -chdir=terraform/aws/staging apply -auto-approve
 
       - name: "Update kubeconfig"
@@ -215,7 +209,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/production init
@@ -271,7 +265,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: "Terraform Init"
         run: terraform -chdir=terraform/aws/production init

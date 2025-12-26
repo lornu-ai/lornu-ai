@@ -38,6 +38,9 @@ permissions:
   contents: read
   id-token: write
 
+env:
+  AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
 jobs:
   acm:
     name: Stage 1 - ACM
@@ -51,13 +54,13 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.8.0
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
@@ -72,7 +75,7 @@ jobs:
           TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
           TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
           TF_VAR_route53_zone_name: ${{ secrets.ROUTE53_ZONE_NAME }}
-          TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
+          TF_VAR_create_route53_zone: "true"
         run: |
           terraform -chdir=terraform/aws/production plan \
             -target=aws_acm_certificate.cloudfront \
@@ -89,7 +92,7 @@ jobs:
           TF_VAR_db_username: ${{ secrets.PROD_DB_USERNAME }}
           TF_VAR_db_password: ${{ secrets.PROD_DB_PASSWORD }}
           TF_VAR_route53_zone_name: ${{ secrets.ROUTE53_ZONE_NAME }}
-          TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
+          TF_VAR_create_route53_zone: "true"
         run: |
           terraform -chdir=terraform/aws/production apply -auto-approve \
             -target=aws_acm_certificate.cloudfront \
