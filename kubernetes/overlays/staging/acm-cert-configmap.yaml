@@ -5,9 +5,9 @@ metadata:
   namespace: lornu-staging
   labels:
     lornu.ai/environment: staging
-    lornu.ai/managed-by: plan-a-orchestration
+    lornu.ai/managed-by: terraform-cloud
     lornu.ai/asset-id: lornu-ai-final-clear-bg
 data:
   # ALB listener certificate ARN for HTTPS
-  # Replace with actual ACM certificate ARN from AWS
-  certificate-arn: "arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/CERT_ID"
+  # Populated dynamically by Terraform with the actual ACM certificate ARN
+  certificate-arn: "${ACM_CERTIFICATE_ARN}"

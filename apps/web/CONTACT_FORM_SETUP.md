@@ -129,11 +129,7 @@ For Kubernetes deployments:
    - `RESEND_API_KEY` (required - Resend API key)
    - `CONTACT_EMAIL` (optional - defaults to `contact@lornu.ai`)
 
-
-
-2. Deploy via Cloudflare Git Integration (automatic on push to `main` or `develop`)
-
-3. Verify the contact form at `https://lornu.ai` (scroll to contact section)
+4. Verify the contact form at `https://lornu.ai` (scroll to contact section)
 
 ## Email Format
 

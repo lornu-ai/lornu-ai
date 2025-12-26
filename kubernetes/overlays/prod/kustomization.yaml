@@ -9,12 +9,10 @@ resources:
 
 namespace: lornu-prod
 
-labels:
-- pairs:
-    lornu.ai/environment: production
-    lornu.ai/managed-by: terraform-cloud
-    lornu.ai/asset-id: lornu-ai-final-clear-bg
-  includeSelectors: true
+commonLabels:
+  lornu.ai/environment: production
+  lornu.ai/managed-by: terraform-cloud
+  lornu.ai/asset-id: lornu-ai-final-clear-bg
 
 patches:
 - target:

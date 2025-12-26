@@ -8,6 +8,6 @@ metadata:
     lornu.ai/managed-by: plan-a-orchestration
     lornu.ai/asset-id: lornu-ai-final-clear-bg
 data:
-  # ALB listener certificate ARN for HTTPS
-  # Replace with actual ACM certificate ARN from AWS
-  certificate-arn: "arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/CERT_ID"
+  # ALB listener certificate ARN for HTTPS.
+  # Populated by Terraform/CI at deploy time with the actual ACM certificate ARN from AWS
+  certificate-arn: "${ACM_CERTIFICATE_ARN}"
