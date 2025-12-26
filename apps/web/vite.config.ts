@@ -38,17 +38,13 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks for better caching and code splitting
           if (id.includes('node_modules')) {
-            // React core libraries - MUST be together to share context
+            // React core + ecosystem packages that depend on React context
+            // MUST be in the same chunk to ensure React is available when deps initialize
             if (
               id.includes('/react/') ||
               id.includes('/react-dom/') ||
               id.includes('/react-is/') ||
-              id.includes('/scheduler/')
-            ) {
-              return 'vendor-react';
-            }
-            // React ecosystem packages that depend on React context
-            if (
+              id.includes('/scheduler/') ||
               id.includes('react-router') ||
               id.includes('react-helmet-async') ||
               id.includes('react-error-boundary') ||
@@ -57,17 +53,14 @@ export default defineConfig({
               id.includes('sonner') ||
               id.includes('vaul') ||
               id.includes('cmdk') ||
-              id.includes('embla-carousel-react')
+              id.includes('embla-carousel-react') ||
+              id.includes('@radix-ui')
             ) {
-              return 'vendor-react-deps';
+              return 'vendor-react';
             }
             // Icon libraries
             if (id.includes('@phosphor-icons') || id.includes('@heroicons') || id.includes('lucide-react')) {
               return 'vendor-icons';
-            }
-            // Radix UI components
-            if (id.includes('@radix-ui')) {
-              return 'vendor-radix-ui';
             }
             // Animation library
             if (id.includes('framer-motion')) {
