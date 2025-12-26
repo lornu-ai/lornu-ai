@@ -237,7 +237,7 @@ Post this on infra PRs after running a plan.
 
 Plan Summary:
 - Directory: `terraform/aws/<env>`
-- Backend: Terraform Cloud (`aws-kustomize` / `gcp-lornu-ai`)
+- Backend: Terraform Cloud (`aws-kustomize` / `gcp-kustomize`)
 
 Changes:
 - Adds: <count>

@@ -22,7 +22,7 @@ Before running a manual infrastructure update via the TFC UI, the configuration 
 Lornu AI uses two TFC workspaces in the `lornu-ai` organization:
 
 - **AWS Production**: `aws-kustomize` (terraform/aws/production)
-- **GCP**: `gcp-lornu-ai` (terraform/gcp)
+- **GCP**: `gcp-kustomize` (terraform/gcp)
 
 ### Verifying Configuration Version
 
@@ -35,7 +35,7 @@ Before running a manual TFC UI run:
 ### Running Manual Updates
 
 1. **Ensure Sync Completed**: Check GitHub Actions for the `tfc-sync.yml` workflow run
-2. **Navigate to TFC**: Go to the appropriate workspace (`aws-kustomize` for AWS, `gcp-lornu-ai` for GCP)
+2. **Navigate to TFC**: Go to the appropriate workspace (`aws-kustomize` for AWS, `gcp-kustomize` for GCP)
 3. **Create Run**: Click "+ New Run" in the TFC UI
 4. **Select Configuration Version**: The latest version (from the sync) will be pre-selected
 5. **Review Plan**: Review the plan output before applying

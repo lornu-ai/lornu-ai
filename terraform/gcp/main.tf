@@ -11,7 +11,7 @@ terraform {
   cloud {
     organization = "lornu-ai"
     workspaces {
-      name = "gcp-lornu-ai"
+      name = "gcp-kustomize"
     }
   }
 }
