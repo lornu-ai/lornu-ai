@@ -28,6 +28,9 @@ async def vectorize_image(file: UploadFile = File(...)):
     """
     Endpoint to convert a raster image to SVG.
     """
+    if not image_agent.enabled:
+        raise HTTPException(status_code=501, detail="Vectorization service unavailable (vtracer missing)")
+
     # Create a temp directory explicitly (not context manager) to persist during streaming
     temp_dir = tempfile.mkdtemp()
     temp_path = Path(temp_dir)
