@@ -204,4 +204,4 @@ imagePullSecrets:
 - Dropped all Linux capabilities
 - Network policies recommended for production
 
-See [kubernetes/base/deployment.yaml](base/deployment.yaml) for full security context.
+See [k8s/base/deployment.yaml](base/deployment.yaml) for full security context.

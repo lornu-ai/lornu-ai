@@ -3,11 +3,5 @@ kind: ConfigMap
 metadata:
   name: lornu-ai-config
 data:
-  ENVIRONMENT: "base"
-  CONTACT_EMAIL: "contact@lornu.ai"
-  # GCP Storage bucket for static assets (equivalent to Cloudflare R2 "Assets")
-  GCS_ASSETS_BUCKET: "gcp-lornu-ai-assets"
-  # Firestore for rate limiting (equivalent to Cloudflare KV "RATE_LIMIT_KV")
-  FIRESTORE_RATE_LIMIT_COLLECTION: "rate_limits"
-  # GCP Project ID
-  GCP_PROJECT_ID: "gcp-lornu-ai"
+  environment: "base"
+  contact-email: ""

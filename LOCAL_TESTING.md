@@ -29,7 +29,7 @@ kubectl port-forward svc/lornu-ai 8080:8080
    - Builds container image in minikube's environment
 
 2. **local-k8s-deploy.sh**:
-   - Applies Kustomize manifests from `kubernetes/overlays/lornu-dev`
+   - Applies Kustomize manifests from `k8s/overlays/dev`
    - Waits for deployment to be ready
    - Shows pod status
 

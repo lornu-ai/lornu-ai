@@ -14,10 +14,10 @@ This setup uses **cert-manager** to automatically provision and renew TLS certif
 
 ### 1. Install cert-manager
 
-cert-manager is installed via Kustomize in `kubernetes/base/cert-manager/`:
+cert-manager is installed via Kustomize in `k8s/base/cert-manager/`:
 
 ```bash
-kubectl apply -k kubernetes/base/cert-manager/
+kubectl apply -k k8s/base/cert-manager/
 ```
 
 This installs:
@@ -65,7 +65,7 @@ Update your domain registrar to use these nameservers.
 
 ### 4. Deploy Application with TLS
 
-The Ingress in `kubernetes/base/ingress.yaml` is configured with:
+The Ingress in `k8s/base/ingress.yaml` is configured with:
 - `cert-manager.io/cluster-issuer: "letsencrypt-prod"` annotation
 - TLS section referencing `lornu-ai-tls` secret
 
@@ -78,7 +78,7 @@ When you deploy, cert-manager will automatically:
 
 ```bash
 # Deploy to production
-kubectl apply -k kubernetes/overlays/lornu-prod/
+kubectl apply -k k8s/overlays/lornu-prod/
 ```
 
 ### 5. Verify Certificate

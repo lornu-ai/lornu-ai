@@ -40,7 +40,7 @@ jobs:
           kustomize-version: '5.0.0'
 
       - name: Set image in Kustomize
-        working-directory: kubernetes/overlays/lornu-prod
+        working-directory: k8s/overlays/prod
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.event.inputs.image_tag || 'latest' }}
@@ -50,7 +50,7 @@ jobs:
 
       - name: Build Kustomize manifests
         run: |
-          kustomize build kubernetes/overlays/lornu-prod > /tmp/manifests.yaml
+          kustomize build k8s/overlays/prod > /tmp/manifests.yaml
           echo "--- Generated Manifests ---"
           cat /tmp/manifests.yaml
 
