@@ -13,8 +13,8 @@ on:
         type: choice
         options:
           - production
-          - staging
-          - development
+          # - staging
+          # - development
 
 permissions:
   contents: write
@@ -42,7 +42,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: apps/web
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Install Playwright Browsers
         working-directory: apps/web
