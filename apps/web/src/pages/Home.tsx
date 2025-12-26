@@ -85,21 +85,23 @@ export default function Home() {
         body: JSON.stringify({ name, email, message }),
       })
 
-      let data: { error?: string } | null = null
-      const responseText = await response.text()
-
-      try {
-        data = JSON.parse(responseText)
-      } catch {
-        data = { error: responseText || 'Failed to parse error response' }
-      }
-
       if (!response.ok) {
-        throw new Error(data?.error || 'Failed to send message')
+        const contentType = response.headers.get('content-type')
+        const responseText = await response.text()
+        let errorMessage = responseText
+
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const data = JSON.parse(responseText)
+            errorMessage = data?.error || errorMessage
+          } catch (e) {
+            // Not a valid JSON, fall back to responseText
+          }
+        }
+        throw new Error(errorMessage || 'Failed to send message')
       }
 
-      toast.success('Message sent! We\'ll be in touch soon.')
-      // Reset the form after successful submission
+      toast.success("Message sent! We'll be in touch soon.")
       form.reset()
     } catch (error) {
       console.error('Error submitting form:', error)

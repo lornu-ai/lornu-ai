@@ -95,7 +95,8 @@ describe('Home Page - Contact Form Integration', () => {
     // Mock failed API response
     mockFetch.mockResolvedValueOnce({
       ok: false,
-      json: async () => ({ error: 'Failed to send message' }),
+      headers: new Headers({ 'Content-Type': 'application/json' }),
+      text: async () => JSON.stringify({ error: 'Failed to send message' }),
     } as Response)
 
     renderHome()
@@ -115,7 +116,7 @@ describe('Home Page - Contact Form Integration', () => {
 
     // Verify error toast was called
     await waitFor(() => {
-      expect(mockToastError).toHaveBeenCalled()
+      expect(mockToastError).toHaveBeenCalledWith('Failed to send message')
     })
   })
 })
