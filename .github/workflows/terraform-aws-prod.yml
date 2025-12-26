@@ -52,7 +52,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/aws/production init
+        run: terraform -chdir=terraform/aws init
 
       - name: Set extra domain aliases for SAN certificate
         run: |
@@ -83,13 +83,13 @@ jobs:
           TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
           TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
           TF_VAR_create_route53_zone: "true"
-        run: terraform -chdir=terraform/aws/production plan
+        run: terraform -chdir=terraform/aws plan
 
       - name: Terraform Security Scan
         if: env.TFSEC_ENABLED == 'true'
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
-          working_directory: terraform/aws/production
+          working_directory: terraform/aws
 
   apply:
     name: Terraform Apply & Deploy
@@ -116,7 +116,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: Terraform Init
-        run: terraform -chdir=terraform/aws/production init
+        run: terraform -chdir=terraform/aws init
 
       - name: Set extra domain aliases for SAN certificate
         run: |
@@ -147,7 +147,7 @@ jobs:
           TF_VAR_cloudfront_web_acl_id: ${{ secrets.CLOUDFRONT_WAF_ACL_ID }}
           TF_VAR_alb_domain_name: ${{ secrets.PROD_ALB_DOMAIN_NAME }}
           TF_VAR_create_route53_zone: "true"
-        run: terraform -chdir=terraform/aws/production apply -auto-approve
+        run: terraform -chdir=terraform/aws apply -auto-approve
 
       - name: Update kubeconfig
         run: |

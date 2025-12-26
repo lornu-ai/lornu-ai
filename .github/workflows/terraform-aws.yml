@@ -5,7 +5,7 @@ on:
     branches: [ develop ]
     paths:
       - "terraform/aws/staging/**"
-      - "terraform/aws/production/**"
+      - "terraform/aws/**"
       - "apps/web/src/**"
       - "apps/web/package.json"
       - "apps/web/bun.lock"
@@ -212,7 +212,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: "Terraform Init"
-        run: terraform -chdir=terraform/aws/production init
+        run: terraform -chdir=terraform/aws init
 
       - name: "Setup TFLint"
         uses: terraform-linters/setup-tflint@v4
@@ -221,17 +221,17 @@ jobs:
 
       - name: "Run TFLint"
         run: |
-          cd terraform/aws/production
+          cd terraform/aws
           tflint --init
           tflint --format compact
 
       - name: "Terraform Plan"
-        run: terraform -chdir=terraform/aws/production plan
+        run: terraform -chdir=terraform/aws plan
 
       - name: "Terraform Security Scan"
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
-          working_directory: terraform/aws/production
+          working_directory: terraform/aws
 
   prod-apply:
     name: "Production Apply"
@@ -268,7 +268,7 @@ jobs:
           cli_config_credentials_token: ${{ secrets.AWS_TF_API_TOKEN }}
 
       - name: "Terraform Init"
-        run: terraform -chdir=terraform/aws/production init
+        run: terraform -chdir=terraform/aws init
 
       - name: "Terraform Apply"
-        run: terraform -chdir=terraform/aws/production apply -auto-approve
+        run: terraform -chdir=terraform/aws apply -auto-approve
