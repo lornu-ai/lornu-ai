@@ -49,3 +49,6 @@ kustomize build kubernetes/overlays/prod | kubectl apply -f -
 
 ## Notes
 Plan A documentation is authoritative for this repo. Legacy references to ECS or Cloudflare Workers are deprecated.
+
+## License
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
