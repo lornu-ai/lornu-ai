@@ -18,17 +18,17 @@ permissions:
 
 jobs:
   stage1-acm:
-    name: "Stage 1 - ACM"
-    uses: ./.github/workflows/terraform-aws-stage1-acm.yml
+    name: "Part 1 - ACM"
+    uses: ./.github/workflows/terraform-aws-part1-acm.yml
     with:
       environment: prod
       action: ${{ inputs.action }}
     secrets: inherit
 
   stage2-cdn:
-    name: "Stage 2 - CDN"
+    name: "Part 2 - CDN"
     needs: stage1-acm
-    uses: ./.github/workflows/terraform-aws-stage2-cdn.yml
+    uses: ./.github/workflows/terraform-aws-part2-cdn.yml
     with:
       environment: prod
       action: ${{ inputs.action }}
