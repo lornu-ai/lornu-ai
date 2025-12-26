@@ -86,6 +86,11 @@ logs
 .env.production.local
 .env.*.local
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -95,6 +100,21 @@ logs
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.eggs/
+*.egg-info/
+*.egg
 
 # Cloudflare Workers (use lornu-ai-dev fork for Cloudflare development)
 wrangler.toml

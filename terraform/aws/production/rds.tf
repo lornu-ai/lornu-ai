@@ -93,14 +93,14 @@ resource "aws_rds_cluster_instance" "main" {
 resource "aws_security_group" "rds" {
   name        = "${local.name}-sg"
   description = "Security group for Aurora Serverless v2"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.lornu_vpc.id
 
   ingress {
     description     = "PostgreSQL access from EKS cluster"
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
-    security_groups = [module.eks.cluster_security_group_id]
+    security_groups = [module.lornu_cluster.cluster_security_group_id]
   }
 
   tags = {

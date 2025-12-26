@@ -25,11 +25,17 @@ export function ContactForm() {
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
+			const headers: HeadersInit = {
+				'Content-Type': 'application/json',
+			};
+
+			if (import.meta.env.MODE !== 'production') {
+				headers['X-RateLimit-Bypass'] = 'development';
+			}
+
 			const response = await fetch('/api/contact', {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
+				headers,
 				body: JSON.stringify(values),
 			});
 

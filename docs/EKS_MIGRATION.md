@@ -48,7 +48,7 @@ Update `.github/workflows/terraform-aws.yml` to:
 
 ### Phase 5: Create Ingress Resource
 
-Create `k8s/overlays/staging/ingress.yaml`:
+Create `kubernetes/overlays/lornu-staging/ingress.yaml`:
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress

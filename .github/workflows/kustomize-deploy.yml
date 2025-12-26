@@ -1,0 +1,50 @@
+name: "Kustomize Deployments"
+
+on:
+  push:
+    branches: [ kustomize ]
+  pull_request:
+    branches: [ kustomize ]
+  workflow_call:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: "Deploy"
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    strategy:
+      matrix:
+        env: [dev, staging, prod]
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ACTIONS_PROD_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: "Update Kubeconfig"
+        run: |
+          aws eks update-kubeconfig --name lornu-ai-production-cluster --region ${{ secrets.AWS_DEFAULT_REGION }}
+          kubectl cluster-info
+          kubectl auth can-i create deployments --namespace lornu-${{ matrix.env }}
+
+      - name: "Create/Update Secrets"
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          kubectl create namespace lornu-${{ matrix.env }} --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret generic lornu-ai-secrets \
+            --from-literal=RESEND_API_KEY="${RESEND_API_KEY}" \
+            -n lornu-${{ matrix.env }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: "Deploy to Namespace"
+        run: |
+          kubectl kustomize kubernetes/overlays/${{ matrix.env }} | kubectl apply -f - --validate=false

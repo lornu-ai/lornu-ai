@@ -1,0 +1,75 @@
+name: GCP Terraform
+
+on:
+  workflow_call:
+
+env:
+  TF_CLOUD_ORGANIZATION: "lornu-ai"
+  TF_API_TOKEN: ${{ secrets.GCP_TF_API_TOKEN }}
+  TF_WORKSPACE: "gcp-lornu-ai"
+  CONFIG_DIRECTORY: "./terraform/gcp"
+
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Upload Configuration
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
+        id: upload-config
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          directory: ${{ env.CONFIG_DIRECTORY }}
+          speculative: ${{ github.event_name == 'pull_request' }}
+
+      - name: Create Plan Run
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
+        id: plan-run
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          configuration_version: ${{ steps.upload-config.outputs.configuration_version_id }}
+          plan_only: true
+
+      - name: Get Plan Output
+        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
+        id: plan-output
+        with:
+          plan: ${{ steps.plan-run.outputs.plan_id }}
+
+      - name: Update PR
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan-output.outputs.stdout }}"
+        with:
+          script: |
+            const output = `#### Terraform Cloud Plan 📖\`${{ steps.plan-run.outputs.run_status }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Apply
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/kustomize' || contains(github.ref, 'feat/multi-cloud-consolidation')) && github.event_name == 'push'
+        uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.0
+        with:
+          run: ${{ steps.plan-run.outputs.run_id }}
+          comment: "Apply Run from GitHub Actions CI ${GITHUB_SHA}"

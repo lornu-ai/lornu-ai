@@ -1,8 +1,26 @@
 # Better Stack (Better Uptime) Setup Guide
 
-**Status:** Active Setup
+**Status:** Active Setup (with GitHub Actions Integration)
 **Last Updated:** 2025-12-15
 **Account:** Access your Better Stack dashboard at https://uptime.betterstack.com
+
+## ⚡ Quick Start: GHA-to-Heartbeat Pattern
+
+**New Approach (Recommended):** See [GITHUB_ACTIONS_MONITORING.md](./GITHUB_ACTIONS_MONITORING.md)
+
+We now use **GitHub Actions + BetterStack Heartbeat** for 92% cost savings:
+
+```
+GitHub Actions (every 10 min) → Run Playwright Tests → Send Heartbeat to BetterStack
+Success: Heartbeat sent ✓
+Failure: Alert triggered after timeout ⚠️
+Result: Live dashboard at https://lornu-ai.github.io/lornu-ai
+Cost: ~$5/month (vs $60/month SaaS)
+```
+
+This guide covers **traditional HTTP monitors** for reference. The GHA approach is now the primary monitoring method.
+
+---
 
 ## Overview
 

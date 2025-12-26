@@ -1,11 +1,18 @@
 import logging
 from pathlib import Path
 from typing import Optional
-import vtracer
-
 logger = logging.getLogger(__name__)
 
 class ImageAgent:
+    def __init__(self):
+        self.enabled = False
+        try:
+            import vtracer
+            self.vtracer = vtracer
+            self.enabled = True
+        except ImportError:
+            logger.warning("vtracer not available. Vectorization disabled.")
+
     def process_vectorization(self, input_path: Path, output_path: Path, colormode: str = "color") -> Optional[Path]:
         """
         Converts a raster image to SVG using vtracer (VisionCortex).
@@ -18,6 +25,9 @@ class ImageAgent:
         Returns:
             Path to the output file if successful, None otherwise.
         """
+        if not self.enabled:
+            raise ImportError("vtracer is not installed or failed to load")
+
         try:
             if not input_path.exists():
                 raise FileNotFoundError(f"Input file not found: {input_path}")
@@ -26,7 +36,7 @@ class ImageAgent:
 
             # vtracer conversion
             # Using defaults for other parameters generally works well for logos
-            vtracer.convert_image_to_svg_py(
+            self.vtracer.convert_image_to_svg_py(
                 str(input_path),
                 str(output_path),
                 colormode=colormode,

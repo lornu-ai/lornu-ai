@@ -1,0 +1,48 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ../../base
+- namespace.yaml
+
+namespace: lornu-prod
+
+labels:
+- pairs:
+    lornu.ai/environment: production
+    lornu.ai/managed-by: terraform-cloud
+    lornu.ai/asset-id: lornu-ai-final-clear-bg
+  includeSelectors: true
+
+patches:
+- path: ingress-patch.yaml
+  target:
+    kind: Ingress
+    name: lornu-ai
+- target:
+    kind: Deployment
+    name: lornu-ai
+  patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 3
+- target:
+    kind: Ingress
+    name: lornu-ai
+  patch: |-
+    - op: add
+      path: /metadata/annotations/alb.ingress.kubernetes.io~1certificate-arn
+      value: "${PROD_ACM_CERTIFICATE_ARN}"
+    - op: add
+      path: /metadata/annotations/cert-manager.io~1cluster-issuer
+      value: letsencrypt-prod
+    - op: add
+      path: /metadata/annotations/cert-manager.io~1certificate-name
+      value: lornu-ai-tls
+    - op: add
+      path: /spec/tls
+      value:
+      - hosts:
+        - lornu.ai
+        - api.lornu.ai
+        secretName: lornu-ai-tls
