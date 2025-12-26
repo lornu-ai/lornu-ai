@@ -1,4 +1,4 @@
-name: Terraform AWS Stage 1 (ACM)
+name: Terraform AWS Part 1 (ACM)
 
 on:
   workflow_call:
@@ -43,7 +43,7 @@ env:
 
 jobs:
   acm:
-    name: Stage 1 - ACM
+    name: Part 1 - ACM
     runs-on: ubuntu-latest
     outputs:
       acm_certificate_arn: ${{ steps.acm_arn.outputs.value }}

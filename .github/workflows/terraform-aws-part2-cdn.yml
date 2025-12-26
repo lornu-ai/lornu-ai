@@ -1,4 +1,4 @@
-name: Terraform AWS Stage 2 (CDN)
+name: Terraform AWS Part 2 (CDN)
 
 on:
   workflow_call:
@@ -13,7 +13,7 @@ on:
         default: plan
         type: string
       acm_certificate_arn:
-        description: ACM certificate ARN from Stage 1
+        description: ACM certificate ARN from Part 1
         required: false
         type: string
   workflow_dispatch:
@@ -43,7 +43,7 @@ env:
 
 jobs:
   cdn:
-    name: Stage 2 - CDN
+    name: Part 2 - CDN
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
