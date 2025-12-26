@@ -12,4 +12,5 @@ dependencies = [
     "google-cloud-storage>=2.14.0",
     "google-cloud-firestore>=2.14.0",
     "resend>=0.8.0",
+    "email-validator>=2.1.0",
 ]
