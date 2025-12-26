@@ -8,12 +8,26 @@ from starlette.background import BackgroundTask
 
 from ..agents.image_agent import ImageAgent
 from ..agents.media_agent import MediaAgent
+from ..agents.email_agent import EmailAgent
+from pydantic import BaseModel, EmailStr
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+@router.get("/health", include_in_schema=False)
+@router.head("/health", include_in_schema=False)
+def health_check():
+    return {"status": "ok", "service": "api"}
+
 image_agent = ImageAgent()
 media_agent = MediaAgent()
+email_agent = EmailAgent()
+
+class ContactRequest(BaseModel):
+    name: str
+    email: EmailStr
+    message: str
 
 def cleanup_temp_dir(path: str):
     """Deletes the temporary directory and its contents."""
@@ -28,14 +42,26 @@ async def vectorize_image(file: UploadFile = File(...)):
     """
     Endpoint to convert a raster image to SVG.
     """
+    if not image_agent.enabled:
+        raise HTTPException(status_code=501, detail="Vectorization service unavailable (vtracer missing)")
+
     # Create a temp directory explicitly (not context manager) to persist during streaming
     temp_dir = tempfile.mkdtemp()
     temp_path = Path(temp_dir)
 
     try:
-        input_file = temp_path / file.filename
-        # Fix: Ensure clean extension replacement (e.g. .png -> .svg)
-        output_file = temp_path / f"{Path(file.filename).stem}.svg"
+        # Sanitize filename to prevent path traversal
+        original_filename = Path(file.filename).name
+        input_file = temp_path / original_filename
+
+        # Ensure clean extension replacement (e.g. .png -> .svg)
+        # Use .with_suffix() to correctly handle extension replacement
+        output_file = input_file.with_suffix(".svg")
+
+        # Handle edge case where input and output filenames are identical
+        # (e.g. uploading 'image.svg' to verify/clean it)
+        if input_file == output_file:
+            output_file = temp_path / f"{input_file.stem}_vectorized.svg"
 
         # Save upload to temp
         with open(input_file, "wb") as buffer:
@@ -73,9 +99,12 @@ async def remove_background(file: UploadFile = File(...)):
     temp_path = Path(temp_dir)
 
     try:
-        input_file = temp_path / file.filename
+        # Sanitize filename to prevent path traversal
+        original_filename = Path(file.filename).name
+        input_file = temp_path / original_filename
+
         # Output as PNG to preserve transparency
-        output_filename = f"{Path(file.filename).stem}_nobg.png"
+        output_filename = f"{Path(original_filename).stem}_nobg.png"
         output_file = temp_path / output_filename
 
         with open(input_file, "wb") as buffer:
@@ -98,3 +127,24 @@ async def remove_background(file: UploadFile = File(...)):
         cleanup_temp_dir(temp_dir)
         logger.error(f"Error in remove_background: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/contact")
+def contact_form(request: ContactRequest):
+    """
+    Endpoint for contact form submissions.
+    """
+    if not email_agent.enabled:
+        # Fallback during migration if Resend is not yet configured
+        logger.warning(f"Contact form submission received but email is disabled: {request.name} <{request.email}>")
+        return {"status": "received", "info": "Email delivery is currently disabled for maintenance."}
+
+    success = email_agent.send_contact_email(
+        name=request.name,
+        email=request.email,
+        message=request.message
+    )
+
+    if success:
+        return {"status": "success", "message": "Thank you for your message. We will get back to you soon."}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send message. Please try again later.")

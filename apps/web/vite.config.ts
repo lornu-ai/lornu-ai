@@ -20,7 +20,15 @@ export default defineConfig({
     sparkPlugin() as PluginOption,
     {
       name: 'force-port',
-      config: () => ({ server: { port: 5174, strictPort: true } }),
+      config: () => ({
+        server: {
+          port: 5174,
+          strictPort: true,
+          proxy: {
+            '/api': 'http://127.0.0.1:8080',
+          },
+        },
+      }),
     }
   ],
   resolve: {
@@ -36,9 +44,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Vendor chunks for better caching and code splitting
           if (id.includes('node_modules')) {
-            // React core + ecosystem packages that depend on React context
+            // Group React core + ecosystem packages that depend on React context
             // MUST be in the same chunk to ensure React is available when deps initialize
             if (
               id.includes('/react/') ||

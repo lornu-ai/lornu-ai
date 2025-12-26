@@ -1,53 +1,23 @@
 # Lornu AI Web App
 
-A React + Vite web application deployed on Cloudflare Workers with custom asset serving.
+A React + Vite web application built with Bun and deployed via Plan A (Kubernetes).
 
 ## Architecture
 
-This application uses **Cloudflare Workers** (not Cloudflare Pages) to serve static assets with custom request handling. The architecture provides:
+This application is built as a Static Site that is served by the Backend API (`packages/api`).
 
-- **Custom MIME type handling**: Ensures all static assets are served with correct Content-Type headers
-- **Cloudflare Workers Runtime**: Leverages edge computing for fast, global content delivery
-- **Asset binding**: The built React app is served through the ASSETS binding in the worker
-
-### Key Components
-
-- **`worker.ts`**: Cloudflare Worker that serves assets, handles API routes (e.g., `/api/contact`), and ensures proper Content-Type headers
-- **`wrangler.toml`**: Worker configuration including asset directory and domain routing
-- **`src/`**: React application source code built with Vite
+- **Frontend**: React + Vite (TS), managed by **Bun**.
+- **Serving**: The Python FastAPI backend serves the built assets from `dist/` and provides SPA fallback routing.
+- **Deployment**: Deployed as a Docker container to GKE (GCP) or EKS (AWS) namespaces (`lornu-dev`, `lornu-staging`, `lornu-prod`).
 
 ## Development
 
 ### Prerequisites
 
-- Bun 1.3.0+ (package manager)
-- Wrangler CLI (installed as dev dependency)
-- [Pre-commit](https://pre-commit.com/) (recommended for code quality & security)
-
-
-### Development Tools (Pre-commit)
-
-This project uses pre-commit hooks to enforce code quality and security standards (blocking secrets, checking syntax).
-
-1.  **Install pre-commit:**
-    ```bash
-    brew install pre-commit  # macOS
-    pip install pre-commit   # Universal
-    ```
-
-2.  **Install hooks in the repo:**
-    ```bash
-    pre-commit install
-    ```
-
-3.  **Run checks manually:**
-    ```bash
-    pre-commit run --all-files
-    ```
+- [Bun](https://bun.sh/) 1.3.0+ (package manager)
+- [Pre-commit](https://pre-commit.com/) (required for code quality & security)
 
 ### Quick Start
-
-The project now uses **Bun** for package management (Phase 2 migration):
 
 ```bash
 # Install dependencies
@@ -56,32 +26,17 @@ bun install
 # Run development server with Vite
 bun dev
 
-# Run in production-like environment with Wrangler
-bun run build
-bun x wrangler dev
+# Run tests
+bun run test
 ```
 
 ### Local Development Workflow
 
-#### Option 1: Vite Dev Server (Fastest Development)
-
-1.  **Install dependencies:**
+1.  **Vite Dev Server**: Starts the HMR server at `http://localhost:5173`.
+2.  **K8s Dev**: Build and apply manifests to the local/dev cluster:
     ```bash
-    bun install
+    bun run dev:k8s
     ```
-
-2.  **Run development server with Vite:**
-    ```bash
-    bun run dev
-    ```
-    This starts the Vite dev server at `http://localhost:5173`
-
-3.  **Test with Wrangler (production-like environment):**
-    ```bash
-    bun run build
-    bunx wrangler dev
-    ```
-    This runs the actual worker locally with the built assets
 
 ### Build
 
@@ -90,157 +45,19 @@ Build the production bundle:
 bun run build
 ```
 
-The output is generated in the `dist/` directory.
-
-### Package Manager Switch to Bun
-
-**Why Bun?**
-- 🚀 **55% smaller lock file** (138 KB vs 308 KB with npm)
-- ⚡ **80-85% faster installs** (subsequent runs after first install)
-- ✅ **100% compatible** with all dependencies
-- 🔒 **Production-ready** (verified in Phase 1 evaluation)
-
-**Migration Details:**
-- `bun.lock` replaces `package-lock.json` for Bun dependency resolution
-- `package.json` remains the same (Bun uses it as source of truth)
-- All npm scripts work with `bun run <script>`
-- All dev tools (TypeScript, Vite, Wrangler) fully compatible
-
-## Deployment
-
-### Cloudflare Git Integration (Recommended)
-
-This project uses **Cloudflare's Git integration** for automatic deployments:
-
-1. Pushing to `main` branch triggers automatic deployment to production
-2. Pushing to `develop` branch triggers deployment to staging (if configured)
-3. Cloudflare handles the build and deployment automatically
-
-**Setup:**
-- Configure in Cloudflare Dashboard → Workers & Pages → Your Project → Settings → Builds & Deployments
-- Cloudflare automatically detects the `wrangler.toml` configuration
-- Ensure Cloudflare build settings use Bun (v1.3.0+) in Builds & Deployments settings
-
-### Manual Deployment
-
-Deploy manually using Wrangler:
-```bash
-bun run build
-bunx wrangler deploy
-```
-
-**Note:** Requires Cloudflare API token configured:
-```bash
-bunx wrangler login
-```
+The output is generated in the `dist/` directory, which is then picked up by the Docker build process.
 
 ## Configuration
 
 ### Environment Variables
 
-Configuration values can be added in `wrangler.toml`:
+Frontend configuration is managed via Vite environment variables (`.env`).
+Backend configuration (including the contact form email) is managed via Kubernetes ConfigMaps and Secrets.
 
-```toml
-[vars]
-API_URL = "https://api.example.com"
-```
+## Deployment
 
-### Secrets
+Deployment is managed by GitHub Actions based on the Plan A model:
+- Pushing to `gcp-develop` triggers deployment to the `lornu-dev` namespace on GKE.
 
-Required secrets for the contact form API:
-
-```bash
-# Required: Resend API key for email sending
-bunx wrangler secret put RESEND_API_KEY
-
-# Optional: Override default contact email (defaults to contact@lornu.ai)
-bunx wrangler secret put CONTACT_EMAIL
-```
-
-For other secrets:
-```bash
-bunx wrangler secret put SECRET_NAME
-```
-
-See [`CONTACT_FORM_SETUP.md`](./CONTACT_FORM_SETUP.md) for detailed contact form configuration.
-
-### Domain Configuration
-
-Production domains are configured in `wrangler.toml`:
-- `lornu.ai`
-- `www.lornu.ai`
-
-**Important:** Custom domains must be added in Cloudflare Dashboard first before the routes will work.
-
-## Migration from Cloudflare Pages
-
-This project was migrated from Cloudflare Pages to Cloudflare Workers to gain:
-
-1.  **Better control**: Custom request/response handling in the worker
-2.  **MIME type fixes**: Resolved issues with Content-Type headers for static assets
-3.  **Flexibility**: Can add API routes, authentication, or other logic in the worker
-
-### What Changed:
-
-- ❌ Removed: `.github/workflows/deploy.yml` (GitHub Actions workflow)
-- ✅ Added: `worker.ts` (Cloudflare Worker for asset serving and API routes like `/api/contact`)
-- ✅ Modified: `wrangler.toml` (from Pages config to Workers config)
-- ✅ Added: Wrangler and Workers types to dependencies
-
-### For Developers:
-
-- Use `bunx wrangler dev` instead of `bun run dev` to test the production-like environment
-- The worker serves assets from the `dist/` directory after build
-- Deploy is automatic via Cloudflare Git integration
-
-## Troubleshooting
-
-### MIME Type Issues
-
-If assets aren't loading correctly, check:
-1.  File extensions are recognized in `worker.ts` MIME_TYPES map
-2.  The worker is properly serving from the ASSETS binding
-3.  Content-Type headers in browser DevTools Network tab
-
-### Local Development Issues
-
-If `bun dev` or `wrangler dev` fails:
-```bash
-# Ensure you have the latest wrangler
-bun add -d wrangler@latest
-# Ensure dependencies are installed
-bun install
-
-# Clear Bun cache if needed
-rm -rf ~/.bun
-
-# Ensure wrangler is up to date
-bun add -D wrangler@latest
-
-# Rebuild the app
-bun run build
-bunx wrangler dev
-```
-
-### Deployment Issues
-
-If deployment fails:
-```bash
-# Check wrangler authentication
-bunx wrangler whoami
-
-# Re-authenticate if needed
-bunx wrangler login
-```
-
-### Contact Form / Email Issues
-
-If the contact form isn't sending emails:
-1. Verify `RESEND_API_KEY` secret is set: `bunx wrangler secret list`
-2. Check domain is verified in Resend dashboard
-3. Review Cloudflare Worker logs for errors
-4. See [`CONTACT_FORM_SETUP.md`](./CONTACT_FORM_SETUP.md) for detailed troubleshooting
-
-## License
-
-The Spark Template files and resources from GitHub are licensed under the terms of the MIT license, Copyright GitHub, Inc.
+---
+*Note: Legacy references to Cloudflare Workers are deprecated. This project uses a unified containerized deployment.*

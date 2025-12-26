@@ -1,0 +1,441 @@
+name: Synthetic Monitoring
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to monitor'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+
+permissions:
+  contents: write
+  issues: write
+
+env:
+  PRODUCTION_URL: https://lornu.ai
+  STAGING_URL: https://staging.lornu.ai
+  DEV_URL: https://d2.lornu.ai
+
+jobs:
+  monitor:
+    name: Health Check - ${{ github.event.inputs.environment || 'production' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: apps/web
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        working-directory: apps/web
+        run: bunx playwright install chromium --with-deps
+
+      - name: Set environment URL
+        id: set-url
+        run: |
+          ENV="${{ github.event.inputs.environment || 'production' }}"
+          case $ENV in
+            production) echo "url=${{ env.PRODUCTION_URL }}" >> $GITHUB_OUTPUT ;;
+            staging) echo "url=${{ env.STAGING_URL }}" >> $GITHUB_OUTPUT ;;
+            development) echo "url=${{ env.DEV_URL }}" >> $GITHUB_OUTPUT ;;
+          esac
+          echo "env=$ENV" >> $GITHUB_OUTPUT
+
+      - name: Run Synthetic Monitoring Tests
+        working-directory: apps/web
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.set-url.outputs.url }}
+          CI: true
+        run: |
+          bun run test:e2e tests/e2e/betterstack-monitoring.spec.ts --project=chromium --reporter=json --output=../../test-results.json || true
+
+      - name: Parse Test Results
+        id: parse-results
+        run: |
+          if [ -f test-results.json ]; then
+                        # Extract pass/fail counts using Playwright's actual status values
+            PASSED=$(jq '[.suites[] | recurse(.suites[]?) | .specs[]? | .tests[]? | select(.status == "expected")] | length' test-results.json || echo 0)
+            FAILED=$(jq '[.suites[] | recurse(.suites[]?) | .specs[]? | .tests[]? | select(.status == "unexpected")] | length' test-results.json || echo 0)
+            TOTAL=$((PASSED + FAILED))
+
+            echo "passed=$PASSED" >> $GITHUB_OUTPUT
+            echo "failed=$FAILED" >> $GITHUB_OUTPUT
+            echo "total=$TOTAL" >> $GITHUB_OUTPUT
+
+            if [ $FAILED -gt 0 ]; then
+              echo "status=failure" >> $GITHUB_OUTPUT
+              echo "success=false" >> $GITHUB_OUTPUT
+            else
+              echo "status=success" >> $GITHUB_OUTPUT
+              echo "success=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "status=error" >> $GITHUB_OUTPUT
+            echo "success=false" >> $GITHUB_OUTPUT
+            echo "passed=0" >> $GITHUB_OUTPUT
+            echo "failed=0" >> $GITHUB_OUTPUT
+            echo "total=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ steps.set-url.outputs.env }}-${{ github.run_number }}
+          path: apps/web/playwright-report/
+          retention-days: 30
+
+      - name: Upload Screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ steps.set-url.outputs.env }}-${{ github.run_number }}
+          path: apps/web/test-results/
+          retention-days: 7
+
+      - name: Prepare GitHub Pages Report
+        if: always()
+        run: |
+          mkdir -p gh-pages
+
+          # Copy Playwright HTML report
+          if [ -d apps/web/playwright-report ]; then
+            cp -r apps/web/playwright-report gh-pages/latest
+          fi
+
+          # Create index page with links to all reports
+          cat > gh-pages/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>LornuAI Monitoring Status</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+              }
+              .container {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                padding: 40px;
+                max-width: 600px;
+                width: 100%;
+              }
+              h1 {
+                color: #1a202c;
+                margin-bottom: 8px;
+                font-size: 32px;
+              }
+              .subtitle {
+                color: #718096;
+                margin-bottom: 32px;
+                font-size: 16px;
+              }
+              .status {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 20px;
+                background: #f7fafc;
+                border-radius: 12px;
+                margin-bottom: 24px;
+              }
+              .status-icon {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+              }
+              .status-icon.green { background: #48bb78; }
+              .status-icon.red { background: #f56565; }
+              .status-info h2 {
+                font-size: 18px;
+                color: #2d3748;
+                margin-bottom: 4px;
+              }
+              .status-info p {
+                font-size: 14px;
+                color: #718096;
+              }
+              .btn {
+                display: inline-block;
+                padding: 12px 24px;
+                background: #667eea;
+                color: white;
+                text-decoration: none;
+                border-radius: 8px;
+                font-weight: 500;
+                transition: all 0.2s;
+                margin: 8px 8px 8px 0;
+              }
+              .btn:hover {
+                background: #5a67d8;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+              }
+              .btn.secondary {
+                background: #e2e8f0;
+                color: #2d3748;
+              }
+              .btn.secondary:hover {
+                background: #cbd5e0;
+              }
+              .footer {
+                margin-top: 32px;
+                padding-top: 24px;
+                border-top: 1px solid #e2e8f0;
+                text-align: center;
+                color: #a0aec0;
+                font-size: 14px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>🚀 LornuAI Monitoring</h1>
+              <p class="subtitle">Real-time health check results</p>
+
+              <div class="status">
+                <div class="status-icon green">✓</div>
+                <div class="status-info">
+                  <h2>System Operational</h2>
+                  <p>Last checked: <span id="timestamp">Loading...</span></p>
+                </div>
+              </div>
+
+              <div>
+                <a href="./latest/index.html" class="btn">View Latest Test Report</a>
+                <a href="https://github.com/lornu-ai/lornu-ai/actions/workflows/synthetic-monitoring.yml" class="btn secondary">View All Runs</a>
+              </div>
+
+              <div class="footer">
+                Powered by GitHub Actions • Updates every 5 minutes<br>
+                <a href="https://lornu.ai" style="color: #667eea; text-decoration: none;">lornu.ai</a>
+              </div>
+            </div>
+
+            <script>
+              document.getElementById('timestamp').textContent = new Date().toLocaleString();
+            </script>
+          </body>
+          </html>
+          EOF
+
+      - name: Deploy to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages
+          keep_files: false
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'Update monitoring report - ${{ github.run_number }}'
+
+
+      - name: Create or Update Incident Issue
+        if: steps.parse-results.outputs.success == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const env = '${{ steps.set-url.outputs.env }}';
+            const url = '${{ steps.set-url.outputs.url }}';
+            const passed = '${{ steps.parse-results.outputs.passed }}';
+            const failed = '${{ steps.parse-results.outputs.failed }}';
+            const total = '${{ steps.parse-results.outputs.total }}';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            // Read test results for error details
+            let errorDetails = 'Test results not available';
+            try {
+              const results = JSON.parse(fs.readFileSync('test-results.json', 'utf8'));
+              const failures = [];
+              for (const suite of results.suites || []) {
+                for (const spec of suite.specs || []) {
+                  for (const test of spec.tests || []) {
+                    if (test.status === 'failed') {
+                      failures.push(`- **${test.title}**: ${test.error?.message || 'Unknown error'}`);
+                    }
+                  }
+                }
+              }
+              if (failures.length > 0) {
+                errorDetails = failures.join('\n');
+              }
+            } catch (e) {
+              errorDetails = `Failed to parse test results: ${e.message}`;
+            }
+
+            const issueTitle = `🚨 Synthetic Monitoring Alert: ${env} (${url})`;
+            const issueBody = `## Monitoring Alert
+
+            **Environment**: \`${env}\`
+            **URL**: ${url}
+            **Status**: ❌ **FAILING**
+            **Time**: ${new Date().toISOString()}
+
+            ### Test Summary
+            - ✅ Passed: ${passed}/${total}
+            - ❌ Failed: ${failed}/${total}
+
+            ### Failed Tests
+            ${errorDetails}
+
+            ### Actions
+            - [View Full Report](${runUrl})
+            - [Download Screenshots](${runUrl}#artifacts)
+
+            ### Auto-Recovery
+            This issue will auto-close if the next scheduled check passes.
+
+            ---
+            *Automated by Synthetic Monitoring workflow - runs every 5 minutes*`;
+
+            // Search for existing open incident
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'synthetic-monitoring,incident',
+              per_page: 100
+            });
+
+            const existingIncident = issues.data.find(issue =>
+              issue.title.includes(env) && issue.title.includes('Synthetic Monitoring Alert')
+            );
+
+            if (existingIncident) {
+              // Update existing incident
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIncident.number,
+                body: `### 🔄 Update: Still Failing\n\n${issueBody}`
+              });
+
+              core.info(`Updated existing incident: #${existingIncident.number}`);
+            } else {
+              // Create new incident
+              const newIssue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issueTitle,
+                body: issueBody,
+                labels: ['synthetic-monitoring', 'incident', `env:${env}`, 'priority:high']
+              });
+
+              core.info(`Created new incident: #${newIssue.data.number}`);
+            }
+
+      - name: Close Resolved Incidents
+        if: steps.parse-results.outputs.success == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const env = '${{ steps.set-url.outputs.env }}';
+
+            // Find open incidents for this environment
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'synthetic-monitoring,incident',
+              per_page: 100
+            });
+
+            for (const issue of issues.data) {
+              if (issue.title.includes(env) && issue.title.includes('Synthetic Monitoring Alert')) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `### ✅ Resolved\n\nAll health checks are now passing.\n\n**Time**: ${new Date().toISOString()}\n\nClosing incident.`
+                });
+
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                  labels: [...issue.labels.map(l => l.name), 'resolved']
+                });
+
+                core.info(`Closed incident: #${issue.number}`);
+              }
+            }
+
+      - name: Send Slack Notification (Optional)
+        if: failure() && vars.SLACK_WEBHOOK_URL
+        run: |
+          curl -X POST ${{ vars.SLACK_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "text": "🚨 Synthetic Monitoring Alert",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Environment*: `${{ steps.set-url.outputs.env }}`\n*URL*: ${{ steps.set-url.outputs.url }}\n*Status*: ❌ FAILING\n*Failed Tests*: ${{ steps.parse-results.outputs.failed }}/${{ steps.parse-results.outputs.total }}"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Workflow Run"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }'
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Synthetic Monitoring Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment**: ${{ steps.set-url.outputs.env }}" >> $GITHUB_STEP_SUMMARY
+          echo "**URL**: ${{ steps.set-url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: ${{ steps.parse-results.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Passed: ${{ steps.parse-results.outputs.passed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ❌ Failed: ${{ steps.parse-results.outputs.failed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 Total: ${{ steps.parse-results.outputs.total }}" >> $GITHUB_STEP_SUMMARY
