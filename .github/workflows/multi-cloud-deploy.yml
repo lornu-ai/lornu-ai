@@ -1,0 +1,47 @@
+name: Multi-Cloud Orchestrator
+
+on:
+  push:
+    branches:
+      - main
+      - kustomize
+      - feat/multi-cloud-consolidation
+    paths:
+      - 'terraform/**'
+      - 'kubernetes/**'
+      - '.github/workflows/multi-cloud-deploy.yml'
+      - 'Dockerfile'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      aws-changed: ${{ steps.filter.outputs.aws }}
+      gcp-changed: ${{ steps.filter.outputs.gcp }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            aws:
+              - 'terraform/aws/**'
+              - 'kubernetes/overlays/aws-**'
+              - 'Dockerfile'
+            gcp:
+              - 'terraform/gcp/**'
+              - 'kubernetes/overlays/gcp-**'
+              - 'kubernetes/overlays/lornu-dev/**'
+
+  deploy-aws:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.aws-changed == 'true'
+    uses: ./.github/workflows/terraform-aws-prod.yml
+    secrets: inherit
+
+  deploy-gcp:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.gcp-changed == 'true'
+    uses: ./.github/workflows/terraform-gcp.yml
+    secrets: inherit

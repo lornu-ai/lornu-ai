@@ -1,13 +1,7 @@
 name: Terraform AWS Production
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'terraform/aws/production/**'
-      - 'Dockerfile'
-      - '.github/workflows/terraform-aws-prod.yml'
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   id-token: write
@@ -130,7 +124,7 @@ jobs:
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
-            --name lornu-ai-production \
+            --name lornu-ai-production-cluster \
             --region ${{ env.AWS_REGION }}
 
       - name: Install Kustomize
@@ -139,13 +133,16 @@ jobs:
           sudo mv kustomize /usr/local/bin/
 
       - name: Deploy to EKS with Kustomize
+        env:
+          ACM_CERTIFICATE_ARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
         run: |
-          kustomize build kubernetes/overlays/lornu-prod | \
-          kubectl set image deployment/production-lornu-ai \
+          kustomize build kubernetes/overlays/aws-prod | \
+          envsubst | \
+          kubectl set image deployment/lornu-ai \
             lornu-ai=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} \
-            --filename - | \
+            --local -f - -o yaml | \
           kubectl apply -f -
 
       - name: Wait for Deployment
         run: |
-          kubectl rollout status deployment/production-lornu-ai -n default --timeout=5m
+          kubectl rollout status deployment/lornu-ai -n lornu-prod --timeout=5m

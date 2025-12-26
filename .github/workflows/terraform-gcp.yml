@@ -1,17 +1,7 @@
 name: GCP Terraform
 
 on:
-  push:
-    branches:
-      - gcp-develop
-    paths:
-      - 'terraform/gcp/**'
-      - '.github/workflows/terraform-gcp.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'terraform/gcp/**'
+  workflow_call:
 
 env:
   TF_CLOUD_ORGANIZATION: "lornu-ai"
