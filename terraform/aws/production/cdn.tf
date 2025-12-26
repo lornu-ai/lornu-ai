@@ -49,7 +49,7 @@ resource "aws_acm_certificate" "cloudfront" {
   domain_name       = var.api_domain != "" ? var.api_domain : var.domain_name
   validation_method = "DNS"
 
-  subject_alternative_names = var.api_domain != "" ? [var.domain_name, var.api_domain] : [var.domain_name]
+  subject_alternative_names = distinct(compact(concat([var.domain_name, var.api_domain], var.extra_domain_names)))
 
   lifecycle {
     create_before_destroy = true
@@ -199,7 +199,7 @@ resource "aws_cloudfront_distribution" "api" {
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "Lornu AI distribution"
-  aliases             = compact([var.domain_name, var.api_domain])
+  aliases             = distinct(compact(concat([var.domain_name, var.api_domain], var.extra_domain_names)))
   price_class         = "PriceClass_100"
   default_root_object = ""
   http_version        = "http2and3"
@@ -274,6 +274,26 @@ resource "aws_route53_record" "api_cloudfront" {
   zone_id = local.route53_zone_id
   name    = var.api_domain
   type    = each.key
+
+  alias {
+    name                   = aws_cloudfront_distribution.api[0].domain_name
+    zone_id                = aws_cloudfront_distribution.api[0].hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "extra_cloudfront" {
+  for_each = var.deploy_stage >= 2 ? {
+    for pair in setproduct(var.extra_domain_names, ["A", "AAAA"]) :
+    "${pair[0]}-${pair[1]}" => {
+      name = pair[0]
+      type = pair[1]
+    }
+  } : {}
+
+  zone_id = local.route53_zone_id
+  name    = each.value.name
+  type    = each.value.type
 
   alias {
     name                   = aws_cloudfront_distribution.api[0].domain_name
