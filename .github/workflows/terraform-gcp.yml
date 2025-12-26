@@ -2,6 +2,7 @@ name: GCP Terraform
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 env:
   TF_CLOUD_ORGANIZATION: "lornu-ai"
