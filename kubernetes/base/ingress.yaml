@@ -2,12 +2,17 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: lornu-ai
-  # Annotations removed from base to support multi-cloud overlays
-  # AWS ALB annotations are added via kubernetes/overlays/aws-prod/ingress-patch.yaml
-  # GCP annotations are added via kubernetes/overlays/gcp-prod/ingress-patch.yaml
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: "gce"
 spec:
+  tls:
+  - hosts:
+    - lornu.ai
+    secretName: lornu-ai-tls
   rules:
-  - http:
+  - host: lornu.ai
+    http:
       paths:
       - path: /
         pathType: Prefix
@@ -15,4 +20,4 @@ spec:
           service:
             name: lornu-ai
             port:
-              number: 8080
+              number: 80
