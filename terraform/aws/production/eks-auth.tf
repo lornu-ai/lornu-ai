@@ -17,7 +17,7 @@ locals {
           groups   = ["system:bootstrappers", "system:nodes"]
         },
         {
-          rolearn  = module.eks.worker_iam_role_arn
+          rolearn  = module.lornu_cluster.worker_iam_role_arn
           username = "system:node:{{EC2PrivateDNSName}}"
           groups   = ["system:bootstrappers", "system:nodes"]
         },
@@ -53,7 +53,7 @@ resource "kubernetes_config_map" "aws_auth" {
         groups   = ["system:bootstrappers", "system:nodes"]
       },
       {
-        rolearn  = module.eks.worker_iam_role_arn
+        rolearn  = module.lornu_cluster.worker_iam_role_arn
         username = "system:node:{{EC2PrivateDNSName}}"
         groups   = ["system:bootstrappers", "system:nodes"]
       },
@@ -67,7 +67,7 @@ resource "kubernetes_config_map" "aws_auth" {
   }
 
   depends_on = [
-    module.eks
+    module.lornu_cluster
   ]
 }
 
