@@ -65,7 +65,7 @@ jobs:
 
       - name: Install Backend Dependencies
         run: |
-          cd ../..
+          cd ../../packages/api
           uv sync --frozen --no-dev
 
       - name: Start Backend API Server
