@@ -120,6 +120,16 @@ Workflows:
 
 Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
 
+## Terraform Cloud (TFC) Manual Runs
+
+Lornu AI uses CLI-driven TFC workflows. Before running manual infrastructure updates via the TFC UI:
+
+1. Ensure the `tfc-sync.yml` workflow has completed (runs automatically on push to `main` or `kustomize`)
+2. Verify the Configuration Version in TFC matches your latest commit
+3. Then create a new run in the TFC UI
+
+See `docs/TFC_MANUAL_RUNS.md` for detailed instructions.
+
 ## Notes
 
 Plan A documentation is authoritative for this repo. Legacy references to ECS or Cloudflare Workers are deprecated.

@@ -45,6 +45,18 @@ kubernetes/overlays/   # dev, staging, prod overlays
 - **GCP**: GKE cluster with Global Load Balancer (`gcp-prod`, `gcp-staging` overlays)
 - **Base**: Cloud-agnostic manifests in `kubernetes/base/`
 
+## Terraform Cloud (TFC) Standard
+
+- **CLI-Driven Workflow**: TFC workspaces are managed via GitHub Actions, not VCS connections
+- **"Not Connected" Status**: This is intentional and expected in TFC UI
+- **Configuration Version Sync**: The `tfc-sync.yml` workflow automatically syncs configuration versions on push to `main` or `kustomize` branches
+- **Manual Runs**: Manual TFC UI runs use the latest synced configuration version
+- **Workspaces**:
+  - AWS Production: `lornu-ai` (terraform/aws/production)
+  - GCP: `gcp-lornu-ai` (terraform/gcp)
+
+See `docs/TFC_MANUAL_RUNS.md` for details on manual TFC UI runs.
+
 ## Prohibited
 
 - Do not introduce AWS ECS or Cloudflare Workers references.

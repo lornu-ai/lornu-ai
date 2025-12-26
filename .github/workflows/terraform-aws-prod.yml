@@ -2,6 +2,13 @@ name: Terraform AWS Production
 
 on:
   workflow_call:
+  push:
+    branches:
+      - main
+      - kustomize
+    paths:
+      - 'terraform/aws/production/**'
+      - '.github/workflows/terraform-aws-prod.yml'
 
 permissions:
   id-token: write
