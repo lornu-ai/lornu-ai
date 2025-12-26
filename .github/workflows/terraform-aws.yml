@@ -64,11 +64,11 @@ jobs:
       - name: Set extra domain aliases for SAN certificate
         run: |
           domains=()
-          # Add DEV_DOMAIN if provided
+          # Add DEV_DOMAIN if provided (d2.<domain>)
           if [ -n "${{ secrets.DEV_DOMAIN }}" ]; then
             domains+=("${{ secrets.DEV_DOMAIN }}")
           fi
-          # Add STAGE_DOMAIN if provided
+          # Add STAGE_DOMAIN if provided (s1.<domain>)
           if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
             domains+=("${{ secrets.STAGE_DOMAIN }}")
           fi
@@ -76,6 +76,11 @@ jobs:
           if [ -n "${{ secrets.PROD_DOMAIN }}" ]; then
             if [[ ! " ${domains[@]} " =~ "${{ secrets.PROD_DOMAIN }}" ]]; then
               domains+=("${{ secrets.PROD_DOMAIN }}")
+            fi
+            # Add www.PROD_DOMAIN (www.<domain>)
+            www_domain="www.${{ secrets.PROD_DOMAIN }}"
+            if [[ ! " ${domains[@]} " =~ "$www_domain" ]]; then
+              domains+=("$www_domain")
             fi
           fi
 
@@ -139,11 +144,11 @@ jobs:
       - name: Set extra domain aliases for SAN certificate
         run: |
           domains=()
-          # Add DEV_DOMAIN if provided
+          # Add DEV_DOMAIN if provided (d2.<domain>)
           if [ -n "${{ secrets.DEV_DOMAIN }}" ]; then
             domains+=("${{ secrets.DEV_DOMAIN }}")
           fi
-          # Add STAGE_DOMAIN if provided
+          # Add STAGE_DOMAIN if provided (s1.<domain>)
           if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
             domains+=("${{ secrets.STAGE_DOMAIN }}")
           fi
@@ -151,6 +156,11 @@ jobs:
           if [ -n "${{ secrets.PROD_DOMAIN }}" ]; then
             if [[ ! " ${domains[@]} " =~ "${{ secrets.PROD_DOMAIN }}" ]]; then
               domains+=("${{ secrets.PROD_DOMAIN }}")
+            fi
+            # Add www.PROD_DOMAIN (www.<domain>)
+            www_domain="www.${{ secrets.PROD_DOMAIN }}"
+            if [[ ! " ${domains[@]} " =~ "$www_domain" ]]; then
+              domains+=("$www_domain")
             fi
           fi
 
