@@ -20,7 +20,15 @@ export default defineConfig({
     sparkPlugin() as PluginOption,
     {
       name: 'force-port',
-      config: () => ({ server: { port: 5174, strictPort: true } }),
+      config: () => ({
+        server: {
+          port: 5174,
+          strictPort: true,
+          proxy: {
+            '/api': 'http://127.0.0.1:8080',
+          },
+        },
+      }),
     }
   ],
   resolve: {
