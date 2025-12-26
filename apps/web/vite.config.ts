@@ -83,6 +83,6 @@ export default defineConfig({
         }
       }
     },
-    chunkSizeWarningLimit: 600, // TODO: Temporarily increased while optimizing. Revisit and reduce to 500 (default) or lower once bundle optimizations are complete.
+    chunkSizeWarningLimit: 500,
   },
 });
