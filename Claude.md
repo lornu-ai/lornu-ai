@@ -12,11 +12,11 @@ Lornu AI uses **Plan A (MVI)**: a **single EKS cluster** (AWS) or **GKE cluster*
 
 ## Branch Model (Plan A)
 - **Primary Branches**:
-  - `main`: Production
-  - `develop`: Staging/Integration
-- **Feature Branches**: Created from `develop`, target `develop` in PRs
+  - `main`: Production (single source of truth)
+  - `develop`: (deprecated) Staging/Integration
+- **Feature Branches**: Created from `main`, target `main` in PRs
 - **Principle**: "Kustomize is in our DNA" — deployment definitions are code, managed through standard feature branch workflow
-- **No separate environment branches**: All Kustomize changes integrated in feature branches
+- **No separate environment branches**: All Kustomize changes integrated in feature branches, all PRs target main
 
 ## Namespaces
 - `lornu-dev` (development)
