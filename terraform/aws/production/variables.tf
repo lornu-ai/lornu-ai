@@ -97,6 +97,12 @@ variable "deploy_stage" {
   }
 }
 
+variable "existing_acm_certificate_arn" {
+  description = "ARN of an existing ACM certificate to use for CloudFront. If provided, skips certificate creation."
+  type        = string
+  default     = ""
+}
+
 variable "github_actions_role_arn" {
   description = "ARN of the GitHub Actions OIDC IAM role. Allows GHA to authenticate with EKS cluster."
   type        = string
@@ -108,4 +114,3 @@ variable "github_actions_role_arn" {
     error_message = "github_actions_role_arn must be a valid IAM role ARN"
   }
 }
-
