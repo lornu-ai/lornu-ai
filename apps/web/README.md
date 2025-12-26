@@ -243,4 +243,4 @@ If the contact form isn't sending emails:
 
 ## License
 
-The Spark Template files and resources from GitHub are licensed under the terms of the MIT license, Copyright GitHub, Inc.
+This project is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for details.
