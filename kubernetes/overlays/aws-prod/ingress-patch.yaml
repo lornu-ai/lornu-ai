@@ -4,7 +4,6 @@ metadata:
   name: lornu-ai
   annotations:
     kubernetes.io/ingress.class: alb
-    cert-manager.io/cluster-issuer: null  # Remove cert-manager annotation
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/certificate-arn: ${ACM_CERTIFICATE_ARN}
