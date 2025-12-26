@@ -110,7 +110,8 @@ data "kubernetes_ingress_v1" "app" {
   count = var.deploy_stage >= 2 ? 1 : 0
 
   metadata {
-    name      = "${var.k8s_namespace_prefix}lornu-ai"
+    # Kustomize overlays no longer use namePrefix, so Ingress is just "lornu-ai"
+    name      = "lornu-ai"
     namespace = "lornu-prod"
   }
 

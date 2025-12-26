@@ -7,8 +7,11 @@ metadata:
     app.kubernetes.io/name: lornu-ai
     lornu.ai/environment: production
     lornu.ai/managed-by: terraform-cloud
+    lornu.ai/asset-id: lornu-ai-final-clear-bg
 data:
   # S3 Assets bucket configuration
+  # NOTE: ACCOUNT_ID is substituted by CI/CD workflow using sed or envsubst
+  # Example: sed -i "s/ACCOUNT_ID/${AWS_ACCOUNT_ID}/g" assets-kv-config.yaml
   S3_ASSETS_BUCKET: "lornu-ai-assets-ACCOUNT_ID"
   S3_ASSETS_REGION: "us-east-1"
   S3_ASSETS_PREFIX: "public/"

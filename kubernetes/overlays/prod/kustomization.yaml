@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
 - ../../base
 - namespace.yaml
-- cert-manager
+# cert-manager deployed separately: kubectl apply -k kubernetes/overlays/prod/cert-manager
 - assets-kv-config.yaml
 
 namespace: lornu-prod
@@ -12,8 +12,8 @@ namespace: lornu-prod
 labels:
 - pairs:
     lornu.ai/environment: production
-    lornu.ai/managed-by: plan-a-orchestration
-    lornu.ai/asset-id: lornu-ai-production-app
+    lornu.ai/managed-by: terraform-cloud
+    lornu.ai/asset-id: lornu-ai-final-clear-bg
   includeSelectors: true
 
 patches:
@@ -41,6 +41,6 @@ patches:
       path: /spec/tls
       value:
       - hosts:
-        - example.com
-        - api.example.com
+        - lornu.ai
+        - api.lornu.ai
         secretName: lornu-ai-tls
