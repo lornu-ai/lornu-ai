@@ -107,3 +107,46 @@ kustomize build kubernetes/overlays/gcp-prod | kubectl apply -f -
 - Do not introduce AWS ECS or Cloudflare Workers references.
 - Do not add non-DRY manifest duplication across overlays.
 - Do not introduce Helm charts, templates, or values files.
+
+## Infrastructure Drift Detection & Remediation
+
+Lornu AI uses **Drift-Sentinel** to automatically detect infrastructure drift across Terraform Cloud workspaces. Drift occurs when the actual cloud infrastructure state diverges from the Terraform code (e.g., manual console changes, failed deployments).
+
+### How to Remediate Infrastructure Drift
+
+When drift is detected (via scheduled hourly checks or manual workflow dispatch):
+
+1. **Review the Drift Report**
+   - Check the GitHub Actions workflow run summary for the affected workspace
+   - Download the drift plan artifact to see detailed changes
+   - Identify whether drift is expected (intentional manual change) or unexpected (security risk)
+
+2. **Determine Remediation Strategy**
+   - **Expected Drift**: Update Terraform code to match the manual change, then commit and push
+   - **Unexpected Drift**: Remediate immediately to restore state consistency
+
+3. **Trigger Remediation**
+   - **Via GitHub Actions UI**: Go to Actions → "Drift-Sentinel" → "Run workflow" → Select workspace → Enable "remediation: true"
+   - **Via CLI**: `gh workflow run drift-sentinel.yml -f workspace=lornu-ai-kustomize -f remediation=true`
+   - **Manual**: Run `terraform apply` in the affected `terraform/aws/{environment}` directory
+
+4. **Verify Remediation**
+   - Check the workflow run output to confirm successful apply
+   - Verify the drift detection run shows no drift after remediation
+   - Monitor Better Stack alerts (when integrated) for infrastructure health
+
+### Workspaces Monitored
+
+- **Production**: `lornu-ai-kustomize` (organization: `lornu-ai`)
+- **Staging**: `lornu-ai-staging-aws` (organization: `disposable-org`)
+
+### Drift Detection Schedule
+
+- **Automatic**: Runs every hour via cron schedule
+- **Manual**: Can be triggered via `workflow_dispatch` for on-demand checks
+
+### Security Considerations
+
+- **Production Remediation**: Requires manual approval (workflow_dispatch with `remediation: true`)
+- **Drift Alerts**: Should be integrated with Better Stack for on-call rotation
+- **Audit Trail**: All drift detections and remediations are logged in GitHub Actions
