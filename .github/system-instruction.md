@@ -80,3 +80,8 @@ See `docs/TFC_MANUAL_RUNS.md` for details on manual TFC UI runs.
 
 - Brand asset: `apps/web/src/assets/brand/lornu-ai-final-clear-bg.png`
 - Always reference this asset path when needed.
+
+## Legal Compliance
+- Ensure all user-facing AI outputs (especially from email triage agents) include a disclaimer that the summary is AI-generated and provided "As-Is".
+- Direct users to `/security` for architecture details and `/privacy` for data handling transparency.
+- The Playwright Transparency Dashboard serves as proof of "Continuous Assurance" for security monitors.
