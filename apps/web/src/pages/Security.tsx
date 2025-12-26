@@ -70,56 +70,56 @@ export default function Security() {
                     <h2 className="text-2xl font-semibold">1. Infrastructure Security</h2>
                   </div>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-4">1.1 Cloudflare Workers Platform</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-4">1.1 Kubernetes Cluster Security (AWS EKS)</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    Our Service runs entirely on Cloudflare Workers, a secure serverless execution environment:
+                    Our Service runs on Amazon EKS (Elastic Kubernetes Service), a managed Kubernetes platform with built-in security:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Isolation:</strong> Each request runs in a V8 isolate sandbox, preventing cross-contamination between requests</li>
-                    <li><strong>Edge Security:</strong> Code executes at Cloudflare's edge locations, close to users for minimal attack surface</li>
-                    <li><strong>Zero Trust Architecture:</strong> No persistent server state; each execution is stateless and ephemeral</li>
-                    <li><strong>DDoS Protection:</strong> Automatic protection against distributed denial-of-service attacks via Cloudflare's network</li>
-                    <li><strong>WAF (Web Application Firewall):</strong> Protection against common web vulnerabilities (SQL injection, XSS, etc.)</li>
+                    <li><strong>Pod Isolation:</strong> Each pod runs in isolation with network policies enforcing zero-trust communication</li>
+                    <li><strong>RBAC (Role-Based Access Control):</strong> Fine-grained access control for all cluster resources</li>
+                    <li><strong>Network Security:</strong> VPC isolation, security groups, and network policies protect cluster traffic</li>
+                    <li><strong>DDoS Protection:</strong> AWS Shield provides automatic protection against distributed denial-of-service attacks</li>
+                    <li><strong>WAF (Web Application Firewall):</strong> AWS WAFv2 protection against common web vulnerabilities (SQL injection, XSS, etc.)</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold mb-3 mt-6">1.2 Cloudflare AI Gateway</h3>
+                  <h3 className="text-xl font-semibold mb-3 mt-6">1.2 API Gateway & Load Balancing</h3>
                   <p className="text-muted-foreground leading-relaxed mb-4">
-                    All AI inference requests are routed through Cloudflare AI Gateway, which provides:
+                    All requests are routed through AWS Application Load Balancer (ALB) with TLS/HTTPS:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Unified Security Layer:</strong> Single point of control for all AI model interactions</li>
+                    <li><strong>TLS 1.3 Encryption:</strong> All traffic encrypted in transit using modern TLS standards</li>
+                    <li><strong>ACM Certificates:</strong> AWS Certificate Manager handles automatic certificate provisioning and renewal</li>
                     <li><strong>Rate Limiting:</strong> Automatic protection against abuse and excessive API usage</li>
-                    <li><strong>Request Validation:</strong> Schema validation and sanitization before forwarding to AI providers</li>
-                    <li><strong>Analytics and Monitoring:</strong> Real-time visibility into all AI requests for anomaly detection</li>
-                    <li><strong>Caching:</strong> Secure caching layer to reduce exposure to third-party AI services</li>
+                    <li><strong>Request Validation:</strong> ALB and application-level validation before processing</li>
+                    <li><strong>Health Checks:</strong> Continuous monitoring and automatic failover for service availability</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">1.3 Data Storage Security</h3>
                   <div className="bg-secondary/20 p-4 rounded-lg mb-4">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <Lock size={20} weight="bold" className="text-accent" />
-                      Cloudflare KV (Key-Value Store)
+                      Amazon RDS (Relational Database)
                     </h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>Encrypted at rest using AES-256 encryption</li>
-                      <li>Encrypted in transit using TLS 1.3</li>
-                      <li>Globally distributed with automatic replication</li>
-                      <li>Access controlled via Wrangler authentication</li>
-                      <li>Automatic TTL (Time-To-Live) expiration for cached data</li>
+                      <li>Encrypted at rest using AWS KMS (Key Management Service)</li>
+                      <li>Encrypted in transit using SSL/TLS</li>
+                      <li>Automated backups with point-in-time recovery</li>
+                      <li>Access controlled via IAM database authentication</li>
+                      <li>Multi-AZ replication for high availability</li>
                     </ul>
                   </div>
 
                   <div className="bg-secondary/20 p-4 rounded-lg">
                     <h4 className="font-semibold mb-2 flex items-center gap-2">
                       <Lock size={20} weight="bold" className="text-accent" />
-                      Cloudflare R2 (Object Storage)
+                      Amazon S3 (Object Storage)
                     </h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
-                      <li>Encrypted at rest with customer-managed or Cloudflare-managed keys</li>
+                      <li>Encrypted at rest with AWS KMS or S3-managed encryption keys</li>
                       <li>Encrypted in transit using TLS 1.3</li>
-                      <li>Access control via presigned URLs and IAM-style policies</li>
+                      <li>Access control via IAM policies and bucket policies</li>
                       <li>Versioning support for data integrity</li>
-                      <li>Audit logging for all access and modifications</li>
+                      <li>CloudTrail audit logging for all access and modifications</li>
                     </ul>
                   </div>
                 </section>
@@ -137,9 +137,9 @@ export default function Security() {
                     All sensitive credentials (API keys, tokens, secrets) are managed using industry best practices:
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-                    <li><strong>Wrangler Secrets:</strong> Production API keys are stored using <code className="bg-secondary px-1.5 py-0.5 rounded text-sm">wrangler secret put</code>, never in code or configuration files</li>
+                    <li><strong>AWS Secrets Manager:</strong> Centralized secrets storage with encryption, rotation, and audit logging</li>
                     <li><strong>GitHub Secrets:</strong> CI/CD pipeline secrets stored securely in GitHub's encrypted secrets storage</li>
-                    <li><strong>Environment Variables:</strong> Runtime secrets injected via Cloudflare Workers environment variables</li>
+                    <li><strong>Kubernetes Secrets:</strong> Runtime secrets injected as environment variables into pod containers</li>
                     <li><strong>No Hardcoding:</strong> Zero tolerance policy for hardcoded credentials in source code</li>
                     <li><strong>Secret Rotation:</strong> Regular rotation schedule for all API keys and access tokens</li>
                   </ul>
@@ -150,9 +150,9 @@ export default function Security() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Role-Based Access:</strong> Team members have access only to resources required for their role</li>
-                    <li><strong>Multi-Factor Authentication:</strong> MFA required for all Cloudflare and GitHub accounts</li>
+                    <li><strong>Multi-Factor Authentication:</strong> MFA required for all AWS and GitHub accounts</li>
                     <li><strong>API Scoping:</strong> Third-party API keys are scoped to minimum required permissions</li>
-                    <li><strong>Audit Trails:</strong> All access to production secrets is logged and monitored</li>
+                    <li><strong>Audit Trails:</strong> All access to production secrets is logged and monitored via CloudTrail</li>
                   </ul>
                 </section>
 
@@ -219,10 +219,10 @@ export default function Security() {
                   <h3 className="text-xl font-semibold mb-3 mt-6">4.2 Data Retention Policy</h3>
                   <div className="bg-secondary/20 p-4 rounded-lg">
                     <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 text-sm">
-                      <li><strong>KV Cache:</strong> Automatic expiration after 7 days of inactivity</li>
-                      <li><strong>R2 Storage:</strong> User-controlled retention; data deleted upon request</li>
+                      <li><strong>Database Records:</strong> User data retained as long as account is active; deletion upon account removal</li>
+                      <li><strong>S3 Storage:</strong> User-controlled retention; data deleted upon request</li>
                       <li><strong>Request Logs:</strong> 30-day retention for analytics and security, then purged</li>
-                      <li><strong>Third-Party Processing:</strong> Cloudflare AI and Google Vertex AI process queries in real-time with minimal retention (see <Link to="/privacy" className="text-accent hover:underline">Privacy Policy</Link>)</li>
+                      <li><strong>Third-Party Processing:</strong> Google Vertex AI processes queries in real-time with minimal retention (see <Link to="/privacy" className="text-accent hover:underline">Privacy Policy</Link>)</li>
                     </ul>
                   </div>
 
@@ -247,13 +247,13 @@ export default function Security() {
                   </p>
 
                   <div className="bg-secondary/20 p-4 rounded-lg mb-4">
-                    <h4 className="font-semibold mb-2">Cloudflare (Infrastructure Provider)</h4>
+                    <h4 className="font-semibold mb-2">Amazon Web Services (AWS) (Infrastructure Provider)</h4>
                     <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4 text-sm">
                       <li>SOC 2 Type II certified</li>
-                      <li>ISO 27001, ISO 27018 certified</li>
-                      <li>PCI DSS compliant</li>
+                      <li>ISO 27001, ISO 27017, ISO 27018 certified</li>
+                      <li>PCI DSS Level 1 compliant</li>
                       <li>GDPR and CCPA compliant</li>
-                      <li>Regular third-party security audits</li>
+                      <li>Regular third-party security audits and penetration testing</li>
                     </ul>
                   </div>
 
@@ -290,8 +290,8 @@ export default function Security() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Real-Time Alerts:</strong> Automated alerting for anomalous behavior and potential threats</li>
-                    <li><strong>Log Analysis:</strong> Centralized logging with automated analysis for security events</li>
-                    <li><strong>Performance Monitoring:</strong> Cloudflare AI Gateway analytics track request patterns</li>
+                    <li><strong>Log Analysis:</strong> Centralized logging via AWS CloudTrail with automated analysis for security events</li>
+                    <li><strong>Performance Monitoring:</strong> CloudWatch and Kubernetes monitoring track request patterns and cluster health</li>
                     <li><strong>Dependency Scanning:</strong> Automated scanning for vulnerable dependencies in our codebase</li>
                   </ul>
 
@@ -331,15 +331,14 @@ export default function Security() {
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>GDPR:</strong> General Data Protection Regulation (EU)</li>
                     <li><strong>CCPA:</strong> California Consumer Privacy Act (US)</li>
-                    <li><strong>SOC 2:</strong> Service Organization Control 2 (via Cloudflare infrastructure)</li>
+                    <li><strong>SOC 2:</strong> Service Organization Control 2 (via AWS infrastructure)</li>
                   </ul>
 
                   <h3 className="text-xl font-semibold mb-3 mt-6">7.2 Security Audits</h3>
                   <p className="text-muted-foreground leading-relaxed">
                     We conduct regular security assessments and audits of our platform, including vulnerability scanning,
-                    penetration testing, and code security reviews. While LornuAI is an early-stage company, we leverage the
-                    security certifications and audits of our infrastructure providers (Cloudflare, Google Cloud) to ensure
-                    enterprise-grade security.
+                    penetration testing, and code security reviews. We leverage the security certifications and audits of our
+                    infrastructure providers (AWS, Google Cloud) to ensure enterprise-grade security.
                   </p>
                 </section>
 

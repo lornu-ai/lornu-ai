@@ -144,39 +144,29 @@ async function testContactAPI(baseUrl: string): Promise<TestResult> {
   }
 }
 
-async function checkWranglerSecrets(): Promise<TestResult> {
+async function checkEnvironmentVariables(): Promise<TestResult> {
   try {
-    const process = await Bun.spawn(['bunx', 'wrangler', 'secret', 'list'], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    });
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const contactEmail = process.env.CONTACT_EMAIL;
 
-    const output = await new Response(process.stdout).text();
-    const errorOutput = await new Response(process.stderr).text();
-    const exitCode = await process.exited;
-
-    if (exitCode !== 0) {
-      return {
-        name: 'Wrangler Secrets Check',
-        success: false,
-        error: `Command failed with exit code ${exitCode}`,
-        details: { stderr: errorOutput },
-      };
-    }
-
-    const hasResendKey = output.includes('RESEND_API_KEY');
+    const hasResendKey = !!resendApiKey;
+    const hasContactEmail = !!contactEmail;
 
     return {
-      name: 'Wrangler Secrets Check',
-      success: hasResendKey,
-      error: hasResendKey ? undefined : 'RESEND_API_KEY secret not found',
+      name: 'Environment Variables Check',
+      success: hasResendKey && hasContactEmail,
+      error:
+        !hasResendKey || !hasContactEmail
+          ? `Missing: ${!hasResendKey ? 'RESEND_API_KEY' : ''} ${!hasContactEmail ? 'CONTACT_EMAIL' : ''}`
+          : undefined,
       details: {
-        output: output.split('\n').filter(line => line.trim()).slice(0, 10), // First 10 lines
+        RESEND_API_KEY: hasResendKey ? '***set***' : 'not set',
+        CONTACT_EMAIL: hasContactEmail ? contactEmail : 'not set',
       },
     };
   } catch (error) {
     return {
-      name: 'Wrangler Secrets Check',
+      name: 'Environment Variables Check',
       success: false,
       error: error instanceof Error ? error.message : 'Failed to check secrets',
     };
@@ -192,22 +182,21 @@ async function main() {
   const isProduction = args.includes('--production');
   const resendOnly = args.includes('--resend-only');
 
-  // Check for Resend API key
-  // Always check for API key if not provided, regardless of resend-only flag
-  // (resend-only still needs the API key to run the test)
+  // Check for required environment variables
   const resendApiKey = process.env.RESEND_API_KEY;
 
   if (!resendApiKey) {
     console.log('⚠️  RESEND_API_KEY environment variable not set.');
-    console.log('   Trying to check Wrangler secrets...\n');
+    console.log('   Checking environment variables...\n');
 
-    const secretCheck = await checkWranglerSecrets();
+    const secretCheck = await checkEnvironmentVariables();
     logResult(secretCheck);
 
     if (!secretCheck.success) {
-      console.log('\n❌ Cannot proceed without Resend API key.');
-      console.log('   Please set RESEND_API_KEY environment variable or configure it in Wrangler:');
-      console.log('   bunx wrangler secret put RESEND_API_KEY\n');
+      console.log('\n❌ Cannot proceed without environment variables.');
+      console.log('   Please set RESEND_API_KEY and CONTACT_EMAIL environment variables:\n');
+      console.log('   export RESEND_API_KEY="your-api-key"');
+      console.log('   export CONTACT_EMAIL="contact@example.com"\n');
       process.exit(1);
     }
   }

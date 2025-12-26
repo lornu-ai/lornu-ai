@@ -221,11 +221,11 @@ export default function Privacy() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
                     <li><strong>Encryption in Transit:</strong> All data transmission uses TLS 1.3 encryption</li>
-                    <li><strong>Encryption at Rest:</strong> Data stored in Cloudflare KV/R2 is encrypted using AES-256</li>
-                    <li><strong>Access Controls:</strong> Strict authentication and authorization for all Service components</li>
-                    <li><strong>Secret Management:</strong> API keys and secrets are stored securely using Wrangler and Cloudflare environment variables</li>
-                    <li><strong>Edge Security:</strong> Cloudflare Workers run in a secure, isolated sandbox environment</li>
-                    <li><strong>DDoS Protection:</strong> Cloudflare's network provides protection against distributed denial-of-service attacks</li>
+                    <li><strong>Encryption at Rest:</strong> Data stored in AWS S3 and RDS is encrypted using AWS KMS</li>
+                    <li><strong>Access Controls:</strong> Strict authentication and authorization for all Service components via IAM and RBAC</li>
+                    <li><strong>Secret Management:</strong> API keys and secrets are stored securely using AWS Secrets Manager</li>
+                    <li><strong>Kubernetes Security:</strong> Containerized workloads run in isolated pods with network policies</li>
+                    <li><strong>DDoS Protection:</strong> AWS Shield provides protection against distributed denial-of-service attacks</li>
                   </ul>
                   <p className="text-muted-foreground leading-relaxed mt-4">
                     However, no method of transmission over the Internet or electronic storage is 100% secure. While we strive to

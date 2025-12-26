@@ -1,27 +1,32 @@
 # Lornu AI Web App
 
-A React + Vite web application deployed on Cloudflare Workers with custom asset serving.
+A React + Vite web application deployed on **AWS EKS** and **Google GKE** via Kubernetes (Kustomize overlays). The application is containerized and orchestrated through Plan A's multi-namespace architecture.
 
 ## Architecture
 
-This application uses **Cloudflare Workers** (not Cloudflare Pages) to serve static assets with custom request handling. The architecture provides:
+This application runs as a containerized service on Kubernetes clusters with:
 
-- **Custom MIME type handling**: Ensures all static assets are served with correct Content-Type headers
-- **Cloudflare Workers Runtime**: Leverages edge computing for fast, global content delivery
-- **Asset binding**: The built React app is served through the ASSETS binding in the worker
+- **Multi-namespace isolation**: Deployed to `lornu-dev`, `lornu-staging`, `lornu-prod`
+- **AWS EKS + ALB Ingress**: Production traffic routed via AWS Application Load Balancer
+- **Google GKE**: Alternative deployment target via GCP
+- **Kustomize overlays**: Environment-specific configuration without duplication
+- **FastAPI backend**: Python backend (in `packages/api/`) handles API routes including `/api/contact`
 
 ### Key Components
 
-- **`worker.ts`**: Cloudflare Worker that serves assets, handles API routes (e.g., `/api/contact`), and ensures proper Content-Type headers
-- **`wrangler.toml`**: Worker configuration including asset directory and domain routing
-- **`src/`**: React application source code built with Vite
+- **`src/`**: React application source code (built with Vite + TypeScript)
+- **`Dockerfile`**: Multi-stage container image (frontend build + backend FastAPI)
+- **`kubernetes/base/`**: Source of truth Kubernetes manifests
+- **`kubernetes/overlays/{dev,staging,prod}/`**: Environment-specific patches (replicas, TLS, resource limits)
+- **`bun.lock`**: Bun-based dependency lock file
 
 ## Development
 
 ### Prerequisites
 
-- Bun 1.3.0+ (package manager)
-- Wrangler CLI (installed as dev dependency)
+- Bun 1.3.0+ (package manager for frontend)
+- Docker (for container testing)
+- kubectl + Kustomize (for local K8s development)
 - [Pre-commit](https://pre-commit.com/) (recommended for code quality & security)
 
 
@@ -45,9 +50,9 @@ This project uses pre-commit hooks to enforce code quality and security standard
     pre-commit run --all-files
     ```
 
-### Quick Start
+### Quick Start (Local Development)
 
-The project now uses **Bun** for package management (Phase 2 migration):
+#### Option 1: Vite Dev Server (Fastest for UI Development)
 
 ```bash
 # Install dependencies
@@ -55,33 +60,28 @@ bun install
 
 # Run development server with Vite
 bun dev
-
-# Run in production-like environment with Wrangler
-bun run build
-bun x wrangler dev
 ```
 
-### Local Development Workflow
+This starts the Vite dev server at `http://localhost:5173`. The FastAPI backend runs separately (see below).
 
-#### Option 1: Vite Dev Server (Fastest Development)
+#### Option 2: Local Kubernetes Deployment (K3s/Minikube)
 
-1.  **Install dependencies:**
-    ```bash
-    bun install
-    ```
+For testing the full containerized deployment:
 
-2.  **Run development server with Vite:**
-    ```bash
-    bun run dev
-    ```
-    This starts the Vite dev server at `http://localhost:5173`
+```bash
+# Build the Docker image locally
+docker build -t lornu-ai:dev .
 
-3.  **Test with Wrangler (production-like environment):**
-    ```bash
-    bun run build
-    bunx wrangler dev
-    ```
-    This runs the actual worker locally with the built assets
+# Deploy to local Kubernetes cluster
+kubectl apply -k kubernetes/overlays/dev
+```
+
+To access the service:
+```bash
+# Port-forward the service
+kubectl port-forward -n lornu-dev svc/lornu-ai 5173:80
+# Access at http://localhost:5173
+```
 
 ### Build
 
@@ -108,138 +108,124 @@ The output is generated in the `dist/` directory.
 
 ## Deployment
 
-### Cloudflare Git Integration (Recommended)
+### Kubernetes Deployment (Source of Truth)
 
-This project uses **Cloudflare's Git integration** for automatic deployments:
+Deployment is orchestrated via **Terraform Cloud** and **Kustomize**:
 
-1. Pushing to `main` branch triggers automatic deployment to production
-2. Pushing to `develop` branch triggers deployment to staging (if configured)
-3. Cloudflare handles the build and deployment automatically
-
-**Setup:**
-- Configure in Cloudflare Dashboard → Workers & Pages → Your Project → Settings → Builds & Deployments
-- Cloudflare automatically detects the `wrangler.toml` configuration
-- Ensure Cloudflare build settings use Bun (v1.3.0+) in Builds & Deployments settings
-
-### Manual Deployment
-
-Deploy manually using Wrangler:
+#### Development (`lornu-dev`)
 ```bash
-bun run build
-bunx wrangler deploy
+kubectl apply -k kubernetes/overlays/dev
 ```
 
-**Note:** Requires Cloudflare API token configured:
+#### Staging (`lornu-staging`)
 ```bash
-bunx wrangler login
+kustomize build kubernetes/overlays/staging | kubectl apply -f -
 ```
 
-## Configuration
-
-### Environment Variables
-
-Configuration values can be added in `wrangler.toml`:
-
-```toml
-[vars]
-API_URL = "https://api.example.com"
-```
-
-### Secrets
-
-Required secrets for the contact form API:
-
+#### Production (`lornu-prod`)
 ```bash
-# Required: Resend API key for email sending
-bunx wrangler secret put RESEND_API_KEY
-
-# Optional: Override default contact email (defaults to contact@lornu.ai)
-bunx wrangler secret put CONTACT_EMAIL
+kustomize build kubernetes/overlays/prod | kubectl apply -f -
 ```
 
-For other secrets:
+**Automatic CI/CD**: GitHub Actions workflows in `.github/workflows/` automatically:
+1. Build Docker image when code is pushed
+2. Push to AWS ECR/GCP Artifact Registry
+3. Apply Kustomize manifests to appropriate cluster/namespace
+4. Verify deployment health via Kubernetes liveness/readiness probes
+
+### Configuration
+
+#### Environment-Specific Variables
+
+Kustomize patches inject environment variables via ConfigMaps in each overlay:
+
+- **Dev**: 3 replicas, verbose logging
+- **Staging**: 3 replicas, TLS enabled via AWS ACM + cert-manager
+- **Production**: 3 replicas, TLS enabled, CloudFront CDN cache
+
+See `kubernetes/overlays/{dev,staging,prod}/configmap-patch.yaml` for current values.
+
+#### Secrets Management
+
+Sensitive values (API keys, database credentials) are stored in:
+- **AWS Secrets Manager** (production)
+- **Kubernetes Secrets** (all clusters, injected via IRSA)
+- **GitHub Secrets** (for CI/CD workflows)
+
+Example: To set the contact form API key in staging:
 ```bash
-bunx wrangler secret put SECRET_NAME
+kubectl create secret generic contact-api-secrets \
+  --from-literal=RESEND_API_KEY=sk_test_xxxx \
+  -n lornu-staging
 ```
 
-See [`CONTACT_FORM_SETUP.md`](./CONTACT_FORM_SETUP.md) for detailed contact form configuration.
+See `CONTACT_FORM_SETUP.md` for detailed contact form configuration.
 
-### Domain Configuration
+## Branding
 
-Production domains are configured in `wrangler.toml`:
-- `lornu.ai`
-- `www.lornu.ai`
-
-**Important:** Custom domains must be added in Cloudflare Dashboard first before the routes will work.
-
-## Migration from Cloudflare Pages
-
-This project was migrated from Cloudflare Pages to Cloudflare Workers to gain:
-
-1.  **Better control**: Custom request/response handling in the worker
-2.  **MIME type fixes**: Resolved issues with Content-Type headers for static assets
-3.  **Flexibility**: Can add API routes, authentication, or other logic in the worker
-
-### What Changed:
-
-- ❌ Removed: `.github/workflows/deploy.yml` (GitHub Actions workflow)
-- ✅ Added: `worker.ts` (Cloudflare Worker for asset serving and API routes like `/api/contact`)
-- ✅ Modified: `wrangler.toml` (from Pages config to Workers config)
-- ✅ Added: Wrangler and Workers types to dependencies
-
-### For Developers:
-
-- Use `bunx wrangler dev` instead of `bun run dev` to test the production-like environment
-- The worker serves assets from the `dist/` directory after build
-- Deploy is automatic via Cloudflare Git integration
+The Lornu AI branding asset is served consistently across all environments:
+- **File**: `src/assets/brand/lornu-ai-final-clear-bg.png`
+- **CDN**: Served via CloudFront (prod) or ALB directly (dev/staging)
+- **Labeling**: Every K8s resource includes `lornu.ai/asset-id: lornu-ai-final-clear-bg`
 
 ## Troubleshooting
 
-### MIME Type Issues
+### Build Issues
 
-If assets aren't loading correctly, check:
-1.  File extensions are recognized in `worker.ts` MIME_TYPES map
-2.  The worker is properly serving from the ASSETS binding
-3.  Content-Type headers in browser DevTools Network tab
+If the Docker build fails:
 
-### Local Development Issues
-
-If `bun dev` or `wrangler dev` fails:
 ```bash
-# Ensure you have the latest wrangler
-bun add -d wrangler@latest
-# Ensure dependencies are installed
+# Check Docker is running
+docker ps
+
+# Build with verbose output
+docker build -t lornu-ai:dev --no-cache .
+
+# Verify Bun lock file is up to date
 bun install
-
-# Clear Bun cache if needed
-rm -rf ~/.bun
-
-# Ensure wrangler is up to date
-bun add -D wrangler@latest
-
-# Rebuild the app
-bun run build
-bunx wrangler dev
+bun.lock  # Commit if changed
 ```
 
-### Deployment Issues
+### Kubernetes Deployment Issues
 
-If deployment fails:
+If the deployment fails to start:
+
 ```bash
-# Check wrangler authentication
-bunx wrangler whoami
+# Check pod status
+kubectl get pods -n lornu-dev
+kubectl describe pod <pod-name> -n lornu-dev
 
-# Re-authenticate if needed
-bunx wrangler login
+# View logs
+kubectl logs <pod-name> -n lornu-dev
+
+# Check if image exists in registry
+aws ecr describe-images --repository-name lornu-ai --region us-east-2
 ```
 
 ### Contact Form / Email Issues
 
 If the contact form isn't sending emails:
-1. Verify `RESEND_API_KEY` secret is set: `bunx wrangler secret list`
-2. Check domain is verified in Resend dashboard
-3. Review Cloudflare Worker logs for errors
-4. See [`CONTACT_FORM_SETUP.md`](./CONTACT_FORM_SETUP.md) for detailed troubleshooting
+
+1. **Verify secrets exist**:
+   ```bash
+   kubectl get secret contact-api-secrets -n lornu-dev
+   kubectl describe secret contact-api-secrets -n lornu-dev
+   ```
+
+2. **Check FastAPI backend logs**:
+   ```bash
+   kubectl logs -n lornu-dev -l app=lornu-ai --tail=100 | grep -i "resend\|email"
+   ```
+
+3. **Verify API endpoint**:
+   ```bash
+   # From a pod or port-forward
+   curl -X POST http://localhost:8000/api/contact \
+     -H "Content-Type: application/json" \
+     -d '{"name":"Test","email":"test@example.com","message":"Hello"}'
+   ```
+
+4. **See `CONTACT_FORM_SETUP.md` for detailed troubleshooting**
 
 ## License
 

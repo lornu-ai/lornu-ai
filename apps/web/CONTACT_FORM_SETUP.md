@@ -6,17 +6,17 @@ This guide explains how to configure the contact form API endpoint to send email
 
 The contact form on the home page sends submissions to `/api/contact` endpoint, which:
 - Validates the form data (client and server-side)
-- Applies rate limiting (5 requests per hour per IP, optional with KV)
+- Applies rate limiting (5 requests per hour per IP, optional with application-level caching)
 - Sends emails via Resend API to `contact@lornu.ai`
 
 ### Why Resend?
 
-Resend is an excellent fit for Cloudflare Workers:
+Resend is an excellent fit for our deployment:
 - **Simple REST API**: Uses native `fetch()` - no heavy SDKs needed
-- **Perfect for Serverless**: Designed for edge/serverless environments
+- **Perfect for Serverless/Containers**: Works with any deployment model
 - **Generous Free Tier**: 1,000 emails/month free
 - **TypeScript-Friendly**: Excellent DX with clear documentation
-- **Secure**: API key stored as Cloudflare Worker secret
+- **Secure**: API key stored in environment variables via Kubernetes Secrets
 - **Reliable**: Built on highly reliable email infrastructure
 
 ## Required Configuration
@@ -35,66 +35,65 @@ Resend is an excellent fit for Cloudflare Workers:
 3. Create an API key:
    - Go to **API Keys** in the Resend dashboard
    - Click **Create API Key**
-   - Give your API key a name (e.g., "Cloudflare Worker - Production")
+   - Give your API key a name (e.g., "LornuAI Production")
    - Select **Full access** or **Sending access** permission
      - **Sending access** is recommended for security (limits to email sending only)
      - If using **Sending access**, you can optionally restrict to `lornu.ai` domain
    - Copy the API key immediately (you won't be able to see it again)
-4. Set it as a Cloudflare Worker secret:
+4. Set it as a Kubernetes secret or GitHub secret:
 
 ```bash
-cd apps/web
-bunx wrangler secret put RESEND_API_KEY
-# Paste your Resend API key when prompted
+# For Kubernetes deployment
+kubectl create secret generic resend-secrets \
+  --from-literal=RESEND_API_KEY=<your-api-key> \
+  -n lornu-prod
 ```
 
 **Note:** The `from` address in the code is `noreply@lornu.ai`. This domain must be verified in Resend before emails will send. You can also use other verified addresses like `contact@lornu.ai` or `hello@lornu.ai`.
 
 ### 2. Contact Email (Optional - Not Required)
 
-By default, emails are sent to `contact@lornu.ai` (hardcoded in the worker). **No secret needed** - this email is already configured in the code.
+By default, emails are sent to `contact@lornu.ai` (hardcoded in the application). **No secret needed** - this email is already configured in the code.
 
 Only set `CONTACT_EMAIL` as a secret if you want to override the default:
 
 ```bash
-bunx wrangler secret put CONTACT_EMAIL
-# Enter the email address (e.g., sales@lornu.ai)
+kubectl create secret generic contact-secrets \
+  --from-literal=CONTACT_EMAIL=sales@lornu.ai \
+  -n lornu-prod
 ```
 
 **Recommendation:** Don't set this secret unless you need a different recipient. The default `contact@lornu.ai` is already configured.
 
-## Optional: Rate Limiting with KV
+## Optional: Rate Limiting
 
 Rate limiting prevents abuse by limiting submissions to 5 per hour per IP address.
 
-**To enable rate limiting:**
+**Note:** Cloudflare KV is no longer used (Cloudflare Workers deployment removed). Rate limiting can be implemented using:
+- Application-level in-memory caching
+- AWS ElastiCache (Redis) if deployed on AWS EKS
+- Simple request counting with TTL-based cleanup
 
-1. Create a KV namespace in Cloudflare Dashboard:
-   - Go to **Workers & Pages** → **KV**
-   - Click **Create a namespace**
-   - Name it (e.g., `rate-limit`)
-
-2. Update `wrangler.toml`:
-   ```toml
-   kv_namespaces = [
-     { binding = "RATE_LIMIT_KV", id = "your-namespace-id" }
-   ]
-   ```
-
-3. Deploy the updated configuration
-
-**Note:** If KV is not configured, rate limiting is disabled (requests are allowed). This is safe but less secure.
+For current Kubernetes deployments, you can:
+1. Implement in-memory caching with TTL cleanup
+2. Or add a Redis pod to the cluster for distributed rate limiting
 
 ## Testing Locally
 
 For local development, you can test the API endpoint:
 
-1. Start the dev server:
+1. Set environment variables:
+   ```bash
+   export RESEND_API_KEY="your-resend-api-key"
+   export CONTACT_EMAIL="contact@lornu.ai"
+   ```
+
+2. Start the dev server:
    ```bash
    bun run dev
    ```
 
-2. Test the endpoint:
+3. Test the endpoint:
    ```bash
    curl -X POST http://localhost:5173/api/contact \
      -H "Content-Type: application/json" \
@@ -105,18 +104,32 @@ For local development, you can test the API endpoint:
      }'
    ```
 
-**Note:** Local testing requires secrets to be configured. Use `wrangler dev` for testing with Cloudflare Workers environment:
-
-```bash
-bunx wrangler dev
-```
-
 ## Production Deployment
 
-1. Ensure the required secret is set in Cloudflare:
-   - `RESEND_API_KEY` (required - set via `bunx wrangler secret put RESEND_API_KEY`)
-   - `CONTACT_EMAIL` (optional - only needed if overriding default `contact@lornu.ai`)
-   - `RATE_LIMIT_KV` KV namespace (optional - only needed if enabling rate limiting)
+For Kubernetes deployments:
+
+1. Create Kubernetes secrets:
+   ```bash
+   kubectl create secret generic contact-api-secrets \
+     --from-literal=RESEND_API_KEY=<your-api-key> \
+     -n lornu-prod
+   ```
+
+2. Reference the secret in your pod spec:
+   ```yaml
+   env:
+     - name: RESEND_API_KEY
+       valueFrom:
+         secretKeyRef:
+           name: contact-api-secrets
+           key: RESEND_API_KEY
+   ```
+
+3. Required secrets/environment variables:
+   - `RESEND_API_KEY` (required - Resend API key)
+   - `CONTACT_EMAIL` (optional - defaults to `contact@lornu.ai`)
+
+
 
 2. Deploy via Cloudflare Git Integration (automatic on push to `main` or `develop`)
 

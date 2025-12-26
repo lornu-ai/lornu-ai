@@ -116,6 +116,8 @@ jobs:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
           TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
+          TF_VAR_stage_domain: ${{ secrets.STAGE_DOMAIN }}
+          TF_VAR_route53_zone_name: ${{ secrets.ROUTE53_ZONE_NAME }}
         run: terraform -chdir=terraform/aws/staging plan
 
       - name: "Terraform Security Scan"
@@ -157,6 +159,8 @@ jobs:
           TF_VAR_acm_certificate_arn: ${{ secrets.ACM_CERTIFICATE_ARN }}
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
           TF_VAR_docker_image: ${{ needs.build.outputs.image-uri }}
+          TF_VAR_stage_domain: ${{ secrets.STAGE_DOMAIN }}
+          TF_VAR_route53_zone_name: ${{ secrets.ROUTE53_ZONE_NAME }}
         run: terraform -chdir=terraform/aws/staging apply -auto-approve
 
       - name: "Update kubeconfig"

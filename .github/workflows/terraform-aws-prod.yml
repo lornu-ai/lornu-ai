@@ -60,6 +60,21 @@ jobs:
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
 
+      - name: Set extra domain aliases for SAN certificate
+        run: |
+          domains=()
+          if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
+            domains+=("${{ secrets.STAGE_DOMAIN }}")
+          fi
+          
+          # Convert array to JSON string
+          if [ ${#domains[@]} -gt 0 ]; then
+            json_domains=$(printf '%s\n' "${domains[@]}" | jq -R . | jq -s .)
+            echo "TF_VAR_extra_domain_names=$json_domains" >> "$GITHUB_ENV"
+          else
+            echo "TF_VAR_extra_domain_names=[]" >> "$GITHUB_ENV"
+          fi
+
       - name: Terraform Plan
         env:
           TF_VAR_secrets_manager_arn_pattern: ${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}
@@ -109,6 +124,21 @@ jobs:
 
       - name: Terraform Init
         run: terraform -chdir=terraform/aws/production init
+
+      - name: Set extra domain aliases for SAN certificate
+        run: |
+          domains=()
+          if [ -n "${{ secrets.STAGE_DOMAIN }}" ]; then
+            domains+=("${{ secrets.STAGE_DOMAIN }}")
+          fi
+          
+          # Convert array to JSON string
+          if [ ${#domains[@]} -gt 0 ]; then
+            json_domains=$(printf '%s\n' "${domains[@]}" | jq -R . | jq -s .)
+            echo "TF_VAR_extra_domain_names=$json_domains" >> "$GITHUB_ENV"
+          else
+            echo "TF_VAR_extra_domain_names=[]" >> "$GITHUB_ENV"
+          fi
 
       - name: Terraform Apply
         env:
