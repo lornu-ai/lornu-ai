@@ -25,6 +25,20 @@ kubernetes/base/       # Source of truth manifests
 kubernetes/overlays/   # dev, staging, prod overlays
 ```
 
+## GitHub Actions (Main Branch Only)
+
+The `main` branch uses **five consolidated workflows** (Issue #440):
+
+- **orchestrator.yml**: Multi-cloud TFC dispatch (AWS/GCP via OIDC)
+- **ci-unified.yml**: Unified lint/test (uv + bun)
+- **synthetic-monitors.yml**: Playwright health checks
+- **manage-workspaces.yml**: TFC workspace management
+- **security-scan.yml**: tfsec & CodeQL
+
+**All workflows use OIDC** - no static AWS/GCP keys. TFC workspaces: `aws-kustomize`, `gcp-lornu-ai`.
+
+See `.github/workflows/README.md` for the complete architecture.
+
 ## Developer Workflows
 ### Frontend (Bun)
 ```bash

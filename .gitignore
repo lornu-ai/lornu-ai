@@ -90,6 +90,8 @@ logs
 .terraform/
 *.tfstate
 *.tfstate.*
+.terraform.lock.hcl
+terraform/**/.terraform.lock.hcl
 
 # Editor directories and files
 .vscode/*

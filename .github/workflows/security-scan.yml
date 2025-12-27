@@ -1,0 +1,106 @@
+name: "Security Scan - The Shield"
+
+# Unified security scanning for Terraform and Kubernetes
+# Scans: terraform/ and kubernetes/ directories
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'terraform/**'
+      - 'kubernetes/**'
+      - '.github/workflows/security-scan.yml'
+  pull_request:
+    paths:
+      - 'terraform/**'
+      - 'kubernetes/**'
+      - '.github/workflows/security-scan.yml'
+  schedule:
+    # Weekly security scan on Sundays at 2 AM UTC
+    - cron: "0 2 * * 0"
+
+permissions:
+  contents: read
+  security-events: write  # Required for CodeQL
+  actions: read
+
+jobs:
+  tfsec:
+    name: "Terraform Security Scan (tfsec)"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory:
+          - terraform/aws
+          - terraform/gcp
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working_directory: ${{ matrix.directory }}
+          soft_fail: true  # Don't fail PR, but report issues
+
+      - name: Upload tfsec Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tfsec-results-${{ matrix.directory }}
+          path: tfsec.sarif
+          retention-days: 30
+
+  codeql:
+    name: "CodeQL Security Scan"
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['yaml', 'python', 'typescript']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  kubernetes-scan:
+    name: "Kubernetes Security Scan"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run kube-score
+        uses: zegl/kube-score-action@v1
+        with:
+          paths: 'kubernetes/**/*.yaml'
+          output-format: sarif
+          output-file: kube-score.sarif
+          exit-1-on-score: false
+
+      - name: Upload kube-score Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kube-score-results
+          path: kube-score.sarif
+          retention-days: 30
+

@@ -1,0 +1,149 @@
+name: "CI Unified - The Gate"
+
+# Unified lint and test pipeline for backend (uv) and frontend (bun)
+# Consolidates: web-ci.yml and backend CI logic
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'apps/web/**'
+      - 'packages/api/**'
+      - '.github/workflows/ci-unified.yml'
+  pull_request:
+    paths:
+      - 'apps/web/**'
+      - 'packages/api/**'
+      - '.github/workflows/ci-unified.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  backend-lint-test:
+    name: "Backend - Lint & Test (uv)"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/api
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install Dependencies
+        run: uv sync --all-groups
+
+      - name: Lint (ruff)
+        run: uv run ruff check .
+
+      - name: Format Check (ruff)
+        run: uv run ruff format --check .
+
+      - name: Type Check (mypy)
+        run: uv run mypy . || true  # Non-blocking for now
+
+      - name: Unit Tests
+        run: uv run pytest --cov=. --cov-report=term --cov-report=xml
+
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: ./coverage.xml
+          flags: backend
+          name: backend-coverage
+          working-directory: packages/api
+
+  frontend-lint-test:
+    name: "Frontend - Lint & Test (bun)"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Type Check
+        run: bun run type-check || true  # Non-blocking if not configured
+
+      - name: Unit Tests
+        run: bun run test:run
+
+      - name: Build
+        run: bun run build
+
+  frontend-e2e:
+    name: "Frontend - E2E Tests"
+    runs-on: ubuntu-latest
+    needs: [backend-lint-test]
+    defaults:
+      run:
+        working-directory: apps/web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install Frontend Dependencies
+        working-directory: apps/web
+        run: bun install
+
+      - name: Install Backend Dependencies
+        working-directory: packages/api
+        run: uv sync --no-dev
+
+      - name: Install Playwright Browsers
+        working-directory: apps/web
+        run: bun run playwright install --with-deps
+
+      - name: Start Backend API Server
+        run: |
+          cd ../../packages/api
+          export PYTHONPATH="$(pwd)/../..:$PYTHONPATH"
+          uv run -- uvicorn packages.api.main:app --host 0.0.0.0 --port 8080 &
+          sleep 5
+          curl -f http://localhost:8080/api/health || exit 1
+        env:
+          PORT: 8080
+
+      - name: Run Playwright Tests
+        working-directory: apps/web
+        run: bun run playwright test --grep-invert "betterstack-monitoring"
+        env:
+          CI: true
+
