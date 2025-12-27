@@ -1,8 +1,0 @@
-terraform {
-  cloud {
-    organization = "lornu-ai"
-    workspaces {
-      name = "lornu-ai-hub" # Different from your root workspace
-    }
-  }
-}
