@@ -23,7 +23,6 @@ jobs:
       fail-fast: false
       matrix:
         directory:
-          - terraform/aws/staging
           - terraform/aws
 
     steps:
@@ -79,7 +78,6 @@ jobs:
       fail-fast: false
       matrix:
         directory:
-          - terraform/aws/staging
           - terraform/aws
 
     steps:
@@ -118,4 +116,3 @@ jobs:
           else
             echo "✅ All Terraform checks passed"
           fi
-

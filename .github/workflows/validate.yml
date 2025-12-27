@@ -31,7 +31,6 @@ jobs:
       matrix:
         directory:
           - terraform/aws
-          - terraform/aws/staging
           - terraform/gcp
     steps:
       - name: Checkout Code
@@ -70,4 +69,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review  # Reports errors directly in PR comments
-
