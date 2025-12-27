@@ -22,7 +22,7 @@ resource "google_service_account_iam_member" "wif_tfc_impersonation" {
 
 # Allow HCP Terraform to get access tokens for this SA (required for WIF)
 resource "google_service_account_iam_member" "wif_tfc_token_creator" {
-  service_account_id = google_service_account.hub_admin_sa.name
+  service_account_id = data.google_service_account.hub_admin_sa.name
   role               = "roles/iam.serviceAccountTokenCreator"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.tfc_pool.name}/attribute.terraform_workspace_name/lornu-ai-hub"
 }
