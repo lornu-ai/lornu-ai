@@ -76,7 +76,6 @@ jobs:
           organization: ${{ env.TF_CLOUD_ORG }}
           workspace: ${{ matrix.workspace }}
           configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
-          is_speculative: ${{ github.event_name == 'pull_request' }}
         env:
           TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
 
