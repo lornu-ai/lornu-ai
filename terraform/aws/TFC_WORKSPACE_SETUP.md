@@ -1,6 +1,6 @@
 # Terraform Cloud Variables for aws-kustomize workspace
 # Add these environment variables to the TFC workspace:
-# 
+#
 # Required (from GitHub Secrets):
 # - AWS_ACCESS_KEY_ID
 # - AWS_SECRET_ACCESS_KEY
