@@ -1,0 +1,18 @@
+# ArgoCD Installation via Kustomize
+# Installs ArgoCD on the management cluster for GitOps workflows
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: argocd
+
+resources:
+  # Install ArgoCD from official stable release
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v2.10.0/manifests/install.yaml
+
+# Common labels for all resources
+commonLabels:
+  app.kubernetes.io/name: argocd
+  app.kubernetes.io/part-of: lornu-platform
+  app.kubernetes.io/managed-by: kustomize
+
