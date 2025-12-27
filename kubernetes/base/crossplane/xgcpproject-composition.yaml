@@ -1,0 +1,67 @@
+# Composition: Standard GCP Project Template
+# This defines the "Implementation" - what actual GCP resources get created
+# when a developer creates an XGCPProject
+
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: gcp-project-standard
+  labels:
+    provider: gcp
+    managed-by: kustomize
+spec:
+  # Link to the XRD (the interface)
+  compositeTypeRef:
+    apiVersion: lornu.ai/v1alpha1
+    kind: XGCPProject
+  
+  # The actual resources that get created
+  resources:
+    - name: gcpProject
+      base:
+        apiVersion: resourcemanager.gcp.upbound.io/v1beta1
+        kind: Project
+        spec:
+          deletionPolicy: Delete
+          forProvider:
+            # Fixed values for all projects
+            # Note: Replace with your actual organization ID
+            orgId: "123456789012"  # TODO: Replace with actual org ID
+            # Labels applied to all projects
+            labels:
+              managed-by: crossplane
+              platform: gcp
+      patches:
+        # Map developer's "projectName" to GCP Project display name
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.projectName"
+          toFieldPath: "spec.forProvider.name"
+        
+        # Map developer's "projectId" to GCP Project ID (must be globally unique)
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.projectId"
+          toFieldPath: "metadata.name"
+        
+        # Map developer's "billingAccountId" to GCP billing account
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.billingAccountId"
+          toFieldPath: "spec.forProvider.billingAccountId"
+        
+        # Map developer's "environment" to project labels
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.environment"
+          toFieldPath: "spec.forProvider.labels.environment"
+        
+        # Map optional description
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.description"
+          toFieldPath: "spec.forProvider.labels.description"
+          optional: true
+      
+      # Connection details - use the default ProviderConfig with WebIdentity
+      connectionDetails:
+        - name: projectId
+          fromConnectionSecretKey: projectId
+        - name: projectNumber
+          fromConnectionSecretKey: projectNumber
+

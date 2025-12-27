@@ -1,0 +1,101 @@
+# Composite Resource Definition (XRD) for XGCPProject
+# This defines the "Interface" - what fields developers can specify when creating a GCP project
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xgcpprojects.lornu.ai
+  labels:
+    managed-by: kustomize
+spec:
+  group: lornu.ai
+  names:
+    kind: XGCPProject
+    plural: xgcpprojects
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              projectName:
+                type: string
+                description: "The display name for the GCP project"
+              projectId:
+                type: string
+                description: "The unique project ID (must be globally unique)"
+                pattern: '^[a-z][a-z0-9-]{4,28}[a-z0-9]$'
+              billingAccountId:
+                type: string
+                description: "The billing account ID (format: XXXXXX-XXXXXX-XXXXXX)"
+                pattern: '^[A-Z0-9-]{13}$'
+              environment:
+                type: string
+                description: "The environment (e.g., dev, staging, prod)"
+                enum: ["dev", "staging", "prod"]
+              description:
+                type: string
+                description: "Optional description for the project"
+            required:
+              - projectName
+              - projectId
+              - billingAccountId
+              - environment
+        status:
+          type: object
+          properties:
+            conditions:
+              type: array
+              items:
+                type: object
+
+---
+# Claim (XRC) - allows namespace-scoped requests
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: gcpprojectclaims.lornu.ai
+  labels:
+    managed-by: kustomize
+spec:
+  group: lornu.ai
+  names:
+    kind: GCPProjectClaim
+    plural: gcpprojectclaims
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              projectName:
+                type: string
+              projectId:
+                type: string
+                pattern: '^[a-z][a-z0-9-]{4,28}[a-z0-9]$'
+              billingAccountId:
+                type: string
+                pattern: '^[A-Z0-9-]{13}$'
+              environment:
+                type: string
+                enum: ["dev", "staging", "prod"]
+              description:
+                type: string
+            required:
+              - projectName
+              - projectId
+              - billingAccountId
+              - environment
+  claimNames:
+    kind: GCPProjectClaim
+    plural: gcpprojectclaims
+

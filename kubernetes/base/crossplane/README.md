@@ -1,98 +1,59 @@
-# Crossplane Control Plane Setup
+# Crossplane GCP Bootstrap Bundle
 
-This directory contains Kustomize manifests for installing Crossplane on the GKE Autopilot cluster created by Terraform.
+This directory contains the complete Kustomize bundle for installing Crossplane and enabling self-service GCP project creation.
+
+## Quick Start
+
+See **[BOOTSTRAP_GUIDE.md](./BOOTSTRAP_GUIDE.md)** for the complete step-by-step guide.
+
+## Bundle Contents
+
+- **`kustomization.yaml`**: Main bundle that installs Crossplane core, providers, and custom APIs
+- **`xgcpproject-xrd.yaml`**: Composite Resource Definition (XRD) - the interface developers use
+- **`xgcpproject-composition.yaml`**: Composition - the implementation that creates GCP projects
+- **`provider-config.yaml`**: GCP provider configuration using Workload Identity
+- **`BOOTSTRAP_GUIDE.md`**: Complete setup and usage guide
 
 ## Architecture
 
 ```
-Terraform → Creates GKE Cluster + Workload Identity Binding
+Terraform → Creates GKE Cluster + Workload Identity Binding (the "Egg")
     ↓
-Kustomize → Installs Crossplane on the cluster
+Kustomize → Deploys Crossplane + Custom Project API (the "Chicken")
     ↓
-Crossplane → Manages GCP resources using Workload Identity
+Developer → Creates XGCPProject YAML (5 lines) → New GCP Project
 ```
 
-## Prerequisites
-
-1. **GKE Cluster Created**: The cluster must be created via Terraform (`terraform/gcp/crossplane.tf`)
-2. **Workload Identity Binding**: The IAM binding must exist (created by Terraform)
-3. **kubectl Access**: Configure kubectl to access the GKE cluster
-
-## Setup Steps
-
-### 1. Configure kubectl
-
-After Terraform creates the cluster, configure kubectl:
+## Installation
 
 ```bash
-gcloud container clusters get-credentials crossplane-control-plane \
-  --region <region> \
-  --project gcp-lornu-ai
-```
-
-### 2. Apply Crossplane
-
-Deploy Crossplane using Kustomize:
-
-```bash
+# 1. Apply the bundle
 kubectl apply -k kubernetes/base/crossplane/
+
+# 2. Wait for providers to be healthy
+kubectl wait --for=condition=Healthy provider/provider-gcp-resourcemanager -n crossplane-system --timeout=300s
 ```
 
-### 3. Verify Installation
-
-Check that Crossplane is running:
-
-```bash
-kubectl get pods -n crossplane-system
-kubectl get providers -n crossplane-system
-```
-
-### 4. Wait for Providers to be Ready
-
-The GCP providers need to download and install:
-
-```bash
-kubectl wait --for=condition=Healthy provider/provider-gcp-storage -n crossplane-system --timeout=300s
-kubectl wait --for=condition=Healthy provider/provider-gcp-compute -n crossplane-system --timeout=300s
-kubectl wait --for=condition=Healthy provider/provider-gcp-iam -n crossplane-system --timeout=300s
-```
-
-## Provider Configuration
-
-The `provider-config.yaml` uses **WebIdentity** (Workload Identity) for authentication. This is configured to use the Kubernetes Service Account:
-
-- **Namespace**: `crossplane-system`
-- **Service Account**: `provider-gcp-default`
-- **GCP Service Account**: `lornu-tfc-infra@gcp-lornu-ai.iam.gserviceaccount.com` (from Terraform)
-
-The Workload Identity binding is created by Terraform in `terraform/gcp/crossplane.tf`.
-
-## Customization
-
-To customize the provider configuration (e.g., different project ID), create an overlay:
+## Usage Example
 
 ```yaml
-# kubernetes/overlays/crossplane-custom/project-id-patch.yaml
-apiVersion: gcp.upbound.io/v1beta1
-kind: ProviderConfig
+apiVersion: lornu.ai/v1alpha1
+kind: XGCPProject
 metadata:
-  name: default
-  namespace: crossplane-system
+  name: my-awesome-app
 spec:
-  projectID: your-custom-project-id
+  projectName: "Awesome App Production"
+  projectId: "awesome-app-prod-2024"
+  billingAccountId: "XXXXXX-XXXXXX-XXXXXX"
+  environment: "prod"
 ```
 
-## Next Steps
+## Key Features
 
-Once Crossplane is installed and providers are healthy, you can:
+- ✅ **Self-Service**: Developers create projects with simple YAML
+- ✅ **Drift Correction**: Automatic reversion of manual changes
+- ✅ **Workload Identity**: Secure authentication without static keys
+- ✅ **Versioned APIs**: Update implementation without changing developer YAML
 
-1. Create **Compositions** for standard GCP resource patterns
-2. Define **Composite Resources** for developers to use
-3. Start managing GCP resources via Crossplane instead of direct Terraform
-
-## References
-
-- [Crossplane Documentation](https://docs.crossplane.io/)
-- [GCP Provider Documentation](https://marketplace.upbound.io/providers/upbound/provider-gcp-storage/)
-- [Workload Identity with Crossplane](https://docs.crossplane.io/latest/concepts/pipeline#workload-identity)
+For detailed instructions, see [BOOTSTRAP_GUIDE.md](./BOOTSTRAP_GUIDE.md).
 
