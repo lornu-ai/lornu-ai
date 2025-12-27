@@ -6,6 +6,7 @@ on:
       - gcloud-oidc  # ONLY trigger on pushes to this branch
     paths:
       - 'hub/**'     # ONLY trigger if files in the hub folder changed
+workflow_dispatch:  # <--- ADD THIS LINE
 
 jobs:
   terraform:
