@@ -19,14 +19,14 @@ resource "google_service_account_iam_member" "wif_github_impersonation" {
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_repo}"
 }
 
-# NEW: Allow HCP Terraform (Remote Runners) to impersonate this SA
-# This fixes the "No Credentials Loaded" error for remote runs.
+# UPDATED: Allow HCP Terraform (Remote Runners) to impersonate this SA
+# We use the workspace name attribute for a clean, secure handshake.
 resource "google_service_account_iam_member" "wif_tfc_impersonation" {
   service_account_id = google_service_account.hub_admin_sa.name
   role               = "roles/iam.workloadIdentityUser"
-  
-  # Logic: principalSet://.../subject/repo:<org>/<repo>:workspace:<workspace_name>
-  member             = "principalSet://iam.googleapis.com/projects/${var.hub_project_id}/locations/global/workloadIdentityPools/github-pool/subject/repo:${var.github_repo}:workspace:lornu-ai-hub"
+
+  # Targets specifically the 'lornu-ai-hub' workspace
+  member = "principalSet://iam.googleapis.com/projects/${var.hub_project_id}/locations/global/workloadIdentityPools/github-pool/attribute.terraform_workspace_name/lornu-ai-hub"
 }
 
 # --------------------------------------------------------------------------------
