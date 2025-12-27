@@ -1,0 +1,272 @@
+name: "Drift-Sentinel: Infrastructure Drift Detection & Remediation"
+
+on:
+  schedule:
+    # Run every hour to detect infrastructure drift
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      workspace:
+        description: 'Terraform Cloud workspace to check'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'lornu-ai-kustomize'
+          - 'lornu-ai-staging-aws'
+      remediation:
+        description: 'Trigger remediation (apply) if drift detected?'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  TF_API_TOKEN: ${{ secrets.AWS_TF_API_TOKEN }}
+  TF_CLOUD_ORG_PROD: "lornu-ai"
+  TF_CLOUD_ORG_STAGING: "lornu-ai"
+  AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
+jobs:
+  detect-drift:
+    name: "Detect Infrastructure Drift"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - workspace: "lornu-ai-kustomize"
+            organization: "lornu-ai"
+            terraform_dir: "terraform/aws"
+            environment: "production"
+          - workspace: "lornu-ai-staging-aws"
+            organization: "lornu-ai"
+            terraform_dir: "terraform/aws/staging"
+            environment: "staging"
+    # Always run for scheduled checks; for manual dispatch, filter in steps
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: "Check workspace filter"
+        id: check-filter
+        run: |
+          REQUESTED_WORKSPACE="${{ github.event.inputs.workspace }}"
+          if [ -z "$REQUESTED_WORKSPACE" ]; then
+            REQUESTED_WORKSPACE="all"
+          fi
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "$REQUESTED_WORKSPACE" != "all" ] && [ "$REQUESTED_WORKSPACE" != "${{ matrix.workspace }}" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Skipping workspace ${{ matrix.workspace }} (filter: $REQUESTED_WORKSPACE)"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: "Checkout"
+        if: steps.check-filter.outputs.skip != 'true'
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        if: steps.check-filter.outputs.skip != 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: "Setup Terraform"
+        if: steps.check-filter.outputs.skip != 'true'
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.0
+          cli_config_credentials_token: ${{ env.TF_API_TOKEN }}
+
+      - name: "Terraform Init"
+        if: steps.check-filter.outputs.skip != 'true'
+        id: init
+        run: |
+          terraform -chdir=${{ matrix.terraform_dir }} init
+        continue-on-error: true
+
+      - name: "Run Speculative Plan (Drift Detection)"
+        if: steps.check-filter.outputs.skip != 'true'
+        id: plan
+        run: |
+          echo "Running speculative plan for workspace: ${{ matrix.workspace }}"
+          export TF_VAR_secrets_manager_arn_pattern="${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}"
+          export TF_VAR_docker_image="placeholder"
+
+          if [ "${{ matrix.environment }}" = "production" ]; then
+            export TF_VAR_domain_name="${{ secrets.PROD_DOMAIN }}"
+            export TF_VAR_db_username="${{ secrets.PROD_DB_USERNAME }}"
+            export TF_VAR_db_password="${{ secrets.PROD_DB_PASSWORD }}"
+            export TF_VAR_resource_prefix="${{ secrets.PROD_RESOURCE_PREFIX }}"
+            export TF_VAR_github_repo="${{ secrets.PROD_GITHUB_REPO }}"
+          else
+            export TF_VAR_aws_region="${{ secrets.AWS_DEFAULT_REGION }}"
+            export TF_VAR_acm_certificate_arn="${{ secrets.ACM_CERTIFICATE_ARN }}"
+            export TF_VAR_stage_domain="${{ secrets.STAGE_DOMAIN }}"
+          fi
+
+          terraform -chdir=${{ matrix.terraform_dir }} plan -detailed-exitcode -out=tfplan.binary
+          PLAN_EXIT_CODE=$?
+          
+          # Exit code 0 = no changes, 1 = error, 2 = changes detected (drift)
+          if [ $PLAN_EXIT_CODE -eq 2 ]; then
+            echo "DRIFT_DETECTED=true" >> $GITHUB_OUTPUT
+            echo "DRIFT_EXIT_CODE=2" >> $GITHUB_OUTPUT
+            echo "⚠️ DRIFT DETECTED in workspace: ${{ matrix.workspace }}"
+            terraform -chdir=${{ matrix.terraform_dir }} show -json tfplan.binary > drift-plan.json
+          elif [ $PLAN_EXIT_CODE -eq 1 ]; then
+            echo "DRIFT_DETECTED=error" >> $GITHUB_OUTPUT
+            echo "DRIFT_EXIT_CODE=1" >> $GITHUB_OUTPUT
+            echo "❌ ERROR during plan execution"
+          else
+            echo "DRIFT_DETECTED=false" >> $GITHUB_OUTPUT
+            echo "DRIFT_EXIT_CODE=0" >> $GITHUB_OUTPUT
+            echo "✅ No drift detected in workspace: ${{ matrix.workspace }}"
+          fi
+        continue-on-error: true
+
+      - name: "Upload Drift Plan Artifact"
+        if: steps.check-filter.outputs.skip != 'true' && steps.plan.outputs.DRIFT_DETECTED == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-plan-${{ matrix.workspace }}-${{ github.run_id }}
+          path: |
+            ${{ matrix.terraform_dir }}/drift-plan.json
+            ${{ matrix.terraform_dir }}/tfplan.binary
+          retention-days: 30
+
+      - name: "Generate Drift Report"
+        if: steps.check-filter.outputs.skip != 'true' && steps.plan.outputs.DRIFT_DETECTED == 'true'
+        run: |
+          echo "## 🚨 Infrastructure Drift Detected" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Workspace:** \`${{ matrix.workspace }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Organization:** \`${{ matrix.organization }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** \`${{ matrix.environment }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Detected At:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Plan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          terraform -chdir=${{ matrix.terraform_dir }} show tfplan.binary | head -100 >> $GITHUB_STEP_SUMMARY || echo "Unable to display plan summary" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Remediation Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review the drift plan artifact above" >> $GITHUB_STEP_SUMMARY
+          echo "2. If drift is expected, update Terraform code accordingly" >> $GITHUB_STEP_SUMMARY
+          echo "3. If drift is unexpected, trigger remediation via workflow_dispatch with \`remediation: true\`" >> $GITHUB_STEP_SUMMARY
+          echo "4. Or manually run: \`terraform apply\` in the \`${{ matrix.terraform_dir }}\` directory" >> $GITHUB_STEP_SUMMARY
+
+      - name: "Alert on Drift Detection"
+        if: steps.check-filter.outputs.skip != 'true' && steps.plan.outputs.DRIFT_DETECTED == 'true'
+        run: |
+          echo "🚨 DRIFT ALERT: Infrastructure drift detected in ${{ matrix.workspace }}"
+          echo "Environment: ${{ matrix.environment }}"
+          echo "Organization: ${{ matrix.organization }}"
+          echo ""
+          echo "This alert should be integrated with Better Stack or your monitoring system."
+          echo "For now, check the workflow run summary and artifacts for details."
+          # TODO: Integrate with Better Stack heartbeat API
+          # curl -X POST "https://uptime.betterstack.com/api/v1/heartbeat/$BETTER_STACK_HEARTBEAT_ID" \
+          #   -H "Authorization: Bearer ${{ secrets.BETTER_STACK_API_TOKEN }}" \
+          #   -d '{"status": "down", "message": "Drift detected in ${{ matrix.workspace }}"}'
+
+  remediate-drift:
+    name: "Remediate Infrastructure Drift"
+    runs-on: ubuntu-latest
+    needs: detect-drift
+    if: github.event.inputs.remediation == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - workspace: "lornu-ai-kustomize"
+            organization: "lornu-ai"
+            terraform_dir: "terraform/aws"
+            environment: "production"
+          - workspace: "lornu-ai-staging-aws"
+            organization: "lornu-ai"
+            terraform_dir: "terraform/aws/staging"
+            environment: "staging"
+
+    steps:
+      - name: "Check workspace filter"
+        id: check-filter
+        run: |
+          REQUESTED_WORKSPACE="${{ github.event.inputs.workspace }}"
+          if [ -z "$REQUESTED_WORKSPACE" ]; then
+            REQUESTED_WORKSPACE="all"
+          fi
+          if [ "$REQUESTED_WORKSPACE" != "all" ] && [ "$REQUESTED_WORKSPACE" != "${{ matrix.workspace }}" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Skipping workspace ${{ matrix.workspace }} (filter: $REQUESTED_WORKSPACE)"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: "Checkout"
+        if: steps.check-filter.outputs.skip != 'true'
+        uses: actions/checkout@v4
+
+      - name: "Configure AWS Credentials"
+        if: steps.check-filter.outputs.skip != 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: "Setup Terraform"
+        if: steps.check-filter.outputs.skip != 'true'
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.8.0"
+          cli_config_credentials_token: ${{ env.TF_API_TOKEN }}
+
+      - name: "Terraform Init"
+        if: steps.check-filter.outputs.skip != 'true'
+        run: terraform -chdir=${{ matrix.terraform_dir }} init
+
+      - name: "Download Drift Plan Artifact"
+        if: steps.check-filter.outputs.skip != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: drift-plan-${{ matrix.workspace }}-*
+          merge-multiple: true
+
+      - name: "Apply Remediation (Terraform Apply)"
+        if: steps.check-filter.outputs.skip != 'true'
+        run: |
+          echo "🔧 Applying remediation for workspace: ${{ matrix.workspace }}"
+          export TF_VAR_secrets_manager_arn_pattern="${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}"
+          export TF_VAR_docker_image="placeholder"
+
+          if [ "${{ matrix.environment }}" = "production" ]; then
+            export TF_VAR_domain_name="${{ secrets.PROD_DOMAIN }}"
+            export TF_VAR_db_username="${{ secrets.PROD_DB_USERNAME }}"
+            export TF_VAR_db_password="${{ secrets.PROD_DB_PASSWORD }}"
+            export TF_VAR_resource_prefix="${{ secrets.PROD_RESOURCE_PREFIX }}"
+            export TF_VAR_github_repo="${{ secrets.PROD_GITHUB_REPO }}"
+          else
+            export TF_VAR_aws_region="${{ secrets.AWS_DEFAULT_REGION }}"
+            export TF_VAR_acm_certificate_arn="${{ secrets.ACM_CERTIFICATE_ARN }}"
+            export TF_VAR_stage_domain="${{ secrets.STAGE_DOMAIN }}"
+          fi
+
+          if [ -f "${{ matrix.terraform_dir }}/tfplan.binary" ]; then
+            terraform -chdir=${{ matrix.terraform_dir }} apply tfplan.binary
+          else
+            echo "No plan file found, running fresh apply"
+            terraform -chdir=${{ matrix.terraform_dir }} apply -auto-approve
+          fi
+
+      - name: "Remediation Complete"
+        if: steps.check-filter.outputs.skip != 'true'
+        run: |
+          echo "✅ Remediation applied successfully for ${{ matrix.workspace }}"
+          echo "**Workspace:** \`${{ matrix.workspace }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** Remediated" >> $GITHUB_STEP_SUMMARY
+          echo "**Applied At:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY

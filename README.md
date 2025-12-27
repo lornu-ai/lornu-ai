@@ -136,6 +136,28 @@ Lornu AI uses CLI-driven TFC workflows. Before running manual infrastructure upd
 
 See `docs/TFC_MANUAL_RUNS.md` for detailed instructions.
 
+## Zero-Secret Architecture
+
+Lornu AI uses **OIDC-based Dynamic Provider Credentials** for Terraform Cloud, eliminating static cloud credentials:
+
+### AWS (aws-kustomize workspace)
+- **OIDC Provider**: `https://app.terraform.io`
+- **IAM Role**: `terraform-cloud-oidc-role`
+- TFC assumes role via OIDC during plan/apply
+
+### GCP (gcp-lornu-ai workspace)
+- **Workload Identity Pool**: `lornu-tfc-pool`
+- **Service Account**: `lornu-tfc-infra@gcp-lornu-ai.iam.gserviceaccount.com`
+- TFC exchanges OIDC tokens for short-lived GCP credentials
+
+### Benefits
+- No static AWS Access Keys or GCP JSON keys
+- Credentials expire after each run
+- Scoped to specific TFC organization/workspace
+- Satisfies CASA Tier 2 compliance requirements
+
+See `docs/OIDC_MIGRATION_RUNBOOK.md` for migration details.
+
 ## Notes
 
 Plan A documentation is authoritative for this repo. Legacy references to ECS or Cloudflare Workers are deprecated.
