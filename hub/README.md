@@ -1,6 +1,8 @@
 
 # 🏗️ Lornu AI - Hub Infrastructure
 
+. . . trigger run
+
 This directory contains the Terraform configuration for the **Hub Project**. The Hub serves as the central management point for infrastructure orchestration, specifically handling:
 
 *   **Workload Identity Federation (WIF)**: Linking GitHub Actions to Google Cloud securely.
