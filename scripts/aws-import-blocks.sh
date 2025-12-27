@@ -49,13 +49,28 @@ if [[ -z "${TF_CLOUD_ORGANIZATION:-}" || -z "${TF_WORKSPACE:-}" ]]; then
 fi
 
 echo "Initializing Terraform in $TF_DIR"
-terraform -chdir="$TF_DIR" init
+if ! terraform -chdir="$TF_DIR" init; then
+  echo "ERROR: 'terraform init' failed for directory: $TF_DIR" >&2
+  echo "       Check your Terraform configuration, backend settings, and Terraform Cloud credentials," >&2
+  echo "       then re-run: terraform -chdir=\"$TF_DIR\" init" >&2
+  exit 1
+fi
 
 echo "Optional: generate missing config with import blocks in place"
 echo "  terraform -chdir=$TF_DIR plan -generate-config-out=generated.tf"
 
 echo "Running plan to validate import blocks"
-terraform -chdir="$TF_DIR" plan
+if ! terraform -chdir="$TF_DIR" plan; then
+  echo "ERROR: 'terraform plan' failed while validating import blocks in: $TF_DIR" >&2
+  echo "       Fix the issues reported by Terraform (e.g., incorrect import blocks or configuration)" >&2
+  echo "       and then re-run: terraform -chdir=\"$TF_DIR\" plan" >&2
+  exit 1
+fi
 
 echo "If plan is clean, apply to write imports to Terraform Cloud state"
-terraform -chdir="$TF_DIR" apply
+if ! terraform -chdir="$TF_DIR" apply; then
+  echo "ERROR: 'terraform apply' failed when writing imports to Terraform Cloud state for: $TF_DIR" >&2
+  echo "       Review the plan output and error details above, resolve any issues," >&2
+  echo "       then re-run: terraform -chdir=\"$TF_DIR\" apply" >&2
+  exit 1
+fi
