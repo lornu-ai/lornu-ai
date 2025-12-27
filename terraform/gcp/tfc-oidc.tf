@@ -114,12 +114,8 @@ resource "google_project_iam_member" "tfc_project_iam_admin" {
   member  = "serviceAccount:${google_service_account.tfc_infrastructure.email}"
 }
 
-# Data source for project number (needed for principalSet)
-data "google_project" "project" {
-  project_id = var.project_id
-}
-
 # Outputs for TFC workspace configuration
+# Note: data.google_project.project is defined in github-wif.tf
 output "tfc_workload_identity_pool_name" {
   description = "The full resource name of the TFC Workload Identity Pool"
   value       = google_iam_workload_identity_pool.tfc_pool.name
