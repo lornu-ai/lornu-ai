@@ -42,3 +42,19 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
   # Security restriction: only allows your repo
   attribute_condition = "assertion.repository == \"${var.github_repo}\""
 }
+
+# NEW: Dedicated OIDC Provider for HCP Terraform
+resource "google_iam_workload_identity_pool_provider" "tfc_provider" {
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.workload_identity_pool_id
+  workload_identity_pool_provider_id = "terraform-cloud-provider"
+
+  attribute_mapping = {
+    "google.subject"                        = "assertion.sub"
+    "attribute.terraform_workspace_name"    = "assertion.terraform_workspace_name"
+    "attribute.terraform_organization_name" = "assertion.terraform_organization_name"
+  }
+
+  oidc {
+    issuer_uri = "https://app.terraform.io"
+  }
+}
