@@ -1,4 +1,4 @@
-name: Synthetic Monitoring
+name: "Synthetic Monitors - The Watcher"
 
 on:
   schedule:

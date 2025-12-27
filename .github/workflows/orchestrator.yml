@@ -1,0 +1,164 @@
+name: "Plan A Orchestrator - The Brain"
+
+# Intelligent Terraform Cloud dispatch for multi-cloud infrastructure
+# Consolidates: terraform-aws.yml, terraform-gcp.yml, infra-orchestrator.yml, deploy-gke.yml, multi-cloud-deploy.yml
+
+on:
+  workflow_dispatch:
+    inputs:
+      cloud:
+        description: 'Cloud provider'
+        required: true
+        type: choice
+        options:
+          - aws
+          - gcp
+          - both
+      action:
+        description: 'Terraform action'
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+      workspace:
+        description: 'TFC workspace (auto-detected if not specified)'
+        required: false
+        type: string
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+      - 'kubernetes/**'
+      - '.github/workflows/orchestrator.yml'
+
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
+env:
+  TF_CLOUD_ORG: "lornu-ai"
+  AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION || 'us-east-1' }}
+
+jobs:
+  # AWS Infrastructure Orchestration
+  aws-orchestrate:
+    name: "AWS Infrastructure (${{ inputs.action || 'plan' }})"
+    runs-on: ubuntu-latest
+    if: |
+      (inputs.cloud == 'aws' || inputs.cloud == 'both' || github.event_name == 'push') &&
+      (github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'terraform/aws') || contains(github.event.head_commit.message, 'kubernetes'))
+    strategy:
+      fail-fast: false
+      max-parallel: 1  # Prevent API throttling
+    env:
+      TF_WORKSPACE: "aws-kustomize"
+      TF_API_TOKEN: ${{ secrets.AWS_TF_API_TOKEN }}
+      CONFIG_DIRECTORY: "./terraform/aws"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.0"
+          cli_config_credentials_token: ${{ env.TF_API_TOKEN }}
+
+      - name: Upload Configuration to TFC
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
+        id: upload-aws
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          directory: ${{ env.CONFIG_DIRECTORY }}
+          speculative: ${{ inputs.action == 'plan' || github.event_name == 'push' }}
+
+      - name: Create Terraform Run
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
+        id: run-aws
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          configuration_version: ${{ steps.upload-aws.outputs.configuration_version_id }}
+          is_speculative: ${{ inputs.action == 'plan' || github.event_name == 'push' }}
+          auto_apply: ${{ inputs.action == 'apply' && github.event_name == 'workflow_dispatch' }}
+
+      - name: Get Plan Output
+        if: steps.run-aws.outputs.run_status == 'planned' || steps.run-aws.outputs.run_status == 'planned_and_finished'
+        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
+        id: plan-output-aws
+        with:
+          plan: ${{ steps.run-aws.outputs.plan_id }}
+
+      - name: Output Run Status
+        run: |
+          echo "✅ AWS TFC workspace '${{ env.TF_WORKSPACE }}' run completed"
+          echo "Run ID: ${{ steps.run-aws.outputs.run_id }}"
+          echo "Status: ${{ steps.run-aws.outputs.run_status }}"
+
+  # GCP Infrastructure Orchestration
+  gcp-orchestrate:
+    name: "GCP Infrastructure (${{ inputs.action || 'plan' }})"
+    runs-on: ubuntu-latest
+    if: |
+      (inputs.cloud == 'gcp' || inputs.cloud == 'both' || github.event_name == 'push') &&
+      (github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'terraform/gcp') || contains(github.event.head_commit.message, 'kubernetes'))
+    strategy:
+      fail-fast: false
+      max-parallel: 1  # Prevent API throttling
+    env:
+      TF_WORKSPACE: "gcp-lornu-ai"
+      TF_API_TOKEN: ${{ secrets.GCP_TF_API_TOKEN }}
+      CONFIG_DIRECTORY: "./terraform/gcp"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud (OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.0"
+          cli_config_credentials_token: ${{ env.TF_API_TOKEN }}
+
+      - name: Upload Configuration to TFC
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
+        id: upload-gcp
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          directory: ${{ env.CONFIG_DIRECTORY }}
+          speculative: ${{ inputs.action == 'plan' || github.event_name == 'push' }}
+
+      - name: Create Terraform Run
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
+        id: run-gcp
+        with:
+          workspace: ${{ env.TF_WORKSPACE }}
+          configuration_version: ${{ steps.upload-gcp.outputs.configuration_version_id }}
+          is_speculative: ${{ inputs.action == 'plan' || github.event_name == 'push' }}
+          auto_apply: ${{ inputs.action == 'apply' && github.event_name == 'workflow_dispatch' }}
+
+      - name: Get Plan Output
+        if: steps.run-gcp.outputs.run_status == 'planned' || steps.run-gcp.outputs.run_status == 'planned_and_finished'
+        uses: hashicorp/tfc-workflows-github/actions/plan-output@v1.0.0
+        id: plan-output-gcp
+        with:
+          plan: ${{ steps.run-gcp.outputs.plan_id }}
+
+      - name: Output Run Status
+        run: |
+          echo "✅ GCP TFC workspace '${{ env.TF_WORKSPACE }}' run completed"
+          echo "Run ID: ${{ steps.run-gcp.outputs.run_id }}"
+          echo "Status: ${{ steps.run-gcp.outputs.run_status }}"
+

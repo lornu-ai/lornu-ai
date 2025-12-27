@@ -72,6 +72,23 @@ Plan A supports both AWS and GCP:
 - Backend tests: `uv run pytest`
 - Backend lint: `uv run ruff check .`
 
+## GitHub Actions Workflows (Plan A Unified Architecture)
+
+The `main` branch uses **five consolidated workflows** (Issue #440):
+
+1. **orchestrator.yml** - The Brain: Intelligent TFC dispatch for AWS/GCP infrastructure
+2. **ci-unified.yml** - The Gate: Unified lint/test (uv for backend, bun for frontend)
+3. **synthetic-monitors.yml** - The Watcher: Playwright health checks
+4. **manage-workspaces.yml** - The Meta: TFC workspace variable lifecycle
+5. **security-scan.yml** - The Shield: tfsec & CodeQL scanning
+
+**Key Standards:**
+- All workflows use **OIDC authentication** (no static keys
+- TFC workspaces: `aws-kustomize` (AWS), `gcp-lornu-ai` (GCP)
+- Standardized permissions: `id-token: write`, `contents: read`
+
+See `.github/workflows/README.md` for details.
+
 ## Terraform Hygiene (Required)
 
 - Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
