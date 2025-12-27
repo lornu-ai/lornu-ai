@@ -1,0 +1,73 @@
+name: "CI - Syntax Validation"
+
+# Validates Terraform syntax and GitHub Actions workflow files on PR open
+# Prevents broken code from being merged
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
+  pull-requests: write  # Required for actionlint PR comments
+
+jobs:
+  # Job 1: Check Terraform Syntax
+  terraform-lint:
+    name: "Terraform Syntax Check"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory:
+          - terraform/aws
+          - terraform/aws/staging
+          - terraform/gcp
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.0"
+
+      - name: Terraform Init
+        run: |
+          cd ${{ matrix.directory }}
+          terraform init -backend=false
+
+      - name: Terraform Format Check
+        run: |
+          cd ${{ matrix.directory }}
+          terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        run: |
+          cd ${{ matrix.directory }}
+          terraform validate
+
+  # Job 2: Check GitHub Actions Workflow Syntax
+  workflow-lint:
+    name: "GitHub Actions Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Run Actionlint
+        uses: reviewdog/action-actionlint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review  # Reports errors directly in PR comments
+
