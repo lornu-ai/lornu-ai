@@ -102,8 +102,33 @@ kustomize build kubernetes/overlays/aws-prod | kubectl apply -f -
 kustomize build kubernetes/overlays/gcp-prod | kubectl apply -f -
 ```
 
+## Contributing Infrastructure
+
+### Zero-Secret OIDC Architecture
+
+Lornu AI uses **OIDC-based Dynamic Provider Credentials** for all cloud authentication:
+
+- **AWS**: TFC assumes `terraform-cloud-oidc-role` via OIDC
+- **GCP**: TFC uses Workload Identity Federation with `lornu-tfc-pool`
+
+### Meta-Terraform Management
+
+The `terraform/tfc-management/` workspace automates:
+- TFC variable injection for OIDC configuration
+- GitHub Actions secret rotation (`TF_API_TOKEN`)
+
+### Infrastructure Security Rules
+
+1. **NEVER create static IAM credentials** (AWS Access Keys or GCP JSON keys)
+2. **ALWAYS use OIDC/Workload Identity** for cloud authentication
+3. **Scope trust policies** to specific TFC organizations and workspaces
+4. **Reference existing OIDC roles** instead of creating new static credentials
+
+See `docs/OIDC_MIGRATION_RUNBOOK.md` for credential management procedures.
+
 ## Prohibited References
 
 - Do not introduce AWS ECS or Cloudflare Workers references.
 - Do not add non-DRY manifest duplication across overlays.
 - Do not introduce Helm charts, templates, or values files.
+- Do not create static AWS Access Keys or GCP Service Account JSON keys.
