@@ -1,12 +1,12 @@
 
 # --------------------------------------------------------------------------------
-# HUB SERVICE ACCOUNT (DATA SOURCE)
+# HUB SERVICE ACCOUNT (LOCALS)
 # --------------------------------------------------------------------------------
 
-# We use a Data Source because this SA is pre-existing and manages Terraform itself.
-# We don't want Terraform to attempt to manage/destroy its own identity.
-data "google_service_account" "hub_admin_sa" {
-  account_id = "tf-cloud-sa"
+# Using locals to avoid API Permission Errors when the SA tries to read itself
+locals {
+  hub_sa_email = "tf-cloud-sa@${var.hub_project_id}.iam.gserviceaccount.com"
+  hub_sa_name  = "projects/${var.hub_project_id}/serviceAccounts/tf-cloud-sa@${var.hub_project_id}.iam.gserviceaccount.com"
 }
 
 # --------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ data "google_service_account" "hub_admin_sa" {
 
 # Allow HCP Terraform to impersonate this SA via the NEW pool
 resource "google_service_account_iam_member" "wif_tfc_impersonation" {
-  service_account_id = data.google_service_account.hub_admin_sa.name
+  service_account_id = local.hub_sa_name
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.tfc_pool.name}/attribute.terraform_workspace_name/lornu-ai-hub"
 }
@@ -35,19 +35,19 @@ resource "google_service_account_iam_member" "wif_tfc_token_creator" {
 resource "google_organization_iam_member" "project_creator" {
   org_id = var.org_id
   role   = "roles/resourcemanager.projectCreator"
-  member = "serviceAccount:${data.google_service_account.hub_admin_sa.email}"
+  member = "serviceAccount:${local.hub_sa_email}"
 }
 
 # 2. BILLING: Attach to Billing Account
 resource "google_billing_account_iam_member" "billing_user" {
   billing_account_id = var.billing_account_id
   role               = "roles/billing.user"
-  member             = "serviceAccount:${data.google_service_account.hub_admin_sa.email}"
+  member             = "serviceAccount:${local.hub_sa_email}"
 }
 
-# 3. PROJECT-LEVEL: Administer Service Accounts (Fixes 403 error on self-read)
+# 3. PROJECT-LEVEL: Administer Service Accounts
 resource "google_project_iam_member" "sa_admin" {
   project = var.hub_project_id
   role    = "roles/iam.serviceAccountAdmin"
-  member  = "serviceAccount:${data.google_service_account.hub_admin_sa.email}"
+  member  = "serviceAccount:${local.hub_sa_email}"
 }

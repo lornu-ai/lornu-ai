@@ -10,5 +10,5 @@ output "workload_identity_provider" {
 
 output "terraform_admin_sa_email" {
   description = "The email of the SA used for spawning Spokes"
-  value       = data.google_service_account.hub_admin_sa.email
+  value       = local.hub_sa_email
 }
