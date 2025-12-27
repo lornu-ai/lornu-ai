@@ -1,0 +1,47 @@
+name: "GCP Hub Provisioning"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'hub/**'     # ONLY trigger if files in the hub folder changed
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'hub/**'
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./hub
+
+    env:
+      TF_VAR_billing_account_id: ${{ secrets.GCP_BILLING_ID }}
+      TF_VAR_org_id: ${{ secrets.GCP_ORG_ID }}
+      TF_VAR_hub_project_id: ${{ secrets.GCP_HUB_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        if: github.event_name == 'pull_request'
+        run: terraform plan -no-color
+
+      - name: Terraform Apply
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: terraform apply -auto-approve
