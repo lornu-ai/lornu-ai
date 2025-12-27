@@ -81,4 +81,3 @@ If a manual TFC UI run appears to be using old code:
 - `.github/workflows/tfc-sync.yml` - Automatic configuration version sync workflow
 - `terraform/aws/backend.tf` - AWS TFC backend configuration
 - `terraform/gcp/main.tf` - GCP TFC backend configuration
-

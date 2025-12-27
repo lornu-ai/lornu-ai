@@ -1,6 +1,6 @@
 # Plan A — Unified Workflow Architecture
 
-**Status**: Consolidated (Issue #440)  
+**Status**: Consolidated (Issue #440)
 **Branch**: `main` only
 
 ## The Five Pillars

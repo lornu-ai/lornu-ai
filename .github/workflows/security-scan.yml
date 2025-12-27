@@ -103,4 +103,3 @@ jobs:
           name: kube-score-results
           path: kube-score.sarif
           retention-days: 30
-

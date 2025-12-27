@@ -327,4 +327,3 @@ gh workflow run drift-sentinel.yml \
 **See Also:**
 - [AGENTS.md](../AGENTS.md) - Drift remediation instructions
 - [Issue #420](https://github.com/lornu-ai/lornu-ai/issues/420) - Feature request details
-

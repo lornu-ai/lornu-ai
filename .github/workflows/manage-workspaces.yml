@@ -15,6 +15,10 @@ on:
           - sync-secrets-aws
           - sync-secrets-gcp
           - all
+  pull_request:
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/manage-workspaces.yml'
   push:
     branches:
       - main
@@ -39,6 +43,7 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event_name == 'push' ||
+      github.event_name == 'pull_request' ||
       (github.event_name == 'workflow_dispatch' && (inputs.action == 'sync-config' || inputs.action == 'all'))
     strategy:
       fail-fast: false
@@ -46,10 +51,8 @@ jobs:
       matrix:
         include:
           - workspace: "aws-kustomize"
-            tf_api_token: ${{ secrets.AWS_TF_API_TOKEN }}
             config_dir: "./terraform/aws"
           - workspace: "gcp-lornu-ai"
-            tf_api_token: ${{ secrets.GCP_TF_API_TOKEN }}
             config_dir: "./terraform/gcp"
     steps:
       - name: Checkout
@@ -59,21 +62,22 @@ jobs:
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
         id: upload
         with:
+          organization: ${{ env.TF_CLOUD_ORG }}
           workspace: ${{ matrix.workspace }}
           directory: ${{ matrix.config_dir }}
-          speculative: true
+          speculative: ${{ github.event_name == 'pull_request' }}
         env:
-          TF_API_TOKEN: ${{ matrix.tf_api_token }}
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
 
       - name: Create Speculative Plan
         uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
         id: plan
         with:
+          organization: ${{ env.TF_CLOUD_ORG }}
           workspace: ${{ matrix.workspace }}
           configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
-          is_speculative: true
         env:
-          TF_API_TOKEN: ${{ matrix.tf_api_token }}
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
 
       - name: Log Sync Status
         run: |
@@ -86,10 +90,11 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'schedule' ||
+      github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && (inputs.action == 'sync-secrets-aws' || inputs.action == 'all'))
     env:
       TF_WORKSPACE: "aws-kustomize"
-      TF_API_TOKEN: ${{ secrets.AWS_TF_API_TOKEN }}
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
       CONFIG_DIRECTORY: "./terraform/aws"
     steps:
       - name: Checkout
@@ -135,10 +140,11 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'schedule' ||
+      github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && (inputs.action == 'sync-secrets-gcp' || inputs.action == 'all'))
     env:
       TF_WORKSPACE: "gcp-lornu-ai"
-      TF_API_TOKEN: ${{ secrets.GCP_TF_API_TOKEN }}
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
       CONFIG_DIRECTORY: "./terraform/gcp"
     steps:
       - name: Checkout
@@ -190,5 +196,4 @@ jobs:
         run: |
           echo -n "$SECRET_VALUE" | gcloud secrets versions add resend-api-key \
             --data-file=- \
-            --project=$PROJECT_ID
-
+            --project="$PROJECT_ID"

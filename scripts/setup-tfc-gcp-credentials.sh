@@ -105,7 +105,7 @@ if [ -n "$EXISTING_VAR" ]; then
             }
           }" \
           "https://app.terraform.io/api/v2/vars/$EXISTING_VAR" > /dev/null
-        
+
         echo "✅ Variable updated successfully"
     else
         echo "Skipping update"
@@ -138,7 +138,7 @@ else
         }
       }" \
       "https://app.terraform.io/api/v2/vars" > /dev/null
-    
+
     echo "✅ Variable created successfully"
 fi
 
@@ -154,4 +154,3 @@ echo "   cd terraform/gcp"
 echo "   terraform init"
 echo "   terraform plan"
 echo ""
-

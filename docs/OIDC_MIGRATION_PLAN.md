@@ -1,7 +1,7 @@
 # Unified Multi-Cloud OIDC Authentication Migration Plan
 
-**Issue**: [#435](https://github.com/lornu-ai/lornu-ai/issues/435)  
-**Status**: In Progress  
+**Issue**: [#435](https://github.com/lornu-ai/lornu-ai/issues/435)
+**Status**: In Progress
 **Target**: 100% OIDC-based authentication for AWS and GCP
 
 ## Executive Summary
@@ -207,4 +207,3 @@ If issues occur during migration:
 - **Phase 5**: Pending (Documentation)
 
 **Estimated completion**: 1-2 weeks (including testing and verification period)
-

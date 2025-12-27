@@ -28,7 +28,7 @@ Check that your `backend.tf` or `terraform {}` block is configured correctly:
 terraform {
   cloud {
     organization = "lornu-ai"
-    
+
     workspaces {
       name = "aws-kustomize"
     }
@@ -213,4 +213,3 @@ Ensure the workspace has:
 ---
 
 **Note**: Always backup your state before migration. State loss can be catastrophic.
-

@@ -83,4 +83,3 @@ env:
 - Full documentation: `docs/SECRETS_MANAGEMENT.md`
 - Workflow details: `.github/workflows/manage-workspaces.yml`
 - OIDC setup: `docs/OIDC_MIGRATION_PLAN.md`
-

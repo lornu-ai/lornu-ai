@@ -12,11 +12,8 @@ resource "google_dns_managed_zone" "public_zone" {
   }
 }
 
-# Import the existing manually created zone
-import {
-  to = google_dns_managed_zone.public_zone
-  id = "projects/gcp-lornu-ai/managedZones/lornu-ai-zone"
-}
+# Note: If this zone already exists, import it using:
+# terraform import google_dns_managed_zone.public_zone projects/gcp-lornu-ai/managedZones/lornu-ai-zone
 
 # Dev Environment d2.lornu.ai
 resource "google_dns_record_set" "dev_d2" {

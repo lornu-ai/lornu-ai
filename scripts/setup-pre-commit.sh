@@ -35,4 +35,3 @@ echo "To run only Terraform hooks:"
 echo "  pre-commit run terraform_fmt --all-files"
 echo "  pre-commit run terraform_validate --all-files"
 echo ""
-

@@ -54,7 +54,7 @@ jobs:
       max-parallel: 1  # Prevent API throttling
     env:
       TF_WORKSPACE: "aws-kustomize"
-      TF_API_TOKEN: ${{ secrets.AWS_TF_API_TOKEN }}
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
       CONFIG_DIRECTORY: "./terraform/aws"
     steps:
       - name: Checkout
@@ -114,7 +114,7 @@ jobs:
       max-parallel: 1  # Prevent API throttling
     env:
       TF_WORKSPACE: "gcp-lornu-ai"
-      TF_API_TOKEN: ${{ secrets.GCP_TF_API_TOKEN }}
+      TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
       CONFIG_DIRECTORY: "./terraform/gcp"
     steps:
       - name: Checkout
@@ -161,4 +161,3 @@ jobs:
           echo "✅ GCP TFC workspace '${{ env.TF_WORKSPACE }}' run completed"
           echo "Run ID: ${{ steps.run-gcp.outputs.run_id }}"
           echo "Status: ${{ steps.run-gcp.outputs.run_status }}"
-

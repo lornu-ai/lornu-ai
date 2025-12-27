@@ -62,4 +62,3 @@ trap "echo 'Stopping servers...'; kill $BACKEND_PID $FRONTEND_PID 2>/dev/null ||
 
 # Wait for both processes
 wait $BACKEND_PID $FRONTEND_PID
-
