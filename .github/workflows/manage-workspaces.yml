@@ -51,10 +51,8 @@ jobs:
       matrix:
         include:
           - workspace: "aws-kustomize"
-            tf_api_token: ${{ secrets.AWS_TF_API_TOKEN }}
             config_dir: "./terraform/aws"
           - workspace: "gcp-lornu-ai"
-            tf_api_token: ${{ secrets.GCP_TF_API_TOKEN }}
             config_dir: "./terraform/gcp"
     steps:
       - name: Checkout
@@ -68,7 +66,7 @@ jobs:
           directory: ${{ matrix.config_dir }}
           speculative: true
         env:
-          TF_API_TOKEN: ${{ matrix.tf_api_token }}
+          TF_API_TOKEN: ${{ matrix.workspace == 'aws-kustomize' && secrets.AWS_TF_API_TOKEN || secrets.GCP_TF_API_TOKEN }}
 
       - name: Create Speculative Plan
         uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
@@ -78,7 +76,7 @@ jobs:
           configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
           is_speculative: true
         env:
-          TF_API_TOKEN: ${{ matrix.tf_api_token }}
+          TF_API_TOKEN: ${{ matrix.workspace == 'aws-kustomize' && secrets.AWS_TF_API_TOKEN || secrets.GCP_TF_API_TOKEN }}
 
       - name: Log Sync Status
         run: |
