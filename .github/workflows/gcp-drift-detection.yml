@@ -1,0 +1,315 @@
+name: GCP Infrastructure Drift Detection
+
+# Addresses GitHub Issue #444: Legacy Cloud Infrastructure Discovery and Terraform Import
+# https://github.com/lornu-ai/lornu-ai/issues/444
+#
+# This workflow implements Phase 3 requirement: Continuous Drift Detection
+# Runs daily to detect manual changes made outside of Terraform
+
+on:
+  # Schedule daily drift detection (6 AM UTC)
+  schedule:
+    - cron: '0 6 * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      alert_threshold:
+        description: 'Number of changes to trigger alert'
+        required: false
+        default: '1'
+        type: string
+      project_id:
+        description: 'GCP Project ID (optional override)'
+        required: false
+        default: 'gcp-lornu-ai'
+        type: string
+
+  # Trigger on changes to Terraform files (to verify no drift after apply)
+  push:
+    paths:
+      - 'terraform/gcp/**'
+    branches:
+      - main
+
+env:
+  GCP_PROJECT_ID: ${{ inputs.project_id || 'gcp-lornu-ai' }}
+  GCP_REGION: 'us-central1'
+  DRIFT_ALERT_THRESHOLD: ${{ inputs.alert_threshold || '1' }}
+  TERRAFORM_VERSION: '1.5.0'  GITHUB_ISSUE_NUMBER: '444'  # Make configurable to avoid hardcoding
+permissions:
+  contents: read
+  issues: write          # For creating drift alert issues
+  id-token: write       # For OIDC authentication to GCP
+  pull-requests: read   # For PR context
+
+jobs:
+  drift-detection:
+    name: Detect Infrastructure Drift
+    runs-on: ubuntu-latest
+    
+    # Only run on main branch for production monitoring
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    
+    outputs:
+      drift-status: ${{ steps.drift-check.outputs.drift-status }}
+      changes-detected: ${{ steps.drift-check.outputs.changes-detected }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        
+      - name: Verify GCP Authentication
+        run: |
+          echo "🔐 Verifying GCP authentication..."
+          gcloud auth list
+          gcloud config set project ${{ env.GCP_PROJECT_ID }}
+          echo "✅ Authenticated to project: ${{ env.GCP_PROJECT_ID }}"
+          
+      - name: Initialize Terraform
+        working-directory: terraform/gcp
+        run: |
+          echo "🏗️  Initializing Terraform..."
+          terraform init -input=false
+          echo "✅ Terraform initialized"
+          
+      - name: Run Drift Detection
+        id: drift-check
+        working-directory: terraform/gcp
+        run: |
+          echo "🔍 Running Terraform plan to detect drift..."
+          
+          # Run terraform plan with detailed exit code
+          set +e  # Don't exit on non-zero code
+          plan_output=$(terraform plan -detailed-exitcode -no-color 2>&1)
+          plan_exit_code=$?
+          set -e
+          
+          echo "📊 Terraform plan exit code: $plan_exit_code"
+          
+          case $plan_exit_code in
+            0)
+              echo "✅ No drift detected"
+              echo "drift-status=no-drift" >> $GITHUB_OUTPUT
+              echo "changes-detected=0" >> $GITHUB_OUTPUT
+              ;;
+            1)
+              echo "❌ Terraform plan failed"
+              echo "::error::Terraform plan failed with errors"
+              echo "$plan_output"
+              exit 1
+              ;;
+            2)
+              echo "⚠️  Infrastructure drift detected!"
+              
+              # Count changes (approximate)
+              changes_count=$(echo "$plan_output" | grep -E "^\s*[~+-]" | wc -l)
+              echo "📈 Detected approximately $changes_count changes"
+              
+              echo "drift-status=drift-detected" >> $GITHUB_OUTPUT
+              echo "changes-detected=$changes_count" >> $GITHUB_OUTPUT
+              
+              # Save plan output for later use
+              echo "$plan_output" > drift-plan-output.txt
+              
+              # Check if we should alert
+              if [ "$changes_count" -ge "${{ env.DRIFT_ALERT_THRESHOLD }}" ]; then
+                echo "🚨 Changes ($changes_count) exceed threshold (${{ env.DRIFT_ALERT_THRESHOLD }})"
+                echo "alert-needed=true" >> $GITHUB_OUTPUT
+              else
+                echo "ℹ️  Changes ($changes_count) below alert threshold (${{ env.DRIFT_ALERT_THRESHOLD }})"
+                echo "alert-needed=false" >> $GITHUB_OUTPUT
+              fi
+              ;;
+            *)
+              echo "❌ Unexpected terraform exit code: $plan_exit_code"
+              exit 1
+              ;;
+          esac
+          
+      - name: Upload Drift Report Artifacts
+        if: steps.drift-check.outputs.drift-status == 'drift-detected'
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-report-${{ github.run_id }}
+          path: terraform/gcp/drift-plan-output.txt
+          retention-days: 30
+          
+  create-drift-alert:
+    name: Create Drift Alert Issue
+    runs-on: ubuntu-latest
+    needs: drift-detection
+    if: needs.drift-detection.outputs.drift-status == 'drift-detected'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Download Drift Report
+        uses: actions/download-artifact@v4
+        with:
+          name: drift-report-${{ github.run_id }}
+          
+      - name: Generate Drift Report
+        id: generate-report
+        run: |
+          echo "📝 Generating drift alert report..."
+          
+          # Read the terraform plan output
+          plan_output=$(cat drift-plan-output.txt)
+          changes_count="${{ needs.drift-detection.outputs.changes-detected }}"
+          
+          # Generate comprehensive drift report
+          cat > drift-alert-body.md << EOF
+          # 🚨 Infrastructure Drift Detected
+          
+          **Alert Generated:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')  
+          **Project:** ${{ env.GCP_PROJECT_ID }}  
+          **Environment:** Production  
+          **Changes Detected:** $changes_count  
+          **Alert Threshold:** ${{ env.DRIFT_ALERT_THRESHOLD }}  
+          **Workflow Run:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          
+          ## 📊 Summary
+          
+          Configuration drift has been detected in the GCP infrastructure. This indicates that manual changes were made outside of Terraform.
+          
+          ## 🔍 Terraform Plan Output
+          
+          <details>
+          <summary>Click to expand plan output</summary>
+          
+          \`\`\`hcl
+          $plan_output
+          \`\`\`
+          
+          </details>
+          
+          ## ⚠️ Impact Assessment
+          
+          - **Security Risk:** Manual changes bypass peer review and audit trails
+          - **Compliance Risk:** Changes may not meet security baselines  
+          - **Operational Risk:** Configuration drift can cause deployment failures
+          
+          ## 🔧 Recommended Actions
+          
+          ### Immediate Actions
+          1. **Review Changes:** Analyze the Terraform plan output above
+          2. **Identify Source:** Check GCP Audit Logs to find who made changes
+          3. **Assess Impact:** Determine if changes affect security or compliance
+          
+          ### Remediation Options
+          
+          **Option A: Accept Changes (if intentional)**
+          \`\`\`bash
+          # Update Terraform configuration to match current state
+          cd terraform/gcp
+          terraform plan  # Review changes
+          # Update .tf files to match desired state
+          terraform apply
+          \`\`\`
+          
+          **Option B: Revert Changes (if unintentional)**
+          \`\`\`bash
+          # Revert to Terraform-managed state
+          cd terraform/gcp
+          terraform apply  # This will restore the desired configuration
+          \`\`\`
+          
+          ### Prevention
+          1. **Update IAM policies** to restrict manual changes
+          2. **Enable audit logging** for all infrastructure changes
+          3. **Review access controls** for the affected resources
+          
+          ## 📚 References
+          
+          - **Original Issue:** [#444 Legacy Cloud Infrastructure Discovery](https://github.com/lornu-ai/lornu-ai/issues/444)
+          - **Terraform Directory:** \`terraform/gcp/\`
+          - **GCP Project:** ${{ env.GCP_PROJECT_ID }}
+          - **Workflow:** [Drift Detection](${{ github.server_url }}/${{ github.repository }}/actions/workflows/drift-detection.yml)
+          
+          ## ✅ Resolution Checklist
+          
+          - [ ] Reviewed and understood the detected changes
+          - [ ] Identified the source of the manual changes
+          - [ ] Decided on remediation approach (accept or revert)
+          - [ ] Updated Terraform configuration (if accepting changes)
+          - [ ] Applied Terraform changes to restore consistency
+          - [ ] Updated access controls to prevent future drift
+          - [ ] Verified no further drift with \`terraform plan\`
+          
+          ---
+          
+          *This alert was automatically generated by the drift detection system.*  
+          *Related Issue: [#444](https://github.com/lornu-ai/lornu-ai/issues/444)*
+          EOF
+          
+          echo "✅ Drift report generated"
+          
+      - name: Create GitHub Issue for Drift Alert
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const driftBody = fs.readFileSync('drift-alert-body.md', 'utf8');
+            
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Infrastructure Drift Detected - ${new Date().toISOString().split('T')[0]}`,
+              body: driftBody,
+              labels: ['infrastructure', 'drift-alert', 'priority:high', 'automated']
+            });
+            
+            console.log(`✅ Created drift alert issue #${issue.data.number}`);
+            
+            # Also comment on the original issue
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: process.env.GITHUB_ISSUE_NUMBER,
+              body: `🚨 **Drift Alert:** Infrastructure changes detected in GCP. See related issue #${issue.data.number} for details.`
+            });
+            
+            console.log('✅ Updated original issue #444 with drift alert');
+            
+  notify-success:
+    name: Notify No Drift Detected
+    runs-on: ubuntu-latest
+    needs: drift-detection
+    if: needs.drift-detection.outputs.drift-status == 'no-drift'
+    
+    steps:
+      - name: Update Issue #444 with Success Status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Only comment on scheduled runs to avoid spam
+            if (context.eventName === 'schedule') {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: process.env.GITHUB_ISSUE_NUMBER,
+                body: `✅ **Drift Check Passed** - No infrastructure drift detected on ${new Date().toISOString().split('T')[0]}. All GCP resources match Terraform configuration.`
+              });
+              
+              console.log(`✅ Updated issue #${process.env.GITHUB_ISSUE_NUMBER} with success status`);
+            } else {
+              console.log('ℹ️  Skipping comment for non-scheduled run');
+            }
+        # End of notify-success drift detection script
