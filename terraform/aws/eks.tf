@@ -1,15 +1,15 @@
 module "lornu_cluster" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 20.0"
+  version = "~> 21.10"
 
-  cluster_name    = "lornu-ai-production-cluster"
-  cluster_version = "1.29"
+  name               = "lornu-ai-production-cluster"
+  kubernetes_version = "1.29"
 
-  cluster_endpoint_public_access       = true
-  cluster_endpoint_private_access      = true
-  cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
+  endpoint_public_access       = true
+  endpoint_private_access      = true
+  endpoint_public_access_cidrs = ["0.0.0.0/0"]
 
-  cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+  enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
   vpc_id                   = aws_vpc.lornu_vpc.id
   subnet_ids               = [aws_subnet.private_a.id, aws_subnet.private_b.id]
