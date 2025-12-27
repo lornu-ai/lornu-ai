@@ -17,36 +17,44 @@ provider "google" {
   project = var.hub_project_id
 }
 
-# EXISTING: Workload Identity Pool
+# --------------------------------------------------------------------------------
+# WORKLOAD IDENTITY POOL
+# --------------------------------------------------------------------------------
+
 resource "google_iam_workload_identity_pool" "github_pool" {
   workload_identity_pool_id = "github-pool"
-  display_name              = "GitHub Actions Pool"
+  display_name              = "Lornu-AI Multi-Platform Pool"
 }
 
-# EXISTING: OIDC Provider
+# --------------------------------------------------------------------------------
+# PROVIDER 1: GITHUB ACTIONS
+# --------------------------------------------------------------------------------
+
 resource "google_iam_workload_identity_pool_provider" "github_provider" {
   workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.workload_identity_pool_id
   workload_identity_pool_provider_id = "github-provider"
 
   attribute_mapping = {
-    "google.subject"                     = "assertion.sub"
-    "attribute.repository"               = "assertion.repository"
-    "attribute.actor"                    = "assertion.actor"
-    "attribute.terraform_workspace_name" = "assertion.terraform_workspace_name"
+    "google.subject"       = "assertion.sub"
+    "attribute.repository" = "assertion.repository"
+    "attribute.actor"      = "assertion.actor"
   }
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
   }
 
-  # Security restriction: only allows your repo
   attribute_condition = "assertion.repository == \"${var.github_repo}\""
 }
 
-# NEW: Dedicated OIDC Provider for HCP Terraform
+# --------------------------------------------------------------------------------
+# PROVIDER 2: HCP TERRAFORM (TFC)
+# --------------------------------------------------------------------------------
+
 resource "google_iam_workload_identity_pool_provider" "tfc_provider" {
   workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.workload_identity_pool_id
   workload_identity_pool_provider_id = "terraform-cloud-provider"
+  display_name                       = "HCP Terraform Provider"
 
   attribute_mapping = {
     "google.subject"                        = "assertion.sub"

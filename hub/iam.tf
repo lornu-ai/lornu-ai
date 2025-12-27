@@ -2,9 +2,8 @@
 # HUB SERVICE ACCOUNT
 # --------------------------------------------------------------------------------
 
-# EXISTING: The Hub Admin Service Account
 resource "google_service_account" "hub_admin_sa" {
-  account_id   = "terraform-admin-sa" # Matches your gcloud setup
+  account_id   = "terraform-admin-sa"
   display_name = "Lornu-AI Hub Orchestrator"
 }
 
@@ -12,20 +11,20 @@ resource "google_service_account" "hub_admin_sa" {
 # WORKLOAD IDENTITY FEDERATION (OIDC BINDINGS)
 # --------------------------------------------------------------------------------
 
-# EXISTING: Allow GitHub OIDC to impersonate this SA
+# Allow GitHub Actions to impersonate this SA
 resource "google_service_account_iam_member" "wif_github_impersonation" {
   service_account_id = google_service_account.hub_admin_sa.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_repo}"
 }
 
-
+# Allow HCP Terraform (Remote Runners) to impersonate this SA
 resource "google_service_account_iam_member" "wif_tfc_impersonation" {
   service_account_id = google_service_account.hub_admin_sa.name
   role               = "roles/iam.workloadIdentityUser"
 
-  # Correct Logic: Use the 'terraform-cloud-provider' path
-  member = "principalSet://iam.googleapis.com/projects/${var.hub_project_id}/locations/global/workloadIdentityPools/github-pool/attribute.terraform_workspace_name/lornu-ai-hub"
+  # Note: This uses the 'terraform_workspace_name' attribute defined in main.tf
+  member = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.terraform_workspace_name/lornu-ai-hub"
 }
 
 # --------------------------------------------------------------------------------
