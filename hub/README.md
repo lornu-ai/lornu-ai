@@ -17,7 +17,7 @@ Changes to this directory are automatically deployed via GitHub Actions.
 
 #### 🎯 Triggers
 The workflow runs automatically under the following conditions:
-*   **Event**: `pull_request`
+*   **Event**: `push`
 *   **Branch**: `gcloud-oidc`
 *   **Scope**: Only triggers when files inside the `hub/` directory are modified.
 
