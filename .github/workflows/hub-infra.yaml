@@ -1,0 +1,37 @@
+name: "GCP Hub Provisioning"
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'hub/**' # Only triggers when you touch the hub folder
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./hub # Crucial for Option C
+
+    env:
+      # Injecting your variables from GH Secrets into the Hub logic
+      TF_VAR_billing_account_id: ${{ secrets.GCP_BILLING_ID }}
+      TF_VAR_org_id: ${{ secrets.GCP_ORG_ID }}
+      TF_VAR_hub_project_id: ${{ secrets.GCP_HUB_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # This step uses your secret to create the ~/.terraformrc file on the runner
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
