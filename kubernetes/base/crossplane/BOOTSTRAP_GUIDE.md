@@ -5,12 +5,16 @@ This guide walks through the complete "chicken and egg" setup for using Crosspla
 ## Architecture Overview
 
 ```
-Terraform → Creates GKE Cluster + Workload Identity Binding (the "Egg")
+Existing GKE Cluster (lornu-ai-gke) = Where Crossplane runs (the "Chicken")
     ↓
-Kustomize → Deploys Crossplane + Custom Project API (the "Chicken")
+Terraform → Creates Workload Identity Binding (the "Bridge")
     ↓
-Developer → Creates XGCPProject YAML (5 lines) → New GCP Project
+Kustomize → Deploys Crossplane + Custom Project API on existing cluster
+    ↓
+Developer → Creates XGCPProject YAML (5 lines) → New GCP Project (the "Eggs")
 ```
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+run_terminal_cmd
 
 ## Prerequisites
 
