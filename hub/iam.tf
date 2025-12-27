@@ -19,11 +19,12 @@ resource "google_service_account_iam_member" "wif_github_impersonation" {
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_repo}"
 }
 
+
 resource "google_service_account_iam_member" "wif_tfc_impersonation" {
   service_account_id = google_service_account.hub_admin_sa.name
   role               = "roles/iam.workloadIdentityUser"
 
-  # UPDATED: Points to the 'terraform-cloud-provider' name instead of 'github-pool'
+  # Correct Logic: Use the 'terraform-cloud-provider' path
   member = "principalSet://iam.googleapis.com/projects/${var.hub_project_id}/locations/global/workloadIdentityPools/github-pool/attribute.terraform_workspace_name/lornu-ai-hub"
 }
 
