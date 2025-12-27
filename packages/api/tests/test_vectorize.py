@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
 from ..src.main import app
 import io
-import os
 import tempfile
 from pathlib import Path
 
