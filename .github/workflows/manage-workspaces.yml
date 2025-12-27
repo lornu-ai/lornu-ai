@@ -15,6 +15,10 @@ on:
           - sync-secrets-aws
           - sync-secrets-gcp
           - all
+  pull_request:
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/manage-workspaces.yml'
   push:
     branches:
       - main
@@ -39,6 +43,7 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event_name == 'push' ||
+      github.event_name == 'pull_request' ||
       (github.event_name == 'workflow_dispatch' && (inputs.action == 'sync-config' || inputs.action == 'all'))
     strategy:
       fail-fast: false
@@ -86,6 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'schedule' ||
+      github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && (inputs.action == 'sync-secrets-aws' || inputs.action == 'all'))
     env:
       TF_WORKSPACE: "aws-kustomize"
@@ -135,6 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'schedule' ||
+      github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && (inputs.action == 'sync-secrets-gcp' || inputs.action == 'all'))
     env:
       TF_WORKSPACE: "gcp-lornu-ai"
