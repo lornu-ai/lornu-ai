@@ -16,14 +16,14 @@
 resource "google_service_account_iam_member" "crossplane_workload_identity" {
   service_account_id = google_service_account.tfc_infrastructure.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[crossplane-system/provider-gcp-default]
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[crossplane-system/provider-gcp-default]"
 }
 
 # Outputs for Crossplane setup
 # Note: These reference the existing GKE cluster, not a newly created one
 output "crossplane_cluster_name" {
   description = "Name of the existing GKE cluster where Crossplane will run"
-  value       = var.cluster_name  # Uses existing cluster: lornu-ai-gke
+  value       = var.cluster_name # Uses existing cluster: lornu-ai-gke
 }
 
 output "crossplane_workload_identity_binding" {
