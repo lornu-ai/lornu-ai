@@ -27,3 +27,41 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+
+  # Terraform formatting and validation
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.86.0
+    hooks:
+      - id: terraform_fmt
+        name: Terraform format
+        description: Rewrites all Terraform configuration files to a canonical format
+        args:
+          - --args=-recursive
+        files: \.tf$
+      - id: terraform_validate
+        name: Terraform validate
+        description: Validates all Terraform configuration files
+        args:
+          - --hook-config=--init-args=-backend=false
+        files: \.tf$
+      - id: terraform_tflint
+        name: Terraform TFLint
+        description: Lints all Terraform configuration files
+        args:
+          - --args=--only=terraform_deprecated_interpolation
+          - --args=--only=terraform_deprecated_index
+          - --args=--only=terraform_unused_declarations
+          - --args=--only=terraform_comment_syntax
+          - --args=--only=terraform_documented_outputs
+          - --args=--only=terraform_documented_variables
+          - --args=--only=terraform_typed_variables
+          - --args=--only=terraform_module_pinned_source
+          - --args=--only=terraform_naming_convention
+          - --args=--only=terraform_required_version
+          - --args=--only=terraform_required_providers
+          - --args=--only=terraform_standard_module_structure
+        files: \.tf$
+      - id: terraform_tfsec
+        name: Terraform Security Scan
+        description: Static analysis security scanner for Terraform
+        files: \.tf$

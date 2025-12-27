@@ -1,0 +1,121 @@
+name: "Terraform Lint & Validate"
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**/*.tf'
+      - '.github/workflows/terraform-lint.yml'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'terraform/**/*.tf'
+      - '.github/workflows/terraform-lint.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  terraform-fmt:
+    name: "Terraform Format Check"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory:
+          - terraform/aws/staging
+          - terraform/aws
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.0
+
+      - name: "Terraform Format Check"
+        id: fmt
+        run: |
+          cd ${{ matrix.directory }}
+          terraform fmt -check -recursive -diff
+        continue-on-error: true
+
+      - name: "Auto-fix Formatting"
+        if: steps.fmt.outcome == 'failure'
+        run: |
+          cd ${{ matrix.directory }}
+          terraform fmt -recursive
+          echo "⚠️ Formatted ${{ matrix.directory }} - please commit the changes"
+
+      - name: "Create Fix PR Comment"
+        if: steps.fmt.outcome == 'failure' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Terraform Formatting Issue Detected**\n\n' +
+                    'The Terraform files in `${{ matrix.directory }}` are not properly formatted.\n\n' +
+                    '**To fix:**\n' +
+                    '```bash\n' +
+                    'cd ${{ matrix.directory }}\n' +
+                    'terraform fmt -recursive\n' +
+                    'git add .\n' +
+                    'git commit -m "fix: format Terraform files"\n' +
+                    'git push\n' +
+                    '```\n\n' +
+                    'Or run: `terraform fmt -recursive terraform/` from the repo root.'
+            })
+
+  terraform-validate:
+    name: "Terraform Validate"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory:
+          - terraform/aws/staging
+          - terraform/aws
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.8.0
+
+      - name: "Terraform Init"
+        run: |
+          cd ${{ matrix.directory }}
+          terraform init -backend=false -upgrade
+
+      - name: "Terraform Validate"
+        run: |
+          cd ${{ matrix.directory }}
+          terraform validate
+
+  terraform-summary:
+    name: "Terraform Check Summary"
+    runs-on: ubuntu-latest
+    needs: [terraform-fmt, terraform-validate]
+    if: always()
+
+    steps:
+      - name: "Check Results"
+        run: |
+          if [ "${{ needs.terraform-fmt.result }}" != "success" ] || [ "${{ needs.terraform-validate.result }}" != "success" ]; then
+            echo "❌ Terraform checks failed"
+            echo "Format check: ${{ needs.terraform-fmt.result }}"
+            echo "Validate check: ${{ needs.terraform-validate.result }}"
+            exit 1
+          else
+            echo "✅ All Terraform checks passed"
+          fi
+
