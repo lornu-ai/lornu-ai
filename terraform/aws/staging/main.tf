@@ -7,9 +7,9 @@ terraform {
   }
 
   cloud {
-    organization = "disposable-org"
+    organization = "lornu-ai"
     workspaces {
-      name = "lornu-ai-staging-aws"
+      name = "aws-kustomize"
     }
   }
 }
