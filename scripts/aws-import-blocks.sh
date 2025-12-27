@@ -43,8 +43,8 @@ if ! command -v terraform >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ -z "${TF_CLOUD_ORGANIZATION:-}" || -z "${TF_WORKSPACE:-}" ]]; then
-  echo "TF_CLOUD_ORGANIZATION and TF_WORKSPACE must be set for Terraform Cloud state." >&2
+if [[ -z "${AWS_TF_CLOUD_ORG:-}" || -z "${AWS_TF_CLOUD_WORKSPACE:-}" ]]; then
+  echo "AWS_TF_CLOUD_ORG and AWS_TF_CLOUD_WORKSPACE must be set for Terraform Cloud state." >&2
   exit 1
 fi
 

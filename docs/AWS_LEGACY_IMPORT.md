@@ -9,8 +9,8 @@ It targets issue #444 and focuses on automation steps for existing resources.
 - AWS CLI authenticated with read access for discovery and write access for import, used only when running these steps manually (do not configure or run discovery/import with write-capable credentials in CI).
 - Terraform Cloud workspace already created and configured (standard: `aws-kustomize` in the `lornu-ai` organization).
 - Environment variables:
-  - `TF_CLOUD_ORGANIZATION` (typically `lornu-ai`)
-  - `TF_WORKSPACE` (typically `aws-kustomize` for this AWS/Kustomize stack; adjust per environment as needed)
+  - `AWS_TF_CLOUD_ORG` (typically `lornu-ai`)
+  - `AWS_TF_CLOUD_WORKSPACE` (typically `aws-kustomize` for this AWS/Kustomize stack; adjust per environment as needed)
   - `AWS_REGION`
 
 ## Discovery (AWS)
