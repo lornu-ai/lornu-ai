@@ -438,7 +438,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto">
             <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr] items-start">
               <div className="space-y-3">
-                <div className="text-2xl font-bold"><Logo width={120} height={40} /></div>
+                <div className="text-2xl font-bold gradient-text"><Logo width={120} height={40} /></div>
                 <p className="text-sm opacity-80 max-w-sm">
                   © 2025 LornuAI Inc. Building the future with intelligent solutions.
                 </p>

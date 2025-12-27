@@ -1,43 +1,83 @@
-from fastapi.testclient import TestClient
-from ..src.main import app
 import io
 import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock
+import pytest
+from fastapi.testclient import TestClient
+
+# Import the specific module where the agent instance is created
+from ..src.router import message_router
+from ..src.main import app
 
 client = TestClient(app)
 
-def test_vectorize_path_traversal():
-    """
-    Tests that the /api/vectorize endpoint is not vulnerable to path traversal.
-    """
-    # Create a temporary directory for the test
+@pytest.fixture
+def mock_dependencies(monkeypatch):
+    """A fixture to mock the image agent and control the temp directory."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        # Define a malicious filename that attempts to traverse directories
-        malicious_filename = "../../../../../../../../../tmp/pwned.png"
+        # 1. Create a dummy output file for the mock to return
+        mock_output_path = Path(tmpdir) / "mocked_output.svg"
+        mock_output_path.touch() # Create the file
 
-        # The sanitized filename should be just the basename
-        sanitized_basename = "pwned.png"
+        # 2. Mock the agent to bypass the 'vtracer' dependency check and the processing method
+        monkeypatch.setattr(message_router.image_agent, "enabled", True)
+        monkeypatch.setattr(
+            message_router.image_agent,
+            "process_vectorization",
+            MagicMock(return_value=mock_output_path)
+        )
+        # 3. Mock the cleanup function to prevent it from deleting our temp dir
+        monkeypatch.setattr(
+            message_router,
+            "cleanup_temp_dir",
+            MagicMock()
+        )
 
-        # Path where the malicious file would be created if the vulnerability exists
-        malicious_filepath = Path(tmpdir) / malicious_filename
+        # 4. Mock mkdtemp to return our predictable, controlled directory
+        monkeypatch.setattr(tempfile, "mkdtemp", lambda: tmpdir)
+        yield tmpdir
 
-        # Ensure the malicious path does not exist before the request
-        assert not malicious_filepath.exists()
+def test_vectorize_path_traversal(mock_dependencies):
+    """
+    Tests that the /api/vectorize endpoint correctly sanitizes a malicious
+    filename and does not write outside the designated temporary directory.
+    """
+    tmpdir = mock_dependencies
+    malicious_filename = "../../../../../tmp/pwned.png"
+    sanitized_basename = "pwned.png"
 
-        # Create a dummy file in memory
-        file_content = b"dummy content"
-        file = io.BytesIO(file_content)
+    # The path where the file should be safely written (inside our temp dir)
+    expected_safe_path = Path(tmpdir) / sanitized_basename
 
+    # A path outside the temp dir that should NOT be written to
+    malicious_unsafe_path = Path("/tmp/pwned.png")
+
+    # Ensure neither path exists before the request
+    assert not expected_safe_path.exists(), "Safe path should not exist initially"
+    assert not malicious_unsafe_path.exists(), "Unsafe path should not exist initially"
+
+    # Create a dummy file in memory to upload
+    file_content = b"dummy content"
+    file = io.BytesIO(file_content)
+
+    try:
         response = client.post(
             "/api/vectorize",
             files={"file": (malicious_filename, file, "image/png")}
         )
 
-        # The request should fail because vtracer is not installed, but it should not
-        # be a 500 error, which would indicate that the server tried to write to the
-        # malicious path. A 501 error indicates that the service is unavailable, which is
-        # the expected behavior in a test environment where vtracer is not installed.
-        assert response.status_code == 501
+        # The request should now succeed (200) because the agent is fully mocked
+        assert response.status_code == 200, f"API returned {response.status_code} with body: {response.text}"
 
-        # Assert that the malicious file was not created
-        assert not malicious_filepath.exists()
+        # Assert that the file was written to the SAFE path inside the temp dir
+        assert expected_safe_path.exists(), "Sanitized file was not created in the temp directory"
+
+        # CRITICAL: Assert that the file was NOT written to the malicious path
+        assert not malicious_unsafe_path.exists(), "Vulnerability exploited: File written outside temp directory"
+
+    finally:
+        # Clean up any files created during the test
+        if expected_safe_path.exists():
+            expected_safe_path.unlink()
+        if malicious_unsafe_path.exists():
+            malicious_unsafe_path.unlink()
