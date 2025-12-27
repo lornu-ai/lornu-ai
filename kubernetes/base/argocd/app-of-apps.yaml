@@ -1,0 +1,42 @@
+# App-of-Apps Pattern for Lornu Platform
+# This is the root Application that tells ArgoCD to watch and sync our infrastructure
+#
+# The App-of-Apps pattern allows us to manage multiple applications declaratively:
+# 1. This root app watches the infrastructure folder
+# 2. ArgoCD syncs Crossplane, and any other platform components
+# 3. Crossplane then provisions cloud resources based on XRDs/Compositions
+#
+# Flow: Git → ArgoCD → Crossplane → GCP/AWS
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: lornu-platform
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  
+  # Source: Our Git repository
+  source:
+    repoURL: 'https://github.com/lornu-ai/lornu-ai.git'
+    targetRevision: HEAD
+    path: kubernetes/base/crossplane
+  
+  # Destination: This cluster
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: crossplane-system
+  
+  # Sync Policy: Automated with self-healing
+  syncPolicy:
+    automated:
+      prune: true      # Delete resources that are no longer in Git
+      selfHeal: true   # Automatically revert manual changes
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true  # Auto-create namespace if it doesn't exist
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+

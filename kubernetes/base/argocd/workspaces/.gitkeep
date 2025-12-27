@@ -1,0 +1,3 @@
+# This file ensures the workspaces directory is tracked by Git
+# Agent environment YAML files will be committed here by the Python provisioner
+
