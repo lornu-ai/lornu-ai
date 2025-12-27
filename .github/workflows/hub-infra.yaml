@@ -1,10 +1,11 @@
 name: "GCP Hub Provisioning"
 
 on:
-  push:
-    branches: [ gcloud-oidc ]
+  pull_request:
+    branches: 
+      - gcloud-oidc  # ONLY trigger when the target (base) branch is gcloud-oidc
     paths:
-      - 'hub/**' # Only triggers when you touch the hub folder
+      - 'hub/**'    # ONLY trigger if files in the hub folder changed
 
 jobs:
   terraform:
@@ -12,10 +13,9 @@ jobs:
     
     defaults:
       run:
-        working-directory: ./hub # Crucial for Option C
+        working-directory: ./hub
 
     env:
-      # Injecting your variables from GH Secrets into the Hub logic
       TF_VAR_billing_account_id: ${{ secrets.GCP_BILLING_ID }}
       TF_VAR_org_id: ${{ secrets.GCP_ORG_ID }}
       TF_VAR_hub_project_id: ${{ secrets.GCP_HUB_PROJECT_ID }}
@@ -24,7 +24,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # This step uses your secret to create the ~/.terraformrc file on the runner
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -33,5 +32,5 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
+      - name: Terraform Plan
+        run: terraform plan -no-color
