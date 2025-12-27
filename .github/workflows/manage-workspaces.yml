@@ -43,14 +43,14 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: 2
-    matrix:
-      include:
-        - workspace: "aws-kustomize"
-          tf_api_token: ${{ secrets.AWS_TF_API_TOKEN }}
-          config_dir: "./terraform/aws"
-        - workspace: "gcp-lornu-ai"
-          tf_api_token: ${{ secrets.GCP_TF_API_TOKEN }}
-          config_dir: "./terraform/gcp"
+      matrix:
+        include:
+          - workspace: "aws-kustomize"
+            tf_api_token: ${{ secrets.AWS_TF_API_TOKEN }}
+            config_dir: "./terraform/aws"
+          - workspace: "gcp-lornu-ai"
+            tf_api_token: ${{ secrets.GCP_TF_API_TOKEN }}
+            config_dir: "./terraform/gcp"
     steps:
       - name: Checkout
         uses: actions/checkout@v6
