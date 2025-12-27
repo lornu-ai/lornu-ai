@@ -17,7 +17,7 @@ Changes to this directory are automatically deployed via GitHub Actions.
 
 #### 🎯 Triggers
 The workflow runs automatically under the following conditions:
-*   **Event**: `push`
+*   **Event**: `pull_request`
 *   **Branch**: `gcloud-oidc`
 *   **Scope**: Only triggers when files inside the `hub/` directory are modified.
 
@@ -38,7 +38,7 @@ The following GitHub Secrets are injected as Terraform variables (`TF_VAR_...`):
 | `hub_project_id` | `GCP_HUB_PROJECT_ID` | The ID of the project hosting this Hub infrastructure. |
 
 #### 📝 How to Deploy
-Simply make your changes to the `.tf` files in this directory and push them to the `gcloud-oidc` branch. The action will handle the rest.
+Simply make your changes to the `.tf` files in this directory and open a pull request against the `gcloud-oidc` branch. The action will kickoff and then if all checks pass the pr merge to `gcloud-oidc`
 
 ```bash
 git add hub/
