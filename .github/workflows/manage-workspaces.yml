@@ -43,7 +43,6 @@ jobs:
     if: |
       github.event_name == 'schedule' ||
       github.event_name == 'push' ||
-      github.event_name == 'pull_request' ||
       (github.event_name == 'workflow_dispatch' && (inputs.action == 'sync-config' || inputs.action == 'all'))
     strategy:
       fail-fast: false
