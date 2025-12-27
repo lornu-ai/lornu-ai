@@ -1,5 +1,5 @@
 resource "google_service_account" "hub_admin_sa" {
-  account_id   = "terraform-admin-sa"
+  account_id   = "tf-cloud-sa"
   display_name = "Lornu-AI Hub Orchestrator"
 }
 
