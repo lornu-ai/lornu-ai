@@ -1,0 +1,65 @@
+# Crossplane GCP Provider Configuration
+# This configures Crossplane to use Workload Identity (WebIdentity) to authenticate to GCP
+# The Workload Identity binding is created by Terraform in terraform/gcp/crossplane.tf
+
+---
+# GCP Resource Manager Provider (for Projects)
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-gcp-resourcemanager
+  namespace: crossplane-system
+spec:
+  package: xpkg.upbound.io/upbound/provider-gcp-resourcemanager:v1.0.0
+
+---
+# GCP Storage Provider (for Cloud Storage buckets, etc.)
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-gcp-storage
+  namespace: crossplane-system
+spec:
+  package: xpkg.upbound.io/upbound/provider-gcp-storage:v1.0.0
+
+---
+# GCP Compute Provider (for VMs, networks, etc.)
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-gcp-compute
+  namespace: crossplane-system
+spec:
+  package: xpkg.upbound.io/upbound/provider-gcp-compute:v1.0.0
+
+---
+# GCP IAM Provider (for service accounts, IAM bindings, etc.)
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-gcp-iam
+  namespace: crossplane-system
+spec:
+  package: xpkg.upbound.io/upbound/provider-gcp-iam:v1.0.0
+
+---
+# GCP Provider Config - Default configuration using Workload Identity
+# This uses the Workload Identity trust bridge created by Terraform
+# The IAM binding allows: serviceAccount:[PROJECT_ID].svc.id.goog[crossplane-system/provider-gcp-default]
+# to impersonate the Terraform Cloud Service Account
+apiVersion: gcp.upbound.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: default
+  namespace: crossplane-system
+spec:
+  # Seed project ID - Crossplane will use this as the default project
+  # Note: Replace with your actual seed project ID
+  projectID: gcp-lornu-ai  # TODO: Replace with actual seed project ID
+  
+  # Use WebIdentity (Workload Identity) for authentication
+  # This leverages the IAM binding created by Terraform:
+  # google_service_account_iam_member.crossplane_workload_identity
+  credentials:
+    source: WebIdentity
+

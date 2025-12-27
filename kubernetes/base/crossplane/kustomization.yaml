@@ -1,0 +1,25 @@
+# Crossplane GCP Bootstrap Bundle
+# This Kustomize bundle installs Crossplane and configures it to manage GCP resources
+# via Workload Identity (the "bridge" created by Terraform)
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: crossplane-system
+
+# Automatically create the namespace if it doesn't exist
+commonLabels:
+  platform: gcp-management
+  managed-by: kustomize
+
+resources:
+  # 1. Install Crossplane Core (v1.14.0)
+  - https://github.com/crossplane/crossplane/cluster?ref=v1.14.0
+  
+  # 2. Custom GCP Project API (Interface + Implementation)
+  - xgcpproject-xrd.yaml
+  - xgcpproject-composition.yaml
+  
+  # 3. GCP Provider Configuration (Connection via Workload Identity)
+  - provider-config.yaml
+
