@@ -96,18 +96,13 @@ resource "google_project_iam_member" "github_actions_storage" {
 # Workload Identity User binding
 # Allow GitHub Actions to impersonate this service account
 # Restrict to lornu-ai/lornu-ai repository
-# Note: Branch restrictions should be enforced via IAM conditions or workflow-level checks
+# Note: Branch restrictions should be enforced via workflow-level checks or 
+# repository settings. IAM conditions on service account bindings don't support
+# attribute-based conditions like attribute.ref.
 resource "google_service_account_iam_member" "github_actions_wif" {
   service_account_id = google_service_account.github_actions.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_actions.workload_identity_pool_id}/attribute.repository/lornu-ai/lornu-ai"
-
-  # Branch restriction via IAM condition (main branch only)
-  condition {
-    title       = "main-branch-only"
-    description = "Only allow access from main branch"
-    expression  = "attribute.ref == \"refs/heads/main\""
-  }
 }
 
 # Data source for project number (needed for principalSet)
