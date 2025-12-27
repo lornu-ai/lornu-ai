@@ -1,12 +1,11 @@
 
 # 🏗️ Lornu AI - Hub Infrastructure
 
-. . . trigger run
 
 This directory contains the Terraform configuration for the **Hub Project**. The Hub serves as the central management point for infrastructure orchestration, specifically handling:
 
 *   **Workload Identity Federation (WIF)**: Linking GitHub Actions to Google Cloud securely.
-*   **Service Accounts**: Configuring the `terraform-admin-sa` used for provisioning "Spoke" projects.
+*   **Service Accounts**: Configuring the `tf-cloud-sa` used for provisioning "Spoke" projects.
 *   **IAM Policies**: Granting necessary permissions (Project Creator, Billing User) to the admin service account.
 
 ## 🚀 Automation & Workflow
