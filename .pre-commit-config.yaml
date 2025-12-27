@@ -65,3 +65,9 @@ repos:
         name: Terraform Security Scan
         description: Static analysis security scanner for Terraform
         files: \.tf$
+      - id: terraform_trivy
+        name: Terraform Trivy Security Scan
+        description: Trivy security scanner for Terraform configurations
+        args:
+          - --args=--severity=CRITICAL,HIGH
+        files: \.tf$
