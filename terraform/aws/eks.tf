@@ -1,6 +1,6 @@
 module "lornu_cluster" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 21.10"
+  version = "~> 20.0"
 
   cluster_name    = "lornu-ai-production-cluster"
   cluster_version = "1.29"
