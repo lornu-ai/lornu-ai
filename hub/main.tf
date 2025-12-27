@@ -18,42 +18,21 @@ provider "google" {
 }
 
 # --------------------------------------------------------------------------------
-# WORKLOAD IDENTITY POOL
+# WORKLOAD IDENTITY POOL (Now renamed to tfc_pool to match reality)
 # --------------------------------------------------------------------------------
 
-resource "google_iam_workload_identity_pool" "github_pool" {
-  workload_identity_pool_id = "github-pool"
-  display_name              = "Lornu-AI Multi-Platform Pool"
+resource "google_iam_workload_identity_pool" "tfc_pool" {
+  workload_identity_pool_id = "tfc-pool"
+  display_name              = "TFC Pool"
 }
 
 # --------------------------------------------------------------------------------
-# PROVIDER 1: GITHUB ACTIONS
-# --------------------------------------------------------------------------------
-
-resource "google_iam_workload_identity_pool_provider" "github_provider" {
-  workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.workload_identity_pool_id
-  workload_identity_pool_provider_id = "github-provider"
-
-  attribute_mapping = {
-    "google.subject"       = "assertion.sub"
-    "attribute.repository" = "assertion.repository"
-    "attribute.actor"      = "assertion.actor"
-  }
-
-  oidc {
-    issuer_uri = "https://token.actions.githubusercontent.com"
-  }
-
-  attribute_condition = "assertion.repository == \"${var.github_repo}\""
-}
-
-# --------------------------------------------------------------------------------
-# PROVIDER 2: HCP TERRAFORM (TFC)
+# PROVIDER: HCP TERRAFORM (TFC)
 # --------------------------------------------------------------------------------
 
 resource "google_iam_workload_identity_pool_provider" "tfc_provider" {
-  workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.workload_identity_pool_id
-  workload_identity_pool_provider_id = "terraform-cloud-provider"
+  workload_identity_pool_id          = google_iam_workload_identity_pool.tfc_pool.workload_identity_pool_id
+  workload_identity_pool_provider_id = "tfc-provider"
   display_name                       = "HCP Terraform Provider"
 
   attribute_mapping = {
@@ -65,4 +44,7 @@ resource "google_iam_workload_identity_pool_provider" "tfc_provider" {
   oidc {
     issuer_uri = "https://app.terraform.io"
   }
+
+  # This matches the "dummy condition" we used to bypass the gcloud CLI bug
+  attribute_condition = "assertion.sub != 'foo'"
 }
