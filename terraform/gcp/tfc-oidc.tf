@@ -46,7 +46,7 @@ resource "google_service_account" "tfc_infrastructure" {
 resource "google_service_account_iam_member" "tfc_workload_identity" {
   service_account_id = google_service_account.tfc_infrastructure.name
   role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.tfc_pool.name}/attribute.terraform_workspace/gcp-lornu-ai"
+  member             = "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.tfc_pool.workload_identity_pool_id}/attribute.terraform_workspace/gcp-lornu-ai"
 }
 
 # IAM Roles for Terraform Cloud Infrastructure Management
@@ -112,6 +112,11 @@ resource "google_project_iam_member" "tfc_project_iam_admin" {
   project = var.project_id
   role    = "roles/resourcemanager.projectIamAdmin"
   member  = "serviceAccount:${google_service_account.tfc_infrastructure.email}"
+}
+
+# Data source for project number (needed for principalSet)
+data "google_project" "project" {
+  project_id = var.project_id
 }
 
 # Outputs for TFC workspace configuration
