@@ -36,8 +36,7 @@ env:
   GCP_PROJECT_ID: ${{ inputs.project_id || 'gcp-lornu-ai' }}
   GCP_REGION: 'us-central1'
   DRIFT_ALERT_THRESHOLD: ${{ inputs.alert_threshold || '1' }}
-  TERRAFORM_VERSION: '1.7.0'
-
+  TERRAFORM_VERSION: '1.5.0'  GITHUB_ISSUE_NUMBER: '444'  # Make configurable to avoid hardcoding
 permissions:
   contents: read
   issues: write          # For creating drift alert issues
@@ -279,11 +278,11 @@ jobs:
             
             console.log(`✅ Created drift alert issue #${issue.data.number}`);
             
-            // Comment on the original issue #444
+            # Also comment on the original issue
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: 444,
+              issue_number: process.env.GITHUB_ISSUE_NUMBER,
               body: `🚨 **Drift Alert:** Infrastructure changes detected in GCP. See related issue #${issue.data.number} for details.`
             });
             
@@ -305,11 +304,12 @@ jobs:
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: 444,
+                issue_number: process.env.GITHUB_ISSUE_NUMBER,
                 body: `✅ **Drift Check Passed** - No infrastructure drift detected on ${new Date().toISOString().split('T')[0]}. All GCP resources match Terraform configuration.`
               });
               
-              console.log('✅ Updated issue #444 with success status');
+              console.log(`✅ Updated issue #${process.env.GITHUB_ISSUE_NUMBER} with success status`);
             } else {
               console.log('ℹ️  Skipping comment for non-scheduled run');
             }
+        # End of notify-success drift detection script

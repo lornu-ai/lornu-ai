@@ -14,7 +14,8 @@
 #   ./scripts/terraform-import-gcp.sh
 #   gh pr create --assignee @me --label "infrastructure" --title "feat: import GCP resources to Terraform"
 
-set -e
+# Note: We use explicit error handling instead of 'set -e' to allow
+# graceful handling of expected failures during resource checks.
 
 PROJECT_ID="${GCP_PROJECT_ID:-gcp-lornu-ai}"
 REGION="${GCP_REGION:-us-central1}"
@@ -39,12 +40,47 @@ check_terraform_state() {
 
 # Function to check if resource exists in GCP
 check_gcp_resource() {
-    local check_command="$1"
-    if eval "$check_command" &>/dev/null; then
-        return 0
-    else
-        return 1
-    fi
+    # Execute gcloud command directly with proper quoting to avoid command injection
+    # All arguments are properly quoted and validated
+    local resource_type="$1"
+    local resource_name="$2" 
+    local extra_args="$3"
+    
+    case "$resource_type" in
+        "dns")
+            gcloud dns managed-zones describe "$resource_name" --project="$PROJECT_ID" &>/dev/null
+            ;;
+        "address")
+            gcloud compute addresses describe "$resource_name" --global --project="$PROJECT_ID" &>/dev/null
+            ;;
+        "bucket")
+            gcloud storage buckets describe "gs://$resource_name" &>/dev/null
+            ;;
+        "service-account")
+            gcloud iam service-accounts describe "$resource_name" --project="$PROJECT_ID" &>/dev/null
+            ;;
+        "gke-cluster")
+            gcloud container clusters describe "$resource_name" --region="$REGION" --project="$PROJECT_ID" &>/dev/null
+            ;;
+        "gke-nodepool")
+            local cluster_name="$extra_args"
+            gcloud container node-pools describe "$resource_name" --cluster="$cluster_name" --region="$REGION" --project="$PROJECT_ID" &>/dev/null
+            ;;
+        "artifact-registry")
+            gcloud artifacts repositories describe "$resource_name" --location="$REGION" --project="$PROJECT_ID" &>/dev/null
+            ;;
+        "workload-identity-pool")
+            gcloud iam workload-identity-pools describe "$resource_name" --location=global --project="$PROJECT_ID" &>/dev/null
+            ;;
+        "workload-identity-provider")
+            local pool_name="$extra_args"
+            gcloud iam workload-identity-pools providers describe "$resource_name" --location=global --workload-identity-pool="$pool_name" --project="$PROJECT_ID" &>/dev/null
+            ;;
+        *)
+            echo "❌ Unknown resource type: $resource_type"
+            return 1
+            ;;
+    esac
 }
 
 # Function to import resource using modern import blocks (Terraform 1.5+)
@@ -80,14 +116,26 @@ EOF
         echo "✅ Successfully planned import for $description"
         echo "📄 Generated configuration in generated_${resource//\./_}.tf"
         
-        # Apply the import
-        if terraform apply -auto-approve; then
-            echo "✅ Successfully imported $description"
-            # Clean up temporary import file after successful import
-            rm -f "$import_file"
+        # Respect DRY_RUN mode to avoid unintended applies
+        if [ "${DRY_RUN:-false}" = "true" ]; then
+            echo "ℹ️ DRY_RUN=true — skipping terraform apply for $description."
+            echo "   Review the plan output and generated configuration, then run 'terraform apply' manually if desired."
         else
-            echo "❌ Failed to apply import for $description"
-            return 1
+            # Apply the import with interactive confirmation
+            echo "❓ Apply the import for $description? (y/N)"
+            read -r confirm
+            if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+                if terraform apply; then
+                    echo "✅ Successfully imported $description"
+                    # Clean up temporary import file after successful import
+                    rm -f "$import_file"
+                else
+                    echo "❌ Failed to apply import for $description"
+                    return 1
+                fi
+            else
+                echo "⏭️  Skipping import for $description"
+            fi
         fi
     else
         echo "❌ Failed to plan import for $description"
@@ -137,7 +185,7 @@ echo "📋 Checking existing resources for import..."
 # Import DNS Zone (already has import block in dns.tf)
 echo ""
 echo "🌐 DNS Zone:"
-if check_gcp_resource "gcloud dns managed-zones describe lornu-ai-zone --project=$PROJECT_ID"; then
+if check_gcp_resource "dns" "lornu-ai-zone"; then
     echo "✅ DNS zone 'lornu-ai-zone' exists in GCP"
     echo "ℹ️  DNS zone import is handled by import block in dns.tf"
 else
@@ -147,7 +195,7 @@ fi
 # Import Global Address
 echo ""
 echo "🌍 Global IP Address:"
-if check_gcp_resource "gcloud compute addresses describe lornu-ai-ingress-ip --global --project=$PROJECT_ID"; then
+if check_gcp_resource "address" "lornu-ai-ingress-ip"; then
     import_resource \
         "google_compute_global_address.ingress_ip" \
         "projects/$PROJECT_ID/global/addresses/lornu-ai-ingress-ip" \
@@ -159,7 +207,7 @@ fi
 # Import Storage Bucket
 echo ""
 echo "🪣 Storage Bucket:"
-if check_gcp_resource "gcloud storage buckets describe gs://$PROJECT_ID-assets"; then
+if check_gcp_resource "bucket" "$PROJECT_ID-assets"; then
     import_resource \
         "google_storage_bucket.assets" \
         "$PROJECT_ID-assets" \
@@ -171,7 +219,7 @@ fi
 # Import Service Accounts
 echo ""
 echo "👤 Service Accounts:"
-if check_gcp_resource "gcloud iam service-accounts describe lornu-backend@$PROJECT_ID.iam.gserviceaccount.com --project=$PROJECT_ID"; then
+if check_gcp_resource "service-account" "lornu-backend@$PROJECT_ID.iam.gserviceaccount.com"; then
     import_resource \
         "google_service_account.backend" \
         "projects/$PROJECT_ID/serviceAccounts/lornu-backend@$PROJECT_ID.iam.gserviceaccount.com" \
@@ -180,7 +228,7 @@ else
     echo "❌ Service account 'lornu-backend@$PROJECT_ID.iam.gserviceaccount.com' not found in GCP"
 fi
 
-if check_gcp_resource "gcloud iam service-accounts describe lornu-github-actions@$PROJECT_ID.iam.gserviceaccount.com --project=$PROJECT_ID"; then
+if check_gcp_resource "service-account" "lornu-github-actions@$PROJECT_ID.iam.gserviceaccount.com"; then
     import_resource \
         "google_service_account.github_actions" \
         "projects/$PROJECT_ID/serviceAccounts/lornu-github-actions@$PROJECT_ID.iam.gserviceaccount.com" \
@@ -192,7 +240,7 @@ fi
 # Import GKE Cluster (if it exists)
 echo ""
 echo "🚢 GKE Cluster:"
-if check_gcp_resource "gcloud container clusters describe $CLUSTER_NAME --region=$REGION --project=$PROJECT_ID"; then
+if check_gcp_resource "gke-cluster" "$CLUSTER_NAME"; then
     import_resource \
         "google_container_cluster.primary" \
         "projects/$PROJECT_ID/locations/$REGION/clusters/$CLUSTER_NAME" \
@@ -200,7 +248,7 @@ if check_gcp_resource "gcloud container clusters describe $CLUSTER_NAME --region
     
     # Import node pool (assuming default node pool name)
     local node_pool_name="${CLUSTER_NAME}-nodes"
-    if check_gcp_resource "gcloud container node-pools describe $node_pool_name --cluster=$CLUSTER_NAME --region=$REGION --project=$PROJECT_ID"; then
+    if check_gcp_resource "gke-nodepool" "$node_pool_name" "$CLUSTER_NAME"; then
         import_resource \
             "google_container_node_pool.primary_nodes" \
             "projects/$PROJECT_ID/locations/$REGION/clusters/$CLUSTER_NAME/nodePools/$node_pool_name" \
@@ -215,7 +263,7 @@ fi
 # Import Artifact Registry Repository (if it exists)
 echo ""
 echo "📦 Artifact Registry:"
-if check_gcp_resource "gcloud artifacts repositories describe lornu-ai --location=$REGION --project=$PROJECT_ID"; then
+if check_gcp_resource "artifact-registry" "lornu-ai"; then
     import_resource \
         "google_artifact_registry_repository.docker_repo" \
         "projects/$PROJECT_ID/locations/$REGION/repositories/lornu-ai" \
@@ -227,14 +275,14 @@ fi
 # Import Workload Identity Pool
 echo ""
 echo "🆔 Workload Identity Pool:"
-if check_gcp_resource "gcloud iam workload-identity-pools describe lornu-github-actions --location=global --project=$PROJECT_ID"; then
+if check_gcp_resource "workload-identity-pool" "lornu-github-actions"; then
     import_resource \
         "google_iam_workload_identity_pool.github_pool" \
         "projects/$PROJECT_ID/locations/global/workloadIdentityPools/lornu-github-actions" \
         "Workload Identity Pool"
     
     # Import Workload Identity Provider
-    if check_gcp_resource "gcloud iam workload-identity-pools providers describe lornu-github-actions-oidc --location=global --workload-identity-pool=lornu-github-actions --project=$PROJECT_ID"; then
+    if check_gcp_resource "workload-identity-provider" "lornu-github-actions-oidc" "lornu-github-actions"; then
         import_resource \
             "google_iam_workload_identity_pool_provider.github_provider" \
             "projects/$PROJECT_ID/locations/global/workloadIdentityPools/lornu-github-actions/providers/lornu-github-actions-oidc" \

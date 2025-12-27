@@ -12,7 +12,8 @@
 #   ./scripts/gcp-cleanup.sh
 #   gh issue comment 444 --body "Cleanup completed successfully"
 
-set -e
+# Note: We intentionally do not use 'set -e' globally because many assessment
+# gcloud commands are expected to fail when resources do not exist.
 
 PROJECT_ID="${GCP_PROJECT_ID:-gcp-lornu-ai}"
 DRY_RUN="${DRY_RUN:-true}"  # Set to false to actually delete resources

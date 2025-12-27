@@ -12,7 +12,8 @@
 #   ./scripts/gcp-discovery-terraformer.sh
 #   gh issue comment 444 --body "Discovery complete. Generated HCL files for review."
 
-set -e
+# Note: We intentionally do not use 'set -e' globally because many terraformer
+# commands are expected to fail when resources do not exist.
 
 PROJECT_ID="${GCP_PROJECT_ID:-gcp-lornu-ai}"
 REGION="${GCP_REGION:-us-central1}"

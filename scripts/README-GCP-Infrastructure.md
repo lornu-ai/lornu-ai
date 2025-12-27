@@ -276,6 +276,6 @@ export DRIFT_ALERT_THRESHOLD=999
 
 ---
 
-**Last Updated:** $(date)  
+**Last Updated:** 2025-12-26  
 **Maintainer:** Cloud Architecture / DevOps Team  
 **GitHub Issue:** [#444](https://github.com/lornu-ai/lornu-ai/issues/444)

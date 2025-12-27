@@ -40,8 +40,9 @@ resource "google_container_cluster" "primary" {
   # Maintenance policy
   maintenance_policy {
     recurring_window {
-      start_time = "2023-01-01T01:00:00Z"
-      end_time   = "2023-01-01T05:00:00Z"
+      # Use a future reference date; recurrence keeps this as a weekly Saturday window.
+      start_time = "2030-01-05T01:00:00Z"
+      end_time   = "2030-01-05T05:00:00Z"
       recurrence = "FREQ=WEEKLY;BYDAY=SA"
     }
   }
@@ -52,9 +53,9 @@ resource "google_container_cluster" "primary" {
 
   # Resource labels
   resource_labels = {
-    environment = "production"
-    managed-by  = "terraform"
-    asset-id    = "lornu-ai-final-clear-bg"
+    "lornu.ai/environment" = "production"
+    "lornu.ai/managed-by"  = "terraform-cloud"
+    "lornu.ai/asset-id"    = "lornu-ai-final-clear-bg"
   }
 }
 
@@ -93,8 +94,8 @@ resource "google_container_node_pool" "primary_nodes" {
     }
 
     labels = {
-      environment = "production"
-      managed-by  = "terraform"
+      "lornu.ai/environment" = "production"
+      "lornu.ai/managed-by"  = "terraform-cloud"
     }
 
     tags = ["gke-node", "lornu-ai"]

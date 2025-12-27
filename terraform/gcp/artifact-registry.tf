@@ -8,9 +8,10 @@ resource "google_artifact_registry_repository" "docker_repo" {
   format        = "DOCKER"
 
   labels = {
-    environment = "production"
-    managed-by  = "terraform"
-    purpose     = "container-images"
+    "lornu.ai/environment" = "production"
+    "lornu.ai/managed-by"  = "terraform-cloud"
+    "lornu.ai/asset-id"    = "lornu-ai-final-clear-bg"
+    purpose                = "container-images"
   }
 }
 

@@ -13,7 +13,8 @@
 #   ./scripts/gcp-drift-detection.sh
 #   gh issue create --title "🚨 Infrastructure Drift Detected" --body "$(cat drift-report.md)"
 
-set -e
+# Note: We use explicit error handling instead of 'set -e' to control
+# when errors should cause script termination.
 
 PROJECT_ID="${GCP_PROJECT_ID:-gcp-lornu-ai}"
 TERRAFORM_DIR="${TERRAFORM_DIR:-terraform/gcp}"

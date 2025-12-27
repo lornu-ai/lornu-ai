@@ -14,7 +14,8 @@
 #   ./scripts/gcp-cleanup-assessment.sh
 #   gh pr create --title "feat: implement GCP infrastructure discovery" --body "Closes #444"
 
-set -e
+# Note: We intentionally do not use 'set -e' globally because many discovery
+# gcloud commands are expected to fail when resources do not exist.
 
 PROJECT_ID="${GCP_PROJECT_ID:-gcp-lornu-ai}"
 echo "🔍 Assessing GCP infrastructure for project: $PROJECT_ID"
