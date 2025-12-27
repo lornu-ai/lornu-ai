@@ -134,7 +134,8 @@ jobs:
       - name: Start Backend API Server
         run: |
           cd ../../packages/api
-          export PYTHONPATH="$(pwd)/../..:$PYTHONPATH"
+          PYTHONPATH="$(pwd)/../..:$PYTHONPATH"
+          export PYTHONPATH
           uv run -- uvicorn packages.api.main:app --host 0.0.0.0 --port 8080 &
           sleep 5
           curl -f http://localhost:8080/api/health || exit 1
