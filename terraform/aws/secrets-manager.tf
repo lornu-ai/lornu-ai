@@ -3,9 +3,9 @@
 # Terraform reads environment variables set by GitHub Actions and creates/updates secrets
 
 resource "aws_secretsmanager_secret" "resend_api_key" {
-  name                    = "lornu-ai/resend-api-key"
-  description             = "Resend API key for contact form email service"
-  recovery_window_in_days = 7
+  name                           = "lornu-ai/resend-api-key"
+  description                    = "Resend API key for contact form email service"
+  recovery_window_in_days        = 7
   force_overwrite_replica_secret = true
 
   tags = {
