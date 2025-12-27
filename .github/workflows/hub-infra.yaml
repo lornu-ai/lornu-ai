@@ -3,10 +3,15 @@ name: "GCP Hub Provisioning"
 on:
   push:
     branches:
-      - gcloud-oidc  # ONLY trigger on pushes to this branch
+      - gcloud-oidc  # Trigger on pushes to this branch
     paths:
       - 'hub/**'     # ONLY trigger if files in the hub folder changed
-  workflow_dispatch:  # <--- ADD THIS LINE
+  pull_request:
+    branches:
+      - gcloud-oidc
+    paths:
+      - 'hub/**'
+  workflow_dispatch:
 
 jobs:
   terraform:
@@ -33,5 +38,10 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Terraform Plan
+        if: github.event_name == 'pull_request'
+        run: terraform plan -no-color
+
       - name: Terraform Apply
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: terraform apply -auto-approve
