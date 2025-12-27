@@ -1,12 +1,12 @@
 resource "google_iam_workload_identity_pool" "github_pool" {
-  workload_identity_pool_id = "github-actions"
+  workload_identity_pool_id = "lornu-github-actions"
   display_name              = "GitHub Actions Pool"
   description               = "Identity pool for GitHub Actions authentication"
 }
 
 resource "google_iam_workload_identity_pool_provider" "github_provider" {
   workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.workload_identity_pool_id
-  workload_identity_pool_provider_id = "github-actions-oidc"
+  workload_identity_pool_provider_id = "lornu-github-actions-oidc"
   display_name                       = "GitHub Actions OIDC Provider"
   description                        = "OIDC Identity Provider for GitHub Actions"
 
@@ -26,7 +26,7 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
 # We create a specific SA for CI/CD instead of reusing the app runtime SA (lornu-backend)
 # to follow the Principle of Least Privilege.
 resource "google_service_account" "github_actions" {
-  account_id   = "github-actions-sa"
+  account_id   = "lornu-github-actions"
   display_name = "GitHub Actions Service Account"
   description  = "Service Account used by GitHub Actions for CI/CD"
 }
@@ -53,11 +53,12 @@ resource "google_project_iam_member" "gke_developer" {
   member  = "serviceAccount:${google_service_account.github_actions.email}"
 }
 
-# Role: Service Account User (required to deploy to GKE using impersonation)
-resource "google_project_iam_member" "service_account_user" {
-  project = var.project_id
-  role    = "roles/iam.serviceAccountUser"
-  member  = "serviceAccount:${google_service_account.github_actions.email}"
+# Role: Service Account User (scoped to the GitHub Actions service account)
+# Allows the SA to act as itself (often required for GKE interactions where the caller identity is checked)
+resource "google_service_account_iam_member" "github_actions_service_account_user" {
+  service_account_id = google_service_account.github_actions.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.github_actions.email}"
 }
 
 output "workload_identity_provider" {
