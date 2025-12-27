@@ -197,4 +197,3 @@ jobs:
           echo -n "$SECRET_VALUE" | gcloud secrets versions add resend-api-key \
             --data-file=- \
             --project=$PROJECT_ID
-

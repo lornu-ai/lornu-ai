@@ -130,4 +130,3 @@ output "github_actions_wif_pool_id" {
   description = "Workload Identity Pool ID"
   value       = google_iam_workload_identity_pool.github_actions.workload_identity_pool_id
 }
-

@@ -273,9 +273,9 @@ gh run watch
 
 ## Security Best Practices
 
-✅ **OIDC Authentication** - All workflows use OIDC (no static keys)  
-✅ **GitHub Secrets** - Source of truth for actual secret values  
-✅ **Terraform** - Version-controlled infrastructure-as-code  
-✅ **Cloud Secret Managers** - Encrypted storage with audit logging  
-✅ **Never commit secrets** - Only infrastructure code is in git  
+✅ **OIDC Authentication** - All workflows use OIDC (no static keys)
+✅ **GitHub Secrets** - Source of truth for actual secret values
+✅ **Terraform** - Version-controlled infrastructure-as-code
+✅ **Cloud Secret Managers** - Encrypted storage with audit logging
+✅ **Never commit secrets** - Only infrastructure code is in git
 ✅ **Least Privilege** - Service accounts have minimal required permissions

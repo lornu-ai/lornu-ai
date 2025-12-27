@@ -146,4 +146,3 @@ jobs:
         run: bun run playwright test --grep-invert "betterstack-monitoring"
         env:
           CI: true
-

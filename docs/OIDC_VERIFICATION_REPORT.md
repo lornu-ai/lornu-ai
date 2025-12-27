@@ -27,7 +27,7 @@
   }
   ```
   - **Note**: Uses wildcard `*` which allows **all branches and workflows** ✅
-  
+
 - **Terraform Code** (in `terraform/aws/staging/github-oidc.tf`):
   ```hcl
   "repo:lornu-ai/lornu-ai:ref:refs/heads/main",
@@ -41,7 +41,7 @@
 - **Status**: ⚠️ **Not found in AWS**
 - **Expected ARN**: Should be `arn:aws:iam::874834750693:role/github-actions-prod`
 - **Terraform Code**: Exists in `terraform/aws/production/github-oidc.tf`
-- **Action Required**: 
+- **Action Required**:
   - If you need production drift detection, apply the production Terraform:
     ```bash
     cd terraform/aws/production
@@ -74,7 +74,7 @@
 1. **Production Role Missing**
    - The `github-actions-prod` role doesn't exist in AWS
    - **Impact**: Production drift detection will fail if trying to use production role
-   - **Solution**: 
+   - **Solution**:
      - If using staging role for both: Update `AWS_ACTIONS_ROLE_ARN` secret to staging role ARN
      - If need separate production role: Apply production Terraform configuration
 
@@ -140,4 +140,3 @@ This script checks:
 
 **Last Verified**: $(date)
 **Verified By**: Automated script `scripts/verify-oidc.sh`
-

@@ -34,7 +34,7 @@ test('Synthetic Monitor: Critical User Journey', async ({ page, request, baseURL
     // Note: /api/health might return straight JSON or HTML depending on env
     // In dev mode with Vite proxy, it should return JSON from backend
     expect(healthRes.status()).toBe(200);
-    
+
     // Verify health response (either JSON from API or HTML from SPA fallback)
     const contentType = healthRes.headers()['content-type'];
     if (contentType?.includes('application/json')) {

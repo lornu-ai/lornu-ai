@@ -29,13 +29,13 @@ test.describe('Smoke Tests', () => {
   test('Contact form is accessible and functional', async ({ page }) => {
     // Mock the API endpoint - match actual API response format
     await page.route('/api/contact', async route => {
-      await route.fulfill({ 
-        status: 200, 
-        contentType: 'application/json', 
-        body: JSON.stringify({ 
-          status: 'success', 
-          message: 'Thank you for your message. We will get back to you soon.' 
-        }) 
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 'success',
+          message: 'Thank you for your message. We will get back to you soon.'
+        })
       });
     });
 

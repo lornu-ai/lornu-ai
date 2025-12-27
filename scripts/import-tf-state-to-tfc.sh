@@ -84,7 +84,7 @@ if [ $? -eq 0 ]; then
     echo ""
     echo "Step 2: Verifying state in Terraform Cloud..."
     terraform state list
-    
+
     echo ""
     echo "✅ Import complete!"
     echo ""
@@ -104,4 +104,3 @@ else
     echo "   Your state backup is saved at: $BACKUP_FILE"
     exit 1
 fi
-

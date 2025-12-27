@@ -14,7 +14,6 @@ on:
         options:
           - 'all'
           - 'lornu-ai-kustomize'
-          - 'lornu-ai-staging-aws'
       remediation:
         description: 'Trigger remediation (apply) if drift detected?'
         required: false
@@ -41,11 +40,6 @@ jobs:
           - workspace: "lornu-ai-kustomize"
             organization: "lornu-ai"
             terraform_dir: "terraform/aws"
-            environment: "production"
-          - workspace: "lornu-ai-staging-aws"
-            organization: "lornu-ai"
-            terraform_dir: "terraform/aws/staging"
-            environment: "staging"
     # Always run for scheduled checks; for manual dispatch, filter in steps
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 
@@ -97,21 +91,15 @@ jobs:
           export TF_VAR_secrets_manager_arn_pattern="${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}"
           export TF_VAR_docker_image="placeholder"
 
-          if [ "${{ matrix.environment }}" = "production" ]; then
-            export TF_VAR_domain_name="${{ secrets.PROD_DOMAIN }}"
-            export TF_VAR_db_username="${{ secrets.PROD_DB_USERNAME }}"
-            export TF_VAR_db_password="${{ secrets.PROD_DB_PASSWORD }}"
-            export TF_VAR_resource_prefix="${{ secrets.PROD_RESOURCE_PREFIX }}"
-            export TF_VAR_github_repo="${{ secrets.PROD_GITHUB_REPO }}"
-          else
-            export TF_VAR_aws_region="${{ secrets.AWS_DEFAULT_REGION }}"
-            export TF_VAR_acm_certificate_arn="${{ secrets.ACM_CERTIFICATE_ARN }}"
-            export TF_VAR_stage_domain="${{ secrets.STAGE_DOMAIN }}"
-          fi
+          export TF_VAR_domain_name="${{ secrets.PROD_DOMAIN }}"
+          export TF_VAR_db_username="${{ secrets.PROD_DB_USERNAME }}"
+          export TF_VAR_db_password="${{ secrets.PROD_DB_PASSWORD }}"
+          export TF_VAR_resource_prefix="${{ secrets.PROD_RESOURCE_PREFIX }}"
+          export TF_VAR_github_repo="${{ secrets.PROD_GITHUB_REPO }}"
 
           terraform -chdir=${{ matrix.terraform_dir }} plan -detailed-exitcode -out=tfplan.binary
           PLAN_EXIT_CODE=$?
-          
+
           # Exit code 0 = no changes, 1 = error, 2 = changes detected (drift)
           if [ $PLAN_EXIT_CODE -eq 2 ]; then
             echo "DRIFT_DETECTED=true" >> $GITHUB_OUTPUT
@@ -146,7 +134,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Workspace:** \`${{ matrix.workspace }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Organization:** \`${{ matrix.organization }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** \`${{ matrix.environment }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Detected At:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Plan Summary" >> $GITHUB_STEP_SUMMARY
@@ -164,7 +151,6 @@ jobs:
         if: steps.check-filter.outputs.skip != 'true' && steps.plan.outputs.DRIFT_DETECTED == 'true'
         run: |
           echo "🚨 DRIFT ALERT: Infrastructure drift detected in ${{ matrix.workspace }}"
-          echo "Environment: ${{ matrix.environment }}"
           echo "Organization: ${{ matrix.organization }}"
           echo ""
           echo "This alert should be integrated with Better Stack or your monitoring system."
@@ -186,11 +172,6 @@ jobs:
           - workspace: "lornu-ai-kustomize"
             organization: "lornu-ai"
             terraform_dir: "terraform/aws"
-            environment: "production"
-          - workspace: "lornu-ai-staging-aws"
-            organization: "lornu-ai"
-            terraform_dir: "terraform/aws/staging"
-            environment: "staging"
 
     steps:
       - name: "Check workspace filter"
@@ -243,17 +224,11 @@ jobs:
           export TF_VAR_secrets_manager_arn_pattern="${{ secrets.SECRETS_MANAGER_ARN_PATTERN }}"
           export TF_VAR_docker_image="placeholder"
 
-          if [ "${{ matrix.environment }}" = "production" ]; then
-            export TF_VAR_domain_name="${{ secrets.PROD_DOMAIN }}"
-            export TF_VAR_db_username="${{ secrets.PROD_DB_USERNAME }}"
-            export TF_VAR_db_password="${{ secrets.PROD_DB_PASSWORD }}"
-            export TF_VAR_resource_prefix="${{ secrets.PROD_RESOURCE_PREFIX }}"
-            export TF_VAR_github_repo="${{ secrets.PROD_GITHUB_REPO }}"
-          else
-            export TF_VAR_aws_region="${{ secrets.AWS_DEFAULT_REGION }}"
-            export TF_VAR_acm_certificate_arn="${{ secrets.ACM_CERTIFICATE_ARN }}"
-            export TF_VAR_stage_domain="${{ secrets.STAGE_DOMAIN }}"
-          fi
+          export TF_VAR_domain_name="${{ secrets.PROD_DOMAIN }}"
+          export TF_VAR_db_username="${{ secrets.PROD_DB_USERNAME }}"
+          export TF_VAR_db_password="${{ secrets.PROD_DB_PASSWORD }}"
+          export TF_VAR_resource_prefix="${{ secrets.PROD_RESOURCE_PREFIX }}"
+          export TF_VAR_github_repo="${{ secrets.PROD_GITHUB_REPO }}"
 
           if [ -f "${{ matrix.terraform_dir }}/tfplan.binary" ]; then
             terraform -chdir=${{ matrix.terraform_dir }} apply tfplan.binary

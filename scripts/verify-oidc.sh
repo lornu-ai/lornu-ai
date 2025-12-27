@@ -60,14 +60,14 @@ else
     echo -e "${GREEN}✅ Staging role found:${NC}"
     echo "   Role: $STAGING_ROLE"
     echo "   ARN: $STAGING_ROLE_ARN"
-    
+
     # Check trust policy
     echo "   Checking trust policy..."
     TRUST_POLICY=$(aws iam get-role --role-name "$STAGING_ROLE" --query 'Role.AssumeRolePolicyDocument' --output json 2>/dev/null)
-    
+
     if echo "$TRUST_POLICY" | jq -e '.Statement[] | select(.Principal.Federated != null)' > /dev/null; then
         echo -e "   ${GREEN}✅ Trust policy includes OIDC federation${NC}"
-        
+
         # Check if it allows the correct repo
         if echo "$TRUST_POLICY" | jq -e '.Statement[].Condition.StringLike."token.actions.githubusercontent.com:sub"[] | select(contains("lornu-ai/lornu-ai"))' > /dev/null; then
             echo -e "   ${GREEN}✅ Trust policy allows lornu-ai/lornu-ai repository${NC}"
@@ -90,14 +90,14 @@ else
     echo -e "${GREEN}✅ Production role found:${NC}"
     echo "   Role: $PROD_ROLE"
     echo "   ARN: $PROD_ROLE_ARN"
-    
+
     # Check trust policy
     echo "   Checking trust policy..."
     TRUST_POLICY=$(aws iam get-role --role-name "$PROD_ROLE" --query 'Role.AssumeRolePolicyDocument' --output json 2>/dev/null)
-    
+
     if echo "$TRUST_POLICY" | jq -e '.Statement[] | select(.Principal.Federated != null)' > /dev/null; then
         echo -e "   ${GREEN}✅ Trust policy includes OIDC federation${NC}"
-        
+
         # Check if it allows the correct repo
         if echo "$TRUST_POLICY" | jq -e '.Statement[].Condition.StringLike."token.actions.githubusercontent.com:sub"[] | select(contains("lornu-ai/lornu-ai"))' > /dev/null; then
             echo -e "   ${GREEN}✅ Trust policy allows lornu-ai/lornu-ai repository${NC}"
@@ -123,7 +123,7 @@ else
     else
         REPO="lornu-ai/lornu-ai"
         echo "   Checking secrets for $REPO..."
-        
+
         # Check for AWS_ACTIONS_ROLE_ARN
         if gh secret list --repo "$REPO" | grep -q "AWS_ACTIONS_ROLE_ARN"; then
             echo -e "   ${GREEN}✅ AWS_ACTIONS_ROLE_ARN secret exists${NC}"
@@ -131,7 +131,7 @@ else
             echo -e "   ${RED}❌ AWS_ACTIONS_ROLE_ARN secret not found${NC}"
             echo "      This is required for drift-sentinel workflow"
         fi
-        
+
         # Check for AWS_TF_API_TOKEN
         if gh secret list --repo "$REPO" | grep -q "AWS_TF_API_TOKEN"; then
             echo -e "   ${GREEN}✅ AWS_TF_API_TOKEN secret exists${NC}"
@@ -147,14 +147,14 @@ echo ""
 echo "4️⃣  Checking drift-sentinel workflow configuration..."
 if [ -f ".github/workflows/drift-sentinel.yml" ]; then
     echo -e "${GREEN}✅ drift-sentinel.yml workflow exists${NC}"
-    
+
     # Check if it references AWS_ACTIONS_ROLE_ARN
     if grep -q "AWS_ACTIONS_ROLE_ARN" .github/workflows/drift-sentinel.yml; then
         echo -e "   ${GREEN}✅ Workflow references AWS_ACTIONS_ROLE_ARN${NC}"
     else
         echo -e "   ${RED}❌ Workflow does not reference AWS_ACTIONS_ROLE_ARN${NC}"
     fi
-    
+
     # Check if it uses OIDC
     if grep -q "configure-aws-credentials" .github/workflows/drift-sentinel.yml; then
         echo -e "   ${GREEN}✅ Workflow uses AWS credentials action (OIDC)${NC}"
@@ -193,4 +193,3 @@ else
     echo "   cd terraform/aws/production && terraform apply"
     echo "3. Update GitHub secrets with the role ARNs"
 fi
-
