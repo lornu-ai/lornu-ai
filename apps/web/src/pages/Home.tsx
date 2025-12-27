@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { Link } from 'react-router-dom'
+import { GradientText } from '@/components/GradientText'
 import { Logo } from '@/components/Logo'
 import SEOHead from '@/components/SEOHead'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -155,9 +156,10 @@ export default function Home() {
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-2xl font-bold gradient-text"
               >
-                <Logo width={60} height={60} />
+                <GradientText className="text-2xl font-bold">
+                  <Logo width={60} height={60} />
+                </GradientText>
               </motion.div>
 
               <div className="hidden md:flex space-x-10">
@@ -213,7 +215,7 @@ export default function Home() {
               transition={{ duration: 0.8 }}
             >
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight">
-                <span className="gradient-text">Build the Future</span>
+                <GradientText>Build the Future</GradientText>
                 <br />
                 <span className="text-foreground">with AI</span>
               </h1>
@@ -290,7 +292,7 @@ export default function Home() {
                 transition={{ duration: 0.6 }}
               >
                 <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-                  Why Choose <span className="gradient-text">LornuAI</span>
+                  Why Choose <GradientText>LornuAI</GradientText>
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                   We combine deep technical expertise with a passion for innovation to deliver solutions
@@ -438,7 +440,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto">
             <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr] items-start">
               <div className="space-y-3">
-                <div className="text-2xl font-bold gradient-text"><Logo width={120} height={40} /></div>
+                <GradientText className="text-2xl font-bold"><Logo width={120} height={40} /></GradientText>
                 <p className="text-sm opacity-80 max-w-sm">
                   © 2025 LornuAI Inc. Building the future with intelligent solutions.
                 </p>

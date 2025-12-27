@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, ShieldCheck, Lock, Key, Eye, CloudArrowUp } from '@phosphor-icons/react'
+import { GradientText } from '@/components/GradientText'
 import { Logo } from '@/components/Logo'
 import SEOHead from '@/components/SEOHead'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -21,8 +22,10 @@ export default function Security() {
         <nav className="bg-card/80 backdrop-blur-lg shadow-lg sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <Link to="/" className="text-2xl font-bold gradient-text" aria-label="LornuAI home">
-                <Logo width={120} height={40} />
+              <Link to="/" aria-label="LornuAI home">
+                <GradientText className="text-2xl font-bold">
+                  <Logo width={120} height={40} />
+                </GradientText>
               </Link>
               <div className="flex items-center gap-3">
                 <Link to="/">
@@ -44,7 +47,7 @@ export default function Security() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4 gradient-text">Security Standards</h1>
+            <h1 className="text-4xl lg:text-5xl font-bold mb-4"><GradientText>Security Standards</GradientText></h1>
             <p className="text-muted-foreground mb-8">Last Updated: December 13, 2025</p>
 
             <Card className="mb-8">
