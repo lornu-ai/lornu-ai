@@ -4,6 +4,7 @@
 
 # Workload Identity Pool for Terraform Cloud
 resource "google_iam_workload_identity_pool" "tfc_pool" {
+  project                   = var.project_id
   workload_identity_pool_id = "lornu-tfc-pool"
   display_name              = "Terraform Cloud Pool"
   description               = "Identity pool for Terraform Cloud Dynamic Provider Credentials"
@@ -11,6 +12,7 @@ resource "google_iam_workload_identity_pool" "tfc_pool" {
 
 # OIDC Provider for Terraform Cloud
 resource "google_iam_workload_identity_pool_provider" "tfc_provider" {
+  project                            = var.project_id
   workload_identity_pool_id          = google_iam_workload_identity_pool.tfc_pool.workload_identity_pool_id
   workload_identity_pool_provider_id = "lornu-tfc-oidc"
   display_name                       = "Terraform Cloud OIDC Provider"
