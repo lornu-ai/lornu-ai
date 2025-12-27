@@ -1,7 +1,7 @@
 
 # 🏗️ Lornu AI - Hub Infrastructure
 
-. . just looking
+
 
 This directory contains the Terraform configuration for the **Hub Project**. The Hub serves as the central management point for infrastructure orchestration, specifically handling:
 
