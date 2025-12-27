@@ -38,10 +38,30 @@ resource "google_service_account" "github_actions" {
 }
 
 # Grant permissions to the GitHub Actions service account
-# Terraform permissions
-resource "google_project_iam_member" "github_actions_terraform" {
+# Use least privilege principle - specific roles instead of roles/editor
+# Compute Engine permissions (for GKE)
+resource "google_project_iam_member" "github_actions_compute" {
   project = var.project_id
-  role    = "roles/editor"
+  role    = "roles/compute.instanceAdmin"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_project_iam_member" "github_actions_compute_network" {
+  project = var.project_id
+  role    = "roles/compute.networkAdmin"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+# IAM permissions (for service accounts and roles)
+resource "google_project_iam_member" "github_actions_iam" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountAdmin"
+  member  = "serviceAccount:${google_service_account.github_actions.email}"
+}
+
+resource "google_project_iam_member" "github_actions_iam_workload_identity" {
+  project = var.project_id
+  role    = "roles/iam.workloadIdentityPoolAdmin"
   member  = "serviceAccount:${google_service_account.github_actions.email}"
 }
 
@@ -75,11 +95,12 @@ resource "google_project_iam_member" "github_actions_storage" {
 
 # Workload Identity User binding
 # Allow GitHub Actions to impersonate this service account
-# Restrict to lornu-ai/lornu-ai repository
+# Restrict to lornu-ai/lornu-ai repository and main branch only
 resource "google_service_account_iam_member" "github_actions_wif" {
   service_account_id = google_service_account.github_actions.name
   role               = "roles/iam.workloadIdentityUser"
-  member            = "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_actions.workload_identity_pool_id}/attribute.repository/lornu-ai/lornu-ai"
+  # Restrict to main branch: add ref condition to principalSet
+  member            = "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_actions.workload_identity_pool_id}/attribute.repository/lornu-ai/lornu-ai/attribute.ref/refs/heads/main"
 }
 
 # Data source for project number (needed for principalSet)

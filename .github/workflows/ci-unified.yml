@@ -58,9 +58,10 @@ jobs:
         uses: codecov/codecov-action@v4
         if: always()
         with:
-          file: ./packages/api/coverage.xml
+          file: ./coverage.xml
           flags: backend
           name: backend-coverage
+          working-directory: packages/api
 
   frontend-lint-test:
     name: "Frontend - Lint & Test (bun)"
@@ -118,12 +119,13 @@ jobs:
       - name: Install uv
         run: pip install uv
 
-      - name: Install Dependencies
-        run: |
-          cd apps/web
-          bun install --frozen-lockfile
-          cd ../../packages/api
-          uv sync --frozen --no-dev
+      - name: Install Frontend Dependencies
+        working-directory: apps/web
+        run: bun install --frozen-lockfile
+
+      - name: Install Backend Dependencies
+        working-directory: packages/api
+        run: uv sync --frozen --no-dev
 
       - name: Install Playwright Browsers
         working-directory: apps/web
