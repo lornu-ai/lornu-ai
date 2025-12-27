@@ -43,5 +43,5 @@ Simply make your changes to the `.tf` files in this directory and open a pull re
 ```bash
 git add hub/
 git commit -m "feat: update hub infrastructure"
-git push origin gcloud-oidc-develop
+git push origin gcloud-oidc
 ```
