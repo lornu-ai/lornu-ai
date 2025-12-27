@@ -27,7 +27,7 @@ permissions:
 env:
   TF_API_TOKEN: ${{ secrets.AWS_TF_API_TOKEN }}
   TF_CLOUD_ORG_PROD: "lornu-ai"
-  TF_CLOUD_ORG_STAGING: "disposable-org"
+  TF_CLOUD_ORG_STAGING: "lornu-ai"
   AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
 jobs:
@@ -43,7 +43,7 @@ jobs:
             terraform_dir: "terraform/aws/production"
             environment: "production"
           - workspace: "lornu-ai-staging-aws"
-            organization: "disposable-org"
+            organization: "lornu-ai"
             terraform_dir: "terraform/aws/staging"
             environment: "staging"
     # Always run for scheduled checks; for manual dispatch, filter in steps
@@ -177,7 +177,7 @@ jobs:
             terraform_dir: "terraform/aws/production"
             environment: "production"
           - workspace: "lornu-ai-staging-aws"
-            organization: "disposable-org"
+            organization: "lornu-ai"
             terraform_dir: "terraform/aws/staging"
             environment: "staging"
 

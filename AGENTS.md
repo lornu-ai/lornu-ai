@@ -138,7 +138,7 @@ When drift is detected (via scheduled hourly checks or manual workflow dispatch)
 ### Workspaces Monitored
 
 - **Production**: `lornu-ai-kustomize` (organization: `lornu-ai`)
-- **Staging**: `lornu-ai-staging-aws` (organization: `disposable-org`)
+- **Staging**: `lornu-ai-staging-aws` (organization: `lornu-ai`)
 
 ### Drift Detection Schedule
 

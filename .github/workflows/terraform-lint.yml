@@ -24,7 +24,7 @@ jobs:
       matrix:
         directory:
           - terraform/aws/staging
-          - terraform/aws/production
+          - terraform/aws
 
     steps:
       - name: "Checkout"
@@ -80,7 +80,7 @@ jobs:
       matrix:
         directory:
           - terraform/aws/staging
-          - terraform/aws/production
+          - terraform/aws
 
     steps:
       - name: "Checkout"
@@ -94,7 +94,7 @@ jobs:
       - name: "Terraform Init"
         run: |
           cd ${{ matrix.directory }}
-          terraform init -backend=false
+          terraform init -backend=false -upgrade
 
       - name: "Terraform Validate"
         run: |

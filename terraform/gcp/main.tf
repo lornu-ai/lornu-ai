@@ -17,6 +17,7 @@ terraform {
 }
 
 provider "google" {
-  project = var.project_id
-  region  = var.region
+  credentials = var.GOOGLE_CREDENTIALS != null ? jsondecode(var.GOOGLE_CREDENTIALS) : null
+  project     = var.project_id
+  region      = var.region
 }

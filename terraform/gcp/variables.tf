@@ -21,3 +21,10 @@ variable "domain_name" {
   type        = string
   default     = "lornu.ai"
 }
+
+variable "GOOGLE_CREDENTIALS" {
+  description = "GCP service account credentials JSON (for Terraform Cloud). Service account: tf-cloud-sa@gcp-lornu-ai.iam.gserviceaccount.com"
+  type        = string
+  sensitive   = true
+  default     = null
+}
