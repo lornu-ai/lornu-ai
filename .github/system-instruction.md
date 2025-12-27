@@ -97,7 +97,22 @@ See `docs/OIDC_MIGRATION_RUNBOOK.md` for details.
 
 ## Terraform Hygiene (Required)
 
-- Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
+**STRICT ENFORCEMENT**: The `validate.yml` CI workflow enforces HCL formatting standards.
+
+### Before Pushing Terraform Changes
+1. **Format**: `terraform fmt -recursive terraform/`
+2. **Validate**: `terraform init -backend=false && terraform validate` in each directory
+
+### CI Checks (validate.yml)
+- `terraform fmt -check -recursive` - **Blocks PRs** with unformatted code
+- `terraform validate` - **Blocks PRs** with syntax/logic errors
+- `actionlint` - **Blocks PRs** with malformed GitHub Actions YAML
+
+### AI Agent Requirements
+- **ALWAYS** produce properly formatted HCL code
+- **ALWAYS** use standard Terraform formatting conventions
+- **NEVER** introduce syntax errors that would fail `terraform validate`
+- **NEVER** create workflows missing required `permissions` blocks (OIDC requires `id-token: write`)
 
 ## Branding
 

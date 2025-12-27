@@ -91,7 +91,24 @@ See `.github/workflows/README.md` for details.
 
 ## Terraform Hygiene (Required)
 
-- Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
+**Pre-push requirements** - Run these locally before pushing any Terraform changes:
+
+```bash
+# Format all Terraform files
+terraform fmt -recursive terraform/
+
+# Validate each directory
+cd terraform/aws && terraform init -backend=false && terraform validate
+cd terraform/gcp && terraform init -backend=false && terraform validate
+cd terraform/tfc-management && terraform init -backend=false && terraform validate
+```
+
+**CI Enforcement**: The `validate.yml` workflow automatically checks:
+- `terraform fmt -check -recursive` on all directories
+- `terraform validate` with backend-less init
+- `actionlint` for GitHub Actions workflow syntax
+
+PRs with formatting or validation errors will be **blocked** until fixed.
 
 ## Kubernetes Deployment
 

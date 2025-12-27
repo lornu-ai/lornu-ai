@@ -1,0 +1,223 @@
+name: "Infrastructure Hygiene & Workflow Validation"
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'terraform/**/*.tf'
+      - '.github/workflows/**/*.yml'
+      - '.github/workflows/**/*.yaml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # Terraform Format Check - All Directories
+  terraform-fmt:
+    name: "Terraform Format"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory:
+          - terraform/aws
+          - terraform/aws/staging
+          - terraform/gcp
+          - terraform/tfc-management
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.8"
+
+      - name: "Check Directory Exists"
+        id: check
+        run: |
+          if [ -d "${{ matrix.directory }}" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: "Terraform Format Check"
+        if: steps.check.outputs.exists == 'true'
+        id: fmt
+        run: |
+          cd ${{ matrix.directory }}
+          terraform fmt -check -recursive -diff
+        continue-on-error: true
+
+      - name: "Report Format Issue"
+        if: steps.fmt.outcome == 'failure' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = `### ⚠️ Terraform Formatting Issue
+
+            **Directory:** \`${{ matrix.directory }}\`
+
+            The Terraform files are not properly formatted.
+
+            **To fix locally:**
+            \`\`\`bash
+            cd ${{ matrix.directory }}
+            terraform fmt -recursive
+            git add . && git commit -m "fix: format terraform files"
+            git push
+            \`\`\`
+
+            Or run from repo root: \`terraform fmt -recursive terraform/\``;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: "Fail on Format Error"
+        if: steps.fmt.outcome == 'failure'
+        run: exit 1
+
+  # Terraform Validate - All Directories
+  terraform-validate:
+    name: "Terraform Validate"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory:
+          - terraform/aws
+          - terraform/aws/staging
+          - terraform/gcp
+          - terraform/tfc-management
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.8"
+
+      - name: "Check Directory Exists"
+        id: check
+        run: |
+          if [ -d "${{ matrix.directory }}" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: "Terraform Init (Backend-less)"
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          cd ${{ matrix.directory }}
+          terraform init -backend=false -upgrade
+
+      - name: "Terraform Validate"
+        if: steps.check.outputs.exists == 'true'
+        id: validate
+        run: |
+          cd ${{ matrix.directory }}
+          terraform validate
+
+      - name: "Report Validation Error"
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = `### ❌ Terraform Validation Failed
+
+            **Directory:** \`${{ matrix.directory }}\`
+
+            The Terraform configuration contains syntax or logic errors.
+
+            **To debug locally:**
+            \`\`\`bash
+            cd ${{ matrix.directory }}
+            terraform init -backend=false
+            terraform validate
+            \`\`\`
+
+            Check the job logs for detailed error messages.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  # GitHub Actions Workflow Linting
+  actionlint:
+    name: "Actionlint"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Run actionlint"
+        uses: reviewdog/action-actionlint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_on_error: true
+          filter_mode: nofilter
+          level: error
+
+  # Summary Job
+  validation-summary:
+    name: "Validation Summary"
+    runs-on: ubuntu-latest
+    needs: [terraform-fmt, terraform-validate, actionlint]
+    if: always()
+
+    steps:
+      - name: "Check All Results"
+        run: |
+          echo "## Validation Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          FMT_RESULT="${{ needs.terraform-fmt.result }}"
+          VALIDATE_RESULT="${{ needs.terraform-validate.result }}"
+          ACTIONLINT_RESULT="${{ needs.actionlint.result }}"
+
+          if [ "$FMT_RESULT" = "success" ]; then
+            echo "✅ Terraform Format: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Terraform Format: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "$VALIDATE_RESULT" = "success" ]; then
+            echo "✅ Terraform Validate: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Terraform Validate: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "$ACTIONLINT_RESULT" = "success" ]; then
+            echo "✅ Actionlint: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Actionlint: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Fail if any check failed
+          if [ "$FMT_RESULT" != "success" ] || [ "$VALIDATE_RESULT" != "success" ] || [ "$ACTIONLINT_RESULT" != "success" ]; then
+            echo ""
+            echo "---"
+            echo "⚠️ **One or more validation checks failed. Please fix the issues above.**"
+            exit 1
+          fi
+
+          echo ""
+          echo "---"
+          echo "🎉 **All validation checks passed!**"
