@@ -34,7 +34,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install uv
         run: pip install uv
@@ -80,7 +80,7 @@ jobs:
           bun-version: latest
 
       - name: Install Dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Lint
         run: bun run lint
@@ -114,18 +114,18 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install uv
         run: pip install uv
 
       - name: Install Frontend Dependencies
         working-directory: apps/web
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Install Backend Dependencies
         working-directory: packages/api
-        run: uv sync --frozen --no-dev
+        run: uv sync --no-dev
 
       - name: Install Playwright Browsers
         working-directory: apps/web
@@ -133,7 +133,7 @@ jobs:
 
       - name: Start Backend API Server
         run: |
-          cd packages/api
+          cd ../../packages/api
           export PYTHONPATH="$(pwd)/../..:$PYTHONPATH"
           uv run -- uvicorn packages.api.main:app --host 0.0.0.0 --port 8080 &
           sleep 5
