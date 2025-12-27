@@ -99,6 +99,16 @@ See `docs/OIDC_MIGRATION_RUNBOOK.md` for details.
 
 - Before pushing, run `terraform fmt` and `terraform validate` for any Terraform changes.
 
+**CI Enforcement**: The `validate.yml` workflow enforces HCL formatting standards:
+- `terraform fmt -check -recursive` - **Blocks PRs** with unformatted code
+- `terraform validate` - **Blocks PRs** with syntax/logic errors
+- `actionlint` - **Blocks PRs** with malformed GitHub Actions YAML
+
+**AI Agent Requirements**:
+- **ALWAYS** produce properly formatted HCL code
+- **NEVER** introduce syntax errors that would fail `terraform validate`
+- **NEVER** create workflows missing required `permissions` blocks (OIDC requires `id-token: write`)
+
 ## Branding
 
 - Brand asset: `apps/web/src/assets/brand/lornu-ai-final-clear-bg.png`
