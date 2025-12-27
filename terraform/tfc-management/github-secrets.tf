@@ -1,15 +1,61 @@
 # GitHub Actions Secrets Management
 # Automates TFC API token rotation for CI/CD workflows
 
-# Team token for GitHub Actions to interact with TFC
-# This token is used by GitHub Actions workflows to trigger TFC runs
-resource "tfe_team_token" "github_actions" {
-  team_id = data.tfe_team.owners.id
+# Create a least-privileged team for GitHub Actions CI/CD
+# This follows the principle of least privilege instead of using the "owners" team
+resource "tfe_team" "github_actions" {
+  name         = "github-actions-ci"
+  organization = var.tfc_organization
+
+  organization_access {
+    # Minimal org-level access - only what's needed for CI
+    manage_workspaces       = false
+    manage_policies         = false
+    manage_policy_overrides = false
+    manage_run_tasks        = false
+    manage_vcs_settings     = false
+    manage_membership       = false
+    manage_modules          = false
+    manage_providers        = false
+    manage_agent_pools      = false
+    read_workspaces         = true
+    read_projects           = true
+  }
 }
 
-data "tfe_team" "owners" {
-  name         = "owners"
-  organization = var.tfc_organization
+# Grant the CI team access to specific workspaces only
+resource "tfe_team_access" "aws_kustomize" {
+  team_id      = tfe_team.github_actions.id
+  workspace_id = data.tfe_workspace.aws_kustomize.id
+
+  permissions {
+    runs              = "apply"
+    variables         = "read"
+    state_versions    = "read"
+    sentinel_mocks    = "none"
+    workspace_locking = false
+    run_tasks         = false
+  }
+}
+
+resource "tfe_team_access" "gcp_lornu_ai" {
+  team_id      = tfe_team.github_actions.id
+  workspace_id = data.tfe_workspace.gcp_lornu_ai.id
+
+  permissions {
+    runs              = "apply"
+    variables         = "read"
+    state_versions    = "read"
+    sentinel_mocks    = "none"
+    workspace_locking = false
+    run_tasks         = false
+  }
+}
+
+# Team token for GitHub Actions to interact with TFC
+# Scoped to the least-privileged github-actions-ci team
+resource "tfe_team_token" "github_actions" {
+  team_id = tfe_team.github_actions.id
 }
 
 # Inject the TFC API token into GitHub Actions secrets
