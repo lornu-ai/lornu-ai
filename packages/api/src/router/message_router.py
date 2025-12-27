@@ -51,8 +51,8 @@ async def vectorize_image(file: UploadFile = File(...)):
 
     try:
         # Sanitize filename to prevent path traversal
-        original_filename = Path(file.filename).name
-        input_file = temp_path / original_filename
+        safe_filename = Path(file.filename).name
+        input_file = temp_path / safe_filename
 
         # Ensure clean extension replacement (e.g. .png -> .svg)
         # Use .with_suffix() to correctly handle extension replacement
@@ -97,11 +97,11 @@ async def remove_background(file: UploadFile = File(...)):
 
     try:
         # Sanitize filename to prevent path traversal
-        original_filename = Path(file.filename).name
-        input_file = temp_path / original_filename
+        safe_filename = Path(file.filename).name
+        input_file = temp_path / safe_filename
 
         # Output as PNG to preserve transparency
-        output_filename = f"{Path(original_filename).stem}_nobg.png"
+        output_filename = f"{Path(safe_filename).stem}_nobg.png"
         output_file = temp_path / output_filename
 
         with open(input_file, "wb") as buffer:
