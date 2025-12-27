@@ -10,7 +10,7 @@ Lornu AI uses a **CLI-driven workflow** for Terraform Cloud (TFC). This means th
 
 Before running a manual infrastructure update via the TFC UI, the configuration version must be "primed" by GitHub Actions:
 
-1. **Automatic Sync**: When code is pushed to `main` or `kustomize` branches, the `.github/workflows/tfc-sync.yml` workflow automatically:
+1. **Automatic Sync**: When code is pushed to the `main` branch, the `.github/workflows/tfc-sync.yml` workflow automatically:
    - Uploads the latest Terraform configuration to TFC
    - Creates a speculative plan to verify the configuration
    - Updates the Configuration Version in the TFC workspace
@@ -21,7 +21,7 @@ Before running a manual infrastructure update via the TFC UI, the configuration 
 
 Lornu AI uses two TFC workspaces in the `lornu-ai` organization:
 
-- **AWS Production**: `aws-kustomize` (terraform/aws/production)
+- **AWS Production**: `aws-kustomize` (terraform/aws)
 - **GCP**: `gcp-lornu-ai` (terraform/gcp)
 
 ### Verifying Configuration Version
@@ -30,7 +30,7 @@ Before running a manual TFC UI run:
 
 1. Check the TFC workspace "Configuration Versions" tab
 2. Verify the latest configuration version matches the most recent GitHub commit SHA
-3. The "Last Updated" timestamp should match your last push to `main` or `kustomize`
+3. The "Last Updated" timestamp should match your last push to `main`
 
 ### Running Manual Updates
 
@@ -44,7 +44,6 @@ Before running a manual TFC UI run:
 ### Branch Mapping
 
 - **`main` branch**: Production infrastructure (AWS and GCP)
-- **`kustomize` branch**: Production infrastructure (legacy, being phased out)
 
 ### Skipping Sync
 
@@ -80,6 +79,6 @@ If a manual TFC UI run appears to be using old code:
 ## Related Documentation
 
 - `.github/workflows/tfc-sync.yml` - Automatic configuration version sync workflow
-- `terraform/aws/production/backend.tf` - AWS TFC backend configuration
+- `terraform/aws/backend.tf` - AWS TFC backend configuration
 - `terraform/gcp/main.tf` - GCP TFC backend configuration
 
