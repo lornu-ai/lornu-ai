@@ -1,10 +1,10 @@
 # DynamoDB table for rate limiting (RATE_LIMIT_KV)
 # Stores rate limit counters per IP address or user ID
 resource "aws_dynamodb_table" "rate_limit_kv" {
-  name             = "lornu-ai-rate-limit-kv"
-  billing_mode     = "PAY_PER_REQUEST"
-  hash_key         = "key"
-  stream_enabled   = false
+  name                        = "lornu-ai-rate-limit-kv"
+  billing_mode                = "PAY_PER_REQUEST"
+  hash_key                    = "key"
+  stream_enabled              = false
   deletion_protection_enabled = true
 
   attribute {
@@ -27,10 +27,10 @@ resource "aws_dynamodb_table" "rate_limit_kv" {
 
 # DynamoDB table for general KV store (caching, sessions, etc.)
 resource "aws_dynamodb_table" "general_kv" {
-  name             = "lornu-ai-general-kv"
-  billing_mode     = "PAY_PER_REQUEST"
-  hash_key         = "key"
-  stream_enabled   = false
+  name                        = "lornu-ai-general-kv"
+  billing_mode                = "PAY_PER_REQUEST"
+  hash_key                    = "key"
+  stream_enabled              = false
   deletion_protection_enabled = true
 
   attribute {
