@@ -2,7 +2,7 @@ name: "GCP Hub Provisioning"
 
 on:
   push:
-    branches: [ main ]
+    branches: [ gcloud-oidc ]
     paths:
       - 'hub/**' # Only triggers when you touch the hub folder
 
