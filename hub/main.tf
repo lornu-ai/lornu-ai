@@ -45,6 +45,6 @@ resource "google_iam_workload_identity_pool_provider" "tfc_provider" {
     issuer_uri = "https://app.terraform.io"
   }
 
-  # This matches the "dummy condition" we used to bypass the gcloud CLI bug
-  attribute_condition = "assertion.sub != 'foo'"
+  # Security: Restrict access to only our TFC Organization
+  attribute_condition = "assertion.terraform_organization_name == \"lornu-ai\""
 }
