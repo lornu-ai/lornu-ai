@@ -1,12 +1,12 @@
 name: "GCP Hub Provisioning"
 
 on:
-  push:
+  pull_request:
     branches:
-      - gcloud-oidc  # ONLY trigger on pushes to this branch
+      - main # ONLY trigger on PRs to main
     paths:
-      - 'hub/**'     # ONLY trigger if files in the hub folder changed
-  workflow_dispatch:  # <--- ADD THIS LINE
+      - 'hub/**' # ONLY trigger if files in the hub folder changed
+  workflow_dispatch:
 
 jobs:
   terraform:
