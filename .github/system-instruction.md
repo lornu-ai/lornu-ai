@@ -57,11 +57,30 @@ kubernetes/overlays/   # dev, staging, prod overlays
 
 See `docs/TFC_MANUAL_RUNS.md` for details on manual TFC UI runs.
 
+## Zero-Secret OIDC Standard (Required)
+
+Lornu AI uses **OIDC-based Dynamic Provider Credentials**. When working with infrastructure:
+
+### Authentication Rules
+1. **NEVER suggest creating static IAM keys** (AWS Access Keys, Secret Keys)
+2. **NEVER suggest creating GCP Service Account JSON keys**
+3. **ALWAYS reference existing OIDC roles** for TFC authentication:
+   - AWS: `terraform-cloud-oidc-role`
+   - GCP: `lornu-tfc-pool` with `lornu-tfc-infra` service account
+4. **ALWAYS use Workload Identity** for GKE pod authentication
+
+### TFC Variables (for reference)
+- `TFC_AWS_PROVIDER_AUTH=true` + `TFC_AWS_RUN_ROLE_ARN`
+- `TFC_GCP_PROVIDER_AUTH=true` + `TFC_GCP_RUN_SERVICE_ACCOUNT_EMAIL`
+
+See `docs/OIDC_MIGRATION_RUNBOOK.md` for details.
+
 ## Prohibited
 
 - Do not introduce AWS ECS or Cloudflare Workers references.
 - Do not add non-DRY manifest duplication across overlays.
 - Do not introduce Helm charts, templates, or values files.
+- Do not create or suggest static AWS Access Keys or GCP JSON keys.
 
 ## PR Labeling (Required)
 
@@ -69,7 +88,7 @@ See `docs/TFC_MANUAL_RUNS.md` for details on manual TFC UI runs.
 - Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.
 
 ## PR Base Branch (Required)
-- Always open PRs against `develop`.
+- Always open PRs against `main`.
 
 ## Dependabot
 - Dependabot manages routine version bumps; do not add manual upgrade PRs unless required.

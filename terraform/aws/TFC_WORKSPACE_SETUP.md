@@ -23,6 +23,6 @@
 #     Environment = local.environment
 #     ManagedBy   = "terraform-cloud"
 #     Repository  = "lornu-ai"
-#     Branch      = "kustomize"
+#     Branch      = "main"
 #   }
 # }
