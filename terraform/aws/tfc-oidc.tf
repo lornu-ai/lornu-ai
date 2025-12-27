@@ -14,10 +14,11 @@ resource "aws_iam_openid_connect_provider" "tfc" {
   thumbprint_list = [data.tls_certificate.tfc.certificates[0].sha1_fingerprint]
 
   tags = {
-    Name                     = "terraform-cloud-oidc"
-    Environment              = "production"
-    "lornu.ai/managed-by"    = "terraform-cloud"
-    "lornu.ai/environment"   = "production"
+    Name                   = "terraform-cloud-oidc"
+    Environment            = "production"
+    "lornu.ai/managed-by"  = "terraform-cloud"
+    "lornu.ai/environment" = "production"
+    "lornu.ai/asset-id"    = "lornu-ai-final-clear-bg"
   }
 }
 
@@ -49,15 +50,20 @@ resource "aws_iam_role" "tfc_oidc" {
   })
 
   tags = {
-    Name                     = "terraform-cloud-oidc-role"
-    Environment              = "production"
-    "lornu.ai/managed-by"    = "terraform-cloud"
-    "lornu.ai/environment"   = "production"
+    Name                   = "terraform-cloud-oidc-role"
+    Environment            = "production"
+    "lornu.ai/managed-by"  = "terraform-cloud"
+    "lornu.ai/environment" = "production"
+    "lornu.ai/asset-id"    = "lornu-ai-final-clear-bg"
   }
 }
 
 # Policy for Terraform Cloud to manage AWS infrastructure
 # Mirrors the permissions from github_terraform_aws policy for consistency
+# Note: Broad permissions (iam:*, kms:*) are required for Terraform Cloud to manage
+# infrastructure resources including IAM roles, policies, OIDC providers, and KMS keys.
+# The trust policy restricts this role to only be assumable by the aws-kustomize workspace
+# in the lornu-ai organization, providing an additional security boundary.
 resource "aws_iam_policy" "tfc_infrastructure" {
   name        = "terraform-cloud-infrastructure"
   description = "Allow Terraform Cloud to manage AWS infrastructure via Dynamic Provider Credentials"
@@ -76,16 +82,60 @@ resource "aws_iam_policy" "tfc_infrastructure" {
           "ecr:*",
           "eks:*",
           # IAM (for roles, policies, OIDC providers)
-          "iam:*",
+          # Restricted to specific actions needed for infrastructure management
+          "iam:CreateRole",
+          "iam:DeleteRole",
+          "iam:GetRole",
+          "iam:ListRoles",
+          "iam:UpdateRole",
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy",
+          "iam:ListAttachedRolePolicies",
+          "iam:CreatePolicy",
+          "iam:DeletePolicy",
+          "iam:GetPolicy",
+          "iam:ListPolicies",
+          "iam:CreatePolicyVersion",
+          "iam:DeletePolicyVersion",
+          "iam:ListPolicyVersions",
+          "iam:SetDefaultPolicyVersion",
+          "iam:CreateOpenIDConnectProvider",
+          "iam:DeleteOpenIDConnectProvider",
+          "iam:GetOpenIDConnectProvider",
+          "iam:ListOpenIDConnectProviders",
+          "iam:TagRole",
+          "iam:UntagRole",
+          "iam:ListRoleTags",
+          "iam:TagPolicy",
+          "iam:UntagPolicy",
+          "iam:ListPolicyTags",
+          "iam:PassRole",
           # Logging
           "logs:*",
           # Load Balancing
           "elasticloadbalancing:*",
           # Auto Scaling
           "autoscaling:*",
-          # Encryption
-          "kms:*",
-          # Secrets (read-only for runtime)
+          # Encryption (KMS keys for EBS volumes, RDS, etc.)
+          # Restricted to key management operations, not key usage
+          "kms:CreateKey",
+          "kms:DeleteKey",
+          "kms:DescribeKey",
+          "kms:ListKeys",
+          "kms:ListAliases",
+          "kms:UpdateKeyDescription",
+          "kms:EnableKey",
+          "kms:DisableKey",
+          "kms:TagResource",
+          "kms:UntagResource",
+          "kms:ListResourceTags",
+          "kms:CreateAlias",
+          "kms:DeleteAlias",
+          "kms:UpdateAlias",
+          "kms:PutKeyPolicy",
+          "kms:GetKeyPolicy",
+          "kms:ListKeyPolicies",
+          # Secrets (read for runtime, write for Terraform management)
           "secretsmanager:GetSecretValue",
           "secretsmanager:DescribeSecret",
           "secretsmanager:ListSecrets",
@@ -139,10 +189,11 @@ resource "aws_iam_policy" "tfc_infrastructure" {
   })
 
   tags = {
-    Name                     = "terraform-cloud-infrastructure"
-    Environment              = "production"
-    "lornu.ai/managed-by"    = "terraform-cloud"
-    "lornu.ai/environment"   = "production"
+    Name                   = "terraform-cloud-infrastructure"
+    Environment            = "production"
+    "lornu.ai/managed-by"  = "terraform-cloud"
+    "lornu.ai/environment" = "production"
+    "lornu.ai/asset-id"    = "lornu-ai-final-clear-bg"
   }
 }
 
