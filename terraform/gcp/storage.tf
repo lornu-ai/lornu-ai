@@ -13,6 +13,8 @@ resource "google_storage_bucket" "assets" {
     max_age_seconds = 3600
   }
 
+  # Lifecycle rule: delete objects after 90 days
+  # Note: The logo.png file is managed by Terraform and will be re-uploaded if deleted
   lifecycle_rule {
     condition {
       age = 90
@@ -33,6 +35,24 @@ resource "google_storage_bucket_iam_member" "assets_public" {
   bucket = google_storage_bucket.assets.name
   role   = "roles/storage.objectViewer"
   member = "allUsers"
+}
+
+# Upload logo file to assets bucket
+resource "google_storage_bucket_object" "logo" {
+  name   = "logo.png"
+  bucket = google_storage_bucket.assets.name
+  # Path relative to repository root for Terraform Cloud compatibility
+  source = "${path.root}/apps/web/src/assets/brand/lornu-ai-final-clear-bg.png"
+
+  # Set content type for proper image serving
+  content_type = "image/png"
+
+  # Cache control headers for optimal CDN performance
+  metadata = {
+    cache-control = "public, max-age=31536000, immutable"
+  }
+
+  depends_on = [google_storage_bucket.assets]
 }
 
 # Firestore database for rate limiting (equivalent to Cloudflare KV "RATE_LIMIT_KV")
