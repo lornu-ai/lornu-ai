@@ -152,9 +152,11 @@ jobs:
 
       - name: Authenticate to Google Cloud (OIDC)
         uses: google-github-actions/auth@v2
+        id: auth
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
+          create_credentials_file: true
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
