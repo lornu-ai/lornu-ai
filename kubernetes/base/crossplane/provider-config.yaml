@@ -1,0 +1,59 @@
+# Crossplane GCP Provider Configuration
+# This configures Crossplane to use Workload Identity (WebIdentity) to authenticate to GCP
+# The Workload Identity binding is created by Terraform in terraform/gcp/crossplane.tf
+
+---
+# GCP Storage Provider (for Cloud Storage buckets, etc.)
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-gcp-storage
+  namespace: crossplane-system
+spec:
+  package: xpkg.upbound.io/upbound/provider-gcp-storage:v1.0.0
+
+---
+# GCP Compute Provider (for VMs, networks, etc.)
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-gcp-compute
+  namespace: crossplane-system
+spec:
+  package: xpkg.upbound.io/upbound/provider-gcp-compute:v1.0.0
+
+---
+# GCP IAM Provider (for service accounts, IAM bindings, etc.)
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-gcp-iam
+  namespace: crossplane-system
+spec:
+  package: xpkg.upbound.io/upbound/provider-gcp-iam:v1.0.0
+
+---
+# GCP Provider Config - Default configuration using Workload Identity
+# This uses the Workload Identity trust bridge created by Terraform
+# Format: serviceAccount:[PROJECT_ID].svc.id.goog[crossplane-system/provider-gcp-default]
+apiVersion: gcp.upbound.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: default
+  namespace: crossplane-system
+spec:
+  # Replace with your actual project ID or use a variable
+  # For now using placeholder - should be set via Kustomize overlay or environment variable
+  projectID: gcp-lornu-ai
+  
+  # Use WebIdentity (Workload Identity) for authentication
+  # This leverages the IAM binding created by Terraform:
+  # google_service_account_iam_member.crossplane_workload_identity
+  credentials:
+    source: WebIdentity
+  
+  # Optional: Specify the Kubernetes Service Account that Crossplane will use
+  # This matches the member in the Terraform IAM binding
+  # ksaName: provider-gcp-default
+  # ksaNamespace: crossplane-system
+
