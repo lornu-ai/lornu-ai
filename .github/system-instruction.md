@@ -88,7 +88,7 @@ See `docs/OIDC_MIGRATION_RUNBOOK.md` for details.
 - Example commands: `gh label create <agent-name>` (if needed), `gh pr edit <pr-number> --add-label <agent-name>`.
 
 ## PR Base Branch (Required)
-- Always open PRs against `develop`.
+- Always open PRs against `main`.
 
 ## Dependabot
 - Dependabot manages routine version bumps; do not add manual upgrade PRs unless required.
